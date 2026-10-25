@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron"
 import { z } from "zod"
 import { CHANNELS } from "../shared/channels"
 import {
+  AccountSetupResultSchema,
   AuthSnapshotSchema,
   CategoryCardSchema,
   ChannelCardSchema,
@@ -33,6 +34,8 @@ const api = {
     logout: () => ipcRenderer.invoke(CHANNELS.authLogout).then(() => undefined),
     openActivation: (flowId) =>
       ipcRenderer.invoke(CHANNELS.authOpenActivation, flowId).then(() => undefined),
+    setup: () =>
+      ipcRenderer.invoke(CHANNELS.authSetup).then((value) => AccountSetupResultSchema.parse(value)),
     snapshot: () =>
       ipcRenderer.invoke(CHANNELS.authSnapshot).then((value) => AuthSnapshotSchema.parse(value)),
   },

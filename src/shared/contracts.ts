@@ -189,6 +189,11 @@ export const SettingsSnapshotSchema = z.object({
 })
 
 export type AuthSnapshot = z.infer<typeof AuthSnapshotSchema>
+export const AccountSetupResultSchema = z.strictObject({
+  auth: AuthSnapshotSchema,
+  player: PlayerSessionSnapshotSchema,
+})
+export type AccountSetupResult = z.infer<typeof AccountSetupResultSchema>
 export type CategoryCard = z.infer<typeof CategoryCardSchema>
 export type ChannelCard = z.infer<typeof ChannelCardSchema>
 export type ClientId = z.infer<typeof ClientIdSchema>
@@ -213,6 +218,8 @@ export interface VacuumStreamApi {
     readonly begin: () => Promise<DeviceChallenge>
     readonly logout: () => Promise<void>
     readonly openActivation: (flowId: string) => Promise<void>
+    /** One-window sign-in for both the player and the app's followed-channels access. */
+    readonly setup: () => Promise<AccountSetupResult>
     readonly snapshot: () => Promise<AuthSnapshot>
   }
   readonly catalog: {

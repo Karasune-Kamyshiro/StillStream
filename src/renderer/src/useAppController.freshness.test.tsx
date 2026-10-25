@@ -69,6 +69,7 @@ const makeBridge = () =>
       begin: vi.fn<VacuumStreamApi["auth"]["begin"]>(),
       logout: vi.fn<VacuumStreamApi["auth"]["logout"]>().mockResolvedValue(undefined),
       openActivation: vi.fn<VacuumStreamApi["auth"]["openActivation"]>(),
+      setup: vi.fn<VacuumStreamApi["auth"]["setup"]>(),
       snapshot: vi.fn<VacuumStreamApi["auth"]["snapshot"]>().mockResolvedValue(authenticated),
     },
     catalog: {

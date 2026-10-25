@@ -63,19 +63,30 @@ open only one window. The extra process exits without opening the profile's stor
 Start in guest mode: choose a Quick watch channel, or open Search and enter an exact Twitch
 channel login, such as `twitch`. Guest mode does not provide general catalog search.
 
-For personalized discovery:
+For personalized discovery and ad-free viewing on channels you subscribe to:
 
 1. Open **Connect Twitch** or **Settings**. The Twitch account card comes first.
 2. From the selected Settings navigation item, press Right (Down on the compact bar) to reach
-   **Sign in on another device**, then activate it.
-3. Scan the QR code or choose **Open Twitch activation**, then enter the displayed code at Twitch.
-4. Approve access on Twitch and return to VacuumStream. The account action becomes **Sign out**.
+   **Sign in with Twitch**, then activate it.
+3. A Twitch window opens. Log in on Twitch's own page (skipped if the player is already signed
+   in). The same window then shows Twitch's activation page with your code filled in.
+4. Confirm on that page. The window closes by itself, the account action becomes **Sign out**,
+   and the card shows that the player is signed in too.
+
+This signs in two things at once: VacuumStream's read-only access to your followed channels,
+and the Twitch player itself, which is what lets subscriber and Turbo ad-free benefits apply.
+**Sign out** signs out of both.
+
+Without a keyboard nearby, choose **Use a code on another device** instead: scan the QR code or
+choose **Open Twitch activation**, then enter the displayed code at Twitch. That path signs in
+only the app; afterwards **Sign in the player too** finishes the player sign-in. Closing the
+Twitch window early also falls back to showing the code.
 
 The account action keeps controller focus as sign-in starts, completes, expires, or fails, and
 when you sign out. While a request is pending it stays reachable but ignores repeated activation.
 If a request fails, its error is announced and the action remains available to retry. An expired
-code returns you to **Sign in on another device** for a new code. You can leave Settings while
-sign-in completes; it does not pull you back or interrupt Client ID editing.
+code returns you to **Sign in with Twitch**. You can leave Settings while sign-in completes; it
+does not pull you back or interrupt Client ID editing.
 
 A public Client ID is built in; ordinary sign-in needs no developer registration or Save step.
 The **Twitch application** card remains below the account card for people using their own app.

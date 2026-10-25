@@ -183,6 +183,10 @@
   gap: var(--space-3);
 }
 
+.account-status__player {
+  color: var(--color-text-muted);
+}
+
 .field-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

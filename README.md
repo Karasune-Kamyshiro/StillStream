@@ -23,7 +23,8 @@ If there is no published release yet, use the [source setup](docs/contributing/d
 - Watch quick-pick channels or search an exact channel name without signing in.
 - Connect your Twitch account to browse live streams, followed channels, categories, and VODs.
 - A public Twitch Client ID is built in. You do **not** need to register a developer application.
-- Device sign-in unlocks discovery; it does not sign the embedded player into your account.
+- **Sign in with Twitch** in Settings connects discovery and signs the embedded player in, so
+  subscriber and Turbo ad-free benefits apply. A code-on-another-device option remains.
 - Twitch controls ads, availability, and player errors. VacuumStream does not bypass them.
 
 ## Documentation

@@ -84,7 +84,7 @@ beforeEach(() => {
     favourites,
     mainWindow: { webContents } as BrowserWindow,
     playbackProgress,
-    playerSession: { signIn: vi.fn(), signOut: vi.fn(), snapshot: vi.fn() },
+    playerSession: { setup: vi.fn(), signIn: vi.fn(), signOut: vi.fn(), snapshot: vi.fn() },
     rendererOrigin: "https://localhost:1234",
     runningInSteamGameMode: false,
     twitch: new TwitchService(

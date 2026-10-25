@@ -75,7 +75,15 @@ export const createTwitchWebSession = (options: {
     )
   }
 
-  const signIn = (): Promise<PlayerSessionSnapshot> => {
+  /**
+   * Opens Twitch in a window that shares the player's cookie jar. Once Twitch's own login has
+   * produced a session, `afterSignIn` decides what the same window does next (close, or continue
+   * to a follow-up page such as device activation).
+   */
+  const openTwitchWindow = (
+    signedIn: boolean,
+    afterSignIn: (window: BrowserWindow) => void,
+  ): Promise<PlayerSessionSnapshot> => {
     if (pending !== undefined) {
       loginWindow?.focus()
       return pending
@@ -88,7 +96,7 @@ export const createTwitchWebSession = (options: {
         height: 760,
         modal: parent !== undefined,
         ...(parent === undefined ? {} : { parent }),
-        title: "Sign in to Twitch",
+        title: "Sign in with Twitch",
         width: 520,
         webPreferences: {
           contextIsolation: true,
@@ -108,7 +116,13 @@ export const createTwitchWebSession = (options: {
         if (!URL.canParse(url) || new URL(url).protocol !== "https:") event.preventDefault()
       })
 
-      let closeTimer: ReturnType<typeof setTimeout> | undefined
+      let continueTimer: ReturnType<typeof setTimeout> | undefined
+      const continueAfterSignIn = (delay: number): void => {
+        if (continueTimer !== undefined) return
+        continueTimer = setTimeout(() => {
+          if (!window.isDestroyed()) afterSignIn(window)
+        }, delay)
+      }
       const onCookieChanged = (
         _event: Electron.Event,
         cookie: Cookie,
@@ -122,15 +136,12 @@ export const createTwitchWebSession = (options: {
           !isTwitchCookie(cookie)
         )
           return
-        if (closeTimer !== undefined) return
-        closeTimer = setTimeout(() => {
-          if (!window.isDestroyed()) window.close()
-        }, CLOSE_DELAY_MS)
+        continueAfterSignIn(CLOSE_DELAY_MS)
       }
       options.session.cookies.on("changed", onCookieChanged)
 
       window.on("closed", () => {
-        if (closeTimer !== undefined) clearTimeout(closeTimer)
+        if (continueTimer !== undefined) clearTimeout(continueTimer)
         options.session.cookies.removeListener("changed", onCookieChanged)
         loginWindow = undefined
         void allowCrossSiteSession()
@@ -142,10 +153,61 @@ export const createTwitchWebSession = (options: {
             resolve(result)
           })
       })
-      void window.loadURL(LOGIN_URL).catch(() => undefined)
+      if (signedIn) {
+        continueAfterSignIn(0)
+      } else {
+        void window.loadURL(LOGIN_URL).catch(() => undefined)
+      }
     })
     pending = attempt
     return attempt
+  }
+
+  const signIn = (): Promise<PlayerSessionSnapshot> =>
+    openTwitchWindow(false, (window) => window.close())
+
+  /**
+   * One-window setup: Twitch login (skipped when the player already has a session), then the
+   * device activation page for the app's own Helix sign-in. Because the window is already logged
+   * in and the activation URL carries the code, the viewer only confirms on Twitch's page.
+   */
+  const setup = async (device: DeviceActivation): Promise<PlayerSessionSnapshot> => {
+    if (pending !== undefined) {
+      loginWindow?.focus()
+      return pending
+    }
+    const current = await snapshot()
+    let activationStarted = false
+    return openTwitchWindow(current.signedIn, (window) => {
+      if (activationStarted) return
+      activationStarted = true
+      void activateDevice(window, device)
+    })
+  }
+
+  const activateDevice = async (window: BrowserWindow, device: DeviceActivation): Promise<void> => {
+    let activation: Awaited<ReturnType<DeviceActivation["begin"]>>
+    try {
+      activation = await device.begin()
+    } catch {
+      activation = undefined
+    }
+    if (window.isDestroyed()) return
+    if (activation === undefined) {
+      window.close()
+      return
+    }
+    window.setTitle("Allow VacuumStream on Twitch")
+    await window.loadURL(activation.url).catch(() => undefined)
+    while (!window.isDestroyed()) {
+      await new Promise((resolve) => setTimeout(resolve, activation.intervalSeconds * 1000))
+      if (window.isDestroyed()) return
+      const state = await device.poll().catch(() => "pending" as const)
+      if (state === "pending") continue
+      // Leave a denied or expired activation on screen so the viewer sees Twitch's message.
+      if (state === "done" && !window.isDestroyed()) window.close()
+      return
+    }
   }
 
   const signOut = async (): Promise<PlayerSessionSnapshot> => {
@@ -170,7 +232,15 @@ export const createTwitchWebSession = (options: {
     return snapshot()
   }
 
-  return { signIn, signOut, snapshot }
+  return { setup, signIn, signOut, snapshot }
+}
+
+export type DeviceActivation = {
+  /** Starts device sign-in; resolves undefined when the app is already signed in. */
+  readonly begin: () => Promise<
+    { readonly intervalSeconds: number; readonly url: string } | undefined
+  >
+  readonly poll: () => Promise<"done" | "failed" | "pending">
 }
 
 export type TwitchWebSession = ReturnType<typeof createTwitchWebSession>

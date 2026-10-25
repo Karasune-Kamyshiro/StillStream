@@ -1,6 +1,7 @@
 import {
   CheckCircleIcon,
   CopyIcon,
+  DeviceMobileIcon,
   MonitorPlayIcon,
   SignInIcon,
   SignOutIcon,
@@ -29,6 +30,16 @@ export const settingsAccountFocusId = (auth: AuthSnapshot): string =>
     : auth.kind === "authorizing"
       ? "settings-open-activation"
       : "settings-sign-in"
+
+export const settingsSecondaryFocusId = (
+  auth: AuthSnapshot,
+  playerSession: PlayerSessionSnapshot | undefined,
+): string | undefined =>
+  auth.kind === "guest" || auth.kind === "error"
+    ? "settings-sign-in-device"
+    : auth.kind === "authenticated" && playerSession?.signedIn === false
+      ? "settings-player-session"
+      : undefined
 
 const errorMessage = (error: unknown): string =>
   error instanceof Error && error.message.includes("id.twitch.tv")
@@ -60,8 +71,18 @@ export const SettingsPanel = ({
   useEffect(() => setClientId(settings.clientId), [settings.clientId])
 
   const [playerSession, setPlayerSession] = useState<PlayerSessionSnapshot | undefined>(undefined)
-  const [playerBusy, setPlayerBusy] = useState(false)
-  const playerPending = useRef(false)
+  const secondaryFocusId = settingsSecondaryFocusId(auth, playerSession)
+  const belowAccountId = secondaryFocusId ?? "settings-client-id"
+  const primaryRef = useRef<HTMLButtonElement>(null)
+  const secondaryFocused = useRef(false)
+  // A secondary action can vanish under the controller (code shown, player signed in);
+  // hand focus to the account button instead of dropping it on the page.
+  useEffect(() => {
+    if (secondaryFocusId !== undefined || !secondaryFocused.current) return
+    secondaryFocused.current = false
+    primaryRef.current?.focus()
+  }, [secondaryFocusId])
+
   useEffect(() => {
     let current = true
     void window.vacuumStream.playerSession.snapshot().then(
@@ -76,25 +97,6 @@ export const SettingsPanel = ({
       current = false
     }
   }, [])
-
-  const activatePlayerSession = async (): Promise<void> => {
-    if (playerPending.current || playerSession === undefined) return
-    playerPending.current = true
-    setPlayerBusy(true)
-    setError("")
-    try {
-      setPlayerSession(
-        await (playerSession.signedIn
-          ? window.vacuumStream.playerSession.signOut()
-          : window.vacuumStream.playerSession.signIn()),
-      )
-    } catch {
-      setError("Twitch player sign-in could not be completed")
-    } finally {
-      playerPending.current = false
-      setPlayerBusy(false)
-    }
-  }
 
   const save: SubmitHandler = async (event) => {
     event.preventDefault()
@@ -118,6 +120,37 @@ export const SettingsPanel = ({
     }
   }
 
+  // Opens Twitch once: login (skipped when the player already has a session), then the
+  // prefilled device activation, so both sign-ins finish with a single confirmation.
+  const runSetup = async (isCurrent: () => boolean): Promise<void> => {
+    const result = await window.vacuumStream.auth.setup()
+    if (!isCurrent()) return
+    onAuthChange(result.auth)
+    setPlayerSession(result.player)
+  }
+
+  // Secondary actions: the code-on-another-device fallback, or finishing the player sign-in.
+  const activateSecondary = async (): Promise<void> => {
+    if (pending.current || needsClientId) return
+    pending.current = true
+    const isCurrent = onAccountRequest()
+    setBusy(true)
+    setError("")
+    try {
+      if (auth.kind === "authenticated") {
+        await runSetup(isCurrent)
+      } else {
+        const challenge = await window.vacuumStream.auth.begin()
+        if (isCurrent()) onAuthChange({ challenge, kind: "authorizing" })
+      }
+    } catch (caught) {
+      if (isCurrent()) setError(errorMessage(caught))
+    } finally {
+      pending.current = false
+      setBusy(false)
+    }
+  }
+
   const activateAccount = async (): Promise<void> => {
     // aria-disabled keeps controller focus; the ref also blocks clicks before React commits.
     if (pending.current || needsClientId) return
@@ -130,11 +163,14 @@ export const SettingsPanel = ({
       if (auth.kind === "authenticated") {
         await window.vacuumStream.auth.logout()
         if (isCurrent()) onAuthChange({ kind: "guest" })
+        if (playerSession?.signedIn === true) {
+          const nextPlayer = await window.vacuumStream.playerSession.signOut()
+          if (isCurrent()) setPlayerSession(nextPlayer)
+        }
       } else if (auth.kind === "authorizing") {
         await window.vacuumStream.auth.openActivation(auth.challenge.flowId)
       } else {
-        const challenge = await window.vacuumStream.auth.begin()
-        if (isCurrent()) onAuthChange({ challenge, kind: "authorizing" })
+        await runSetup(isCurrent)
       }
     } catch (caught) {
       if (isCurrent()) {
@@ -162,12 +198,19 @@ export const SettingsPanel = ({
         <div>
           <h2 id="account-heading">Twitch account</h2>
           <p>
-            Device sign-in grants only permission to read followed channels. Playback remains in
-            Twitch's official player.
+            Sign in once in the Twitch window. VacuumStream can then show your followed channels,
+            and the player knows who is watching, so subscriber and Turbo ad-free benefits apply.
           </p>
         </div>
         <div className={auth.kind === "authorizing" ? "device-code" : "account-status"}>
           {auth.kind === "authenticated" ? <span>Signed in as {auth.displayName}</span> : null}
+          {playerSession === undefined ? null : (
+            <span className="account-status__player">
+              {playerSession.signedIn
+                ? `Player signed in${playerSession.login === undefined ? "" : ` as ${playerSession.login}`}`
+                : "Player not signed in: ads play as for a guest"}
+            </span>
+          )}
           {auth.kind === "authorizing" ? (
             <div className="device-code__challenge">
               <div>
@@ -194,12 +237,13 @@ export const SettingsPanel = ({
             aria-busy={busy}
             aria-disabled={busy || needsClientId}
             className="primary-button"
-            data-focus-down="settings-player-session"
+            data-focus-down={belowAccountId}
             data-focus-id={accountFocusId}
             data-focus-left="nav-settings"
             data-focus-up="nav-settings"
             data-focusable="true"
             onClick={activateAccount}
+            ref={primaryRef}
             type="button"
           >
             <AccountIcon aria-hidden="true" />
@@ -207,45 +251,36 @@ export const SettingsPanel = ({
               ? "Sign out"
               : auth.kind === "authorizing"
                 ? "Open Twitch activation"
-                : "Sign in on another device"}
+                : "Sign in with Twitch"}
           </button>
-        </div>
-      </section>
-
-      <section aria-labelledby="player-session-heading" className="settings-card">
-        <div>
-          <h2 id="player-session-heading">Twitch player</h2>
-          <p>
-            Sign in on Twitch's own page so the player knows who is watching. Subscriptions and
-            Turbo then remove ads exactly as on twitch.tv. This is separate from device sign-in.
-          </p>
-        </div>
-        <div className="account-status">
-          {playerSession?.signedIn === true ? (
-            <span>
-              Player signed in
-              {playerSession.login === undefined ? "" : ` as ${playerSession.login}`}
-            </span>
-          ) : null}
-          <button
-            aria-busy={playerBusy}
-            aria-disabled={playerBusy || playerSession === undefined}
-            className="primary-button"
-            data-focus-down="settings-client-id"
-            data-focus-id="settings-player-session"
-            data-focus-left="nav-settings"
-            data-focus-up={accountFocusId}
-            data-focusable="true"
-            onClick={activatePlayerSession}
-            type="button"
-          >
-            {playerSession?.signedIn === true ? (
-              <SignOutIcon aria-hidden="true" />
-            ) : (
-              <MonitorPlayIcon aria-hidden="true" />
-            )}
-            {playerSession?.signedIn === true ? "Sign player out" : "Sign in to the player"}
-          </button>
+          {secondaryFocusId === undefined ? null : (
+            <button
+              aria-busy={busy}
+              aria-disabled={busy || needsClientId}
+              data-focus-down="settings-client-id"
+              data-focus-id={secondaryFocusId}
+              data-focus-left="nav-settings"
+              data-focus-up={accountFocusId}
+              data-focusable="true"
+              onBlur={() => {
+                secondaryFocused.current = false
+              }}
+              onClick={activateSecondary}
+              onFocus={() => {
+                secondaryFocused.current = true
+              }}
+              type="button"
+            >
+              {secondaryFocusId === "settings-player-session" ? (
+                <MonitorPlayIcon aria-hidden="true" />
+              ) : (
+                <DeviceMobileIcon aria-hidden="true" />
+              )}
+              {secondaryFocusId === "settings-player-session"
+                ? "Sign in the player too"
+                : "Use a code on another device"}
+            </button>
+          )}
         </div>
       </section>
 
@@ -264,7 +299,9 @@ export const SettingsPanel = ({
               autoComplete="off"
               data-focus-down="settings-save"
               data-focus-id="settings-client-id"
-              data-focus-up="settings-player-session"
+              data-focus-up={
+                belowAccountId === "settings-client-id" ? accountFocusId : belowAccountId
+              }
               data-focusable="true"
               id="client-id"
               onChange={(event) => setClientId(event.currentTarget.value)}

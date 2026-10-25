@@ -30,7 +30,7 @@ type IpcOptions = {
   readonly favourites: Pick<FavouritesStore, "add" | "list" | "remove">
   readonly mainWindow: BrowserWindow
   readonly playbackProgress: Pick<PlaybackProgressStore, "get" | "list" | "remove" | "save">
-  readonly playerSession: Pick<TwitchWebSession, "signIn" | "signOut" | "snapshot">
+  readonly playerSession: Pick<TwitchWebSession, "setup" | "signIn" | "signOut" | "snapshot">
   readonly rendererOrigin: string
   readonly runningInSteamGameMode: boolean
   readonly twitch: TwitchService
@@ -91,6 +91,29 @@ export const registerIpc = (options: IpcOptions): void => {
   ipcMain.handle(CHANNELS.authOpenActivation, async (event, input: unknown) => {
     authorize(event)
     await shell.openExternal(options.twitch.activationUrl(z.uuid().parse(input)))
+  })
+  ipcMain.handle(CHANNELS.authSetup, async (event, ...input: unknown[]) => {
+    authorize(event)
+    z.tuple([]).parse(input)
+    const player = await options.playerSession.setup({
+      begin: async () => {
+        if ((await options.twitch.authSnapshot()).kind === "authenticated") return undefined
+        const challenge = await options.twitch.beginAuthorization()
+        return {
+          intervalSeconds: challenge.intervalSeconds,
+          url: options.twitch.activationUrl(challenge.flowId),
+        }
+      },
+      poll: async () => {
+        const auth = await options.twitch.authSnapshot()
+        return auth.kind === "authenticated"
+          ? "done"
+          : auth.kind === "authorizing"
+            ? "pending"
+            : "failed"
+      },
+    })
+    return { auth: await options.twitch.authSnapshot(), player }
   })
   ipcMain.handle(CHANNELS.authLogout, async (event) => {
     authorize(event)

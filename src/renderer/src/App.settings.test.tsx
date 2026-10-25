@@ -3,7 +3,7 @@
 import { act } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { renderToStaticMarkup } from "react-dom/server"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest"
 import type { AuthSnapshot, DeviceChallenge, VacuumStreamApi } from "../../shared/contracts"
 import { App } from "./App"
 import { dispatchControllerKey } from "./focus-navigation"
@@ -39,14 +39,24 @@ const deferred = <T,>() => {
   if (controls === undefined) throw new Error("Promise executor did not run")
   return { ...controls, promise }
 }
-const makeBridge = (auth: AuthSnapshot) =>
+const makeBridge = (auth: AuthSnapshot) => {
+  const begin = vi.fn<VacuumStreamApi["auth"]["begin"]>()
+  return makeBridgeWith(auth, begin)
+}
+// One-click setup is modelled as the viewer closing the Twitch window once the code was issued,
+// which leaves the account authorizing exactly as the device flow does. Races stay on `begin`.
+const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<VacuumStreamApi["auth"]["begin"]>) =>
   ({
     auth: {
-      begin: vi.fn<VacuumStreamApi["auth"]["begin"]>(),
+      begin,
       logout: vi.fn<VacuumStreamApi["auth"]["logout"]>().mockResolvedValue(undefined),
       openActivation: vi
         .fn<VacuumStreamApi["auth"]["openActivation"]>()
         .mockResolvedValue(undefined),
+      setup: vi.fn<VacuumStreamApi["auth"]["setup"]>(async () => ({
+        auth: { challenge: await begin(), kind: "authorizing" },
+        player: { signedIn: false },
+      })),
       snapshot: vi.fn<VacuumStreamApi["auth"]["snapshot"]>().mockResolvedValue(auth),
     },
     catalog: {
@@ -187,6 +197,12 @@ const deliverAuth = async (auth: AuthSnapshot) => {
     await delivered
   })
 }
+const secondaryAction = (auth: AuthSnapshot, playerLoaded: boolean): string | undefined =>
+  auth.kind === "guest" || auth.kind === "error"
+    ? "settings-sign-in-device"
+    : auth.kind === "authenticated" && playerLoaded
+      ? "settings-player-session"
+      : undefined
 const expectFocus = (id: string) => {
   expect(document.activeElement?.getAttribute("data-focus-id")).toBe(id)
   expect(document.activeElement).toBe(target(id))
@@ -202,17 +218,22 @@ describe("Settings in the mounted App", () => {
         expectFocus("nav-settings")
         await key(compact ? "ArrowDown" : "ArrowRight")
         expectFocus(id)
+        const below = secondaryAction(auth, true)
         await key("ArrowDown")
-        expectFocus("settings-player-session")
-        await key("ArrowDown")
+        if (below !== undefined) {
+          expectFocus(below)
+          await key("ArrowDown")
+        }
         expectFocus("settings-client-id")
         await key("ArrowDown")
         expectFocus("settings-save")
         await key("ArrowUp")
         expectFocus("settings-client-id")
         await key("ArrowUp")
-        expectFocus("settings-player-session")
-        await key("ArrowUp")
+        if (below !== undefined) {
+          expectFocus(below)
+          await key("ArrowUp")
+        }
         expectFocus(id)
         await key("ArrowLeft")
         expectFocus("nav-settings")
@@ -231,28 +252,28 @@ describe("Settings in the mounted App", () => {
       container.innerHTML = renderToStaticMarkup(<App />)
       expect(target("nav-settings").getAttribute("data-focus-right")).toBe(id)
       expect(target("nav-settings").getAttribute("data-focus-down")).toBe(id)
-      expect(target(id).getAttribute("data-focus-down")).toBe("settings-player-session")
-      expect(target("settings-player-session").getAttribute("data-focus-up")).toBe(id)
-      expect(target("settings-player-session").getAttribute("data-focus-down")).toBe(
-        "settings-client-id",
-      )
+      // Static markup has no player snapshot yet, so only the device-code fallback can appear.
+      const below = secondaryAction(auth, false)
+      expect(target(id).getAttribute("data-focus-down")).toBe(below ?? "settings-client-id")
+      if (below !== undefined) {
+        expect(target(below).getAttribute("data-focus-up")).toBe(id)
+        expect(target(below).getAttribute("data-focus-down")).toBe("settings-client-id")
+      }
       expect(target(id).getAttribute("data-focus-left")).toBe("nav-settings")
       expect(target(id).getAttribute("data-focus-up")).toBe("nav-settings")
-      expect(target("settings-client-id").getAttribute("data-focus-up")).toBe(
-        "settings-player-session",
-      )
+      expect(target("settings-client-id").getAttribute("data-focus-up")).toBe(below ?? id)
       expect(target("settings-client-id").getAttribute("data-focus-down")).toBe("settings-save")
       expect(target("settings-save").getAttribute("data-focus-up")).toBe("settings-client-id")
       expect(
         [...container.querySelectorAll(".settings-card")].map((card) =>
           card.getAttribute("aria-labelledby"),
         ),
-      ).toEqual(["account-heading", "player-session-heading", "developer-app-heading"])
+      ).toEqual(["account-heading", "developer-app-heading"])
       expect(
         container.querySelectorAll(
           '#account-heading ~ button, [aria-labelledby="account-heading"] button',
         ),
-      ).toHaveLength(1)
+      ).toHaveLength(below === undefined ? 1 : 2)
     },
   )
 
@@ -278,6 +299,7 @@ describe("Settings in the mounted App", () => {
     expectFocus("settings-logout")
     await key("ArrowDown")
     expectFocus("settings-player-session")
+    expect(bridge.auth.setup).toHaveBeenCalledTimes(1)
     expect(bridge.settings.saveClientId).not.toHaveBeenCalled()
     expect(loadPlayer).not.toHaveBeenCalled()
     expect(Player).not.toHaveBeenCalled()

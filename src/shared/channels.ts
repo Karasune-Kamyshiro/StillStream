@@ -2,6 +2,7 @@ export const CHANNELS = {
   authBegin: "auth:begin",
   authLogout: "auth:logout",
   authOpenActivation: "auth:open-activation",
+  authSetup: "auth:setup",
   authSnapshot: "auth:snapshot",
   catalogFollowed: "catalog:followed",
   catalogFollowedChannels: "catalog:followed-channels",

@@ -9,6 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { SettingsStore } from "../../../main/settings-store"
 import type {
+  AccountSetupResult,
   AuthSnapshot,
   DeviceChallenge,
   SettingsSnapshot,
@@ -83,6 +84,14 @@ describe("settings account focus continuity", () => {
   let root: Root
   let currentAuth: AuthSnapshot
   const begin = vi.fn<() => Promise<DeviceChallenge>>()
+  // One-click setup resolves with whatever state Twitch reached; tests model a closed window
+  // after the code was issued, which leaves the account authorizing like the device flow does.
+  const setup = vi.fn<() => Promise<AccountSetupResult>>()
+  const setupAuthorizing = (request: Promise<DeviceChallenge>) =>
+    setup.mockImplementation(async () => ({
+      auth: { challenge: await request, kind: "authorizing" },
+      player: { signedIn: false },
+    }))
   const logout = vi.fn<() => Promise<void>>()
   const openActivation = vi.fn<(flowId: string) => Promise<void>>()
   const saveClientId = vi.fn<(clientId: string) => Promise<SettingsSnapshot>>()
@@ -103,14 +112,18 @@ describe("settings account focus continuity", () => {
   )
   beforeEach(() => {
     begin.mockReset()
+    setup.mockReset()
     logout.mockReset()
     openActivation.mockReset()
     saveClientId.mockReset()
     onAccountRequest.mockReset().mockImplementation(() => () => true)
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true)
     vi.stubGlobal("vacuumStream", {
-      auth: { begin, logout, openActivation },
-      playerSession: { snapshot: vi.fn(async () => ({ signedIn: false })) },
+      auth: { begin, logout, openActivation, setup },
+      playerSession: {
+        signOut: vi.fn(async () => ({ signedIn: false })),
+        snapshot: vi.fn(async () => ({ signedIn: false })),
+      },
       settings: { saveClientId },
     })
     currentAuth = { kind: "guest" }
@@ -145,7 +158,7 @@ describe("settings account focus continuity", () => {
 
   it("keeps the same focused button through guest -> authorizing -> authenticated", async () => {
     const request = deferred<DeviceChallenge>()
-    begin.mockReturnValueOnce(request.promise)
+    setupAuthorizing(request.promise)
     await render({ kind: "guest" })
     const outgoing = action("settings-sign-in")
     outgoing.focus()
@@ -197,6 +210,7 @@ describe("settings account focus continuity", () => {
   const pendingRequest = () => {
     const pending = deferred<DeviceChallenge>()
     begin.mockReturnValue(pending.promise)
+    setupAuthorizing(pending.promise)
     logout.mockImplementation(async () => {
       await pending.promise
     })
@@ -206,7 +220,7 @@ describe("settings account focus continuity", () => {
     return pending
   }
   const requests = [
-    { auth: { kind: "guest" } as const, id: "settings-sign-in", request: begin },
+    { auth: { kind: "guest" } as const, id: "settings-sign-in", request: setup },
     { auth: authorizing, id: "settings-open-activation", request: openActivation },
     { auth: authenticated, id: "settings-logout", request: logout },
   ]
@@ -281,6 +295,50 @@ describe("settings account focus continuity", () => {
     },
   )
 
+  it("finishes both sign-ins from one Sign in with Twitch action", async () => {
+    setup.mockResolvedValueOnce({
+      auth: authenticated,
+      player: { login: "viewer", signedIn: true },
+    })
+    await render({ kind: "guest" })
+    const outgoing = action("settings-sign-in")
+    expect(outgoing.textContent).toBe("Sign in with Twitch")
+    outgoing.focus()
+    await act(async () => outgoing.click())
+    expect(setup).toHaveBeenCalledTimes(1)
+    expect(begin).not.toHaveBeenCalled()
+    expect(onAuthChange).toHaveBeenCalledExactlyOnceWith(authenticated)
+    expect(container.textContent).toContain("Player signed in as viewer")
+    // Fully set up: no secondary action remains between Sign out and the Client ID editor.
+    expect(action("settings-logout").getAttribute("data-focus-down")).toBe("settings-client-id")
+    expectSurvivor(outgoing, "settings-logout")
+  })
+
+  it("keeps the code-on-another-device fallback and returns focus to the account action", async () => {
+    begin.mockResolvedValueOnce(challenge)
+    await render({ kind: "guest" })
+    const fallback = action("settings-sign-in-device")
+    fallback.focus()
+    await act(async () => fallback.click())
+    expect(begin).toHaveBeenCalledTimes(1)
+    expect(setup).not.toHaveBeenCalled()
+    expect(currentAuth).toEqual(authorizing)
+    expect(container.querySelector('[data-focus-id="settings-sign-in-device"]')).toBeNull()
+    expect(document.activeElement).toBe(action("settings-open-activation"))
+  })
+
+  it("signs the player out together with the app account", async () => {
+    const vacuumStream = (globalThis as { vacuumStream?: VacuumStreamApi }).vacuumStream
+    const playerSignOut = vi.mocked(vacuumStream?.playerSession.signOut)
+    vi.mocked(vacuumStream?.playerSession.snapshot)?.mockResolvedValueOnce({ signedIn: true })
+    logout.mockResolvedValueOnce(undefined)
+    await render(authenticated)
+    await act(async () => action("settings-logout").click())
+    expect(logout).toHaveBeenCalledTimes(1)
+    expect(playerSignOut).toHaveBeenCalledTimes(1)
+    expect(currentAuth).toEqual({ kind: "guest" })
+  })
+
   it("discards an obsolete Client ID save instead of resetting a newer account", async () => {
     let current = true
     onAccountRequest.mockReturnValueOnce(() => current)
@@ -352,6 +410,7 @@ const makeMountedBridge = (
       openActivation: vi
         .fn<VacuumStreamApi["auth"]["openActivation"]>()
         .mockResolvedValue(undefined),
+      setup: vi.fn<VacuumStreamApi["auth"]["setup"]>(),
       snapshot: vi
         .fn<VacuumStreamApi["auth"]["snapshot"]>()
         .mockImplementation(async () => getAuth()),
