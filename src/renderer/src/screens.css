@@ -708,12 +708,26 @@
   min-block-size: 0;
 }
 
-.player-immersive-exit {
+/* The exit control covers the whole stage: a click lands here instead of focusing the Twitch
+   iframe, which would otherwise swallow every later key press and controller input. */
+.player-immersive-exit,
+.player-immersive-exit[data-controller-focused="true"]:focus,
+.player-immersive-exit:focus-visible {
   position: absolute;
   z-index: 1;
-  inset-block-start: var(--space-4);
-  inset-inline-start: 50%;
-  translate: -50% 0;
+  inset: 0;
+  display: grid;
+  place-items: start center;
+  padding: var(--space-4);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  cursor: default;
+}
+
+.player-immersive-exit__hint {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -721,14 +735,7 @@
   border-radius: var(--radius-pill);
   background: var(--color-scrim);
   color: var(--color-text);
-  pointer-events: auto;
   animation: player-immersive-hint 3.5s var(--ease-out) forwards;
-}
-
-/* The hint fades away but stays focused; pointer users can hover to find it again. */
-.player-immersive-exit:hover {
-  animation: none;
-  opacity: 1;
 }
 
 @keyframes player-immersive-hint {
@@ -742,7 +749,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .player-immersive-exit {
+  .player-immersive-exit__hint {
     animation-timing-function: steps(1, end);
   }
 }

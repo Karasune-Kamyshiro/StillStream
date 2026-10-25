@@ -43,6 +43,9 @@ type PlayerViewProps = {
   readonly source: PlayerSource
 }
 
+// Dispatched into this document by main's player focus guard; see src/main/player-focus-guard.ts.
+const PLAYER_ESCAPE_EVENT = "vacuumstream:player-escape"
+
 const SEEK_ACTIONS = [
   { id: "player-seek-back-5m", label: "Back 5 minutes", seconds: -300 },
   { id: "player-seek-back-30s", label: "Back 30 seconds", seconds: -30 },
@@ -153,6 +156,20 @@ export const PlayerView = ({
     }
     return true
   }, [onSetFullscreen])
+
+  // Main reports Escape pressed while the Twitch iframe holds keyboard focus (after a click on
+  // the video). Take focus back: leave stream fullscreen, or return to the toolbar.
+  useEffect(() => {
+    const onPlayerEscape = (): void => {
+      if (exitImmersive()) return
+      const back = backButtonRef.current
+      if (back === null) return
+      markControllerFocus(back)
+      back.focus()
+    }
+    document.addEventListener(PLAYER_ESCAPE_EVENT, onPlayerEscape)
+    return () => document.removeEventListener(PLAYER_ESCAPE_EVENT, onPlayerEscape)
+  }, [exitImmersive])
 
   useEffect(() => {
     if (!immersive) return
@@ -453,8 +470,10 @@ export const PlayerView = ({
           ref={immersiveExitRef}
           type="button"
         >
-          <CornersInIcon aria-hidden="true" />
-          Press Back or Enter to show controls
+          <span className="player-immersive-exit__hint">
+            <CornersInIcon aria-hidden="true" />
+            Press Back or Enter, or click, to show controls
+          </span>
         </button>
       ) : null}
       <header className="player-toolbar">

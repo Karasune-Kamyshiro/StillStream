@@ -7,6 +7,7 @@ import { type StaticHttpsServer, startStaticHttpsServer } from "./https-server"
 import { registerIpc } from "./ipc"
 import { createPlaybackKeepAwake } from "./playback-keep-awake"
 import { PlaybackProgressStore } from "./playback-progress-store"
+import { createPlayerFocusGuard } from "./player-focus-guard"
 import { SettingsStore } from "./settings-store"
 import { TokenVault } from "./token-vault"
 import { TwitchService } from "./twitch-service"
@@ -100,6 +101,8 @@ const createWindow = async (): Promise<void> => {
     console.warn("Secure OAuth token storage unavailable; using mode-0600 file fallback")
   }
   const chatInput = createChatInput(mainWindow)
+  const releasePlayerFocusGuard = createPlayerFocusGuard(mainWindow)
+  mainWindow.on("closed", releasePlayerFocusGuard)
   mainWindow.on("blur", chatInput.blur)
   mainWindow.on("closed", chatInput.cancel)
   mainWindow.webContents.on("render-process-gone", chatInput.cancel)
