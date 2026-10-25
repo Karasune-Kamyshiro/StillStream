@@ -1,5 +1,10 @@
-import { BrowserWindow, type Cookie, type Session } from "electron"
+import type { BrowserWindow, Cookie, Session } from "electron"
 import type { PlayerSessionSnapshot } from "../shared/contracts"
+import {
+  createEmbeddedSurface,
+  createWindowSurface,
+  type LoginSurface,
+} from "./twitch-login-surface"
 
 const LOGIN_URL = "https://www.twitch.tv/login"
 const AUTH_COOKIE = "auth-token"
@@ -32,12 +37,14 @@ const cookieUrl = (cookie: Cookie): string =>
  * so this opens Twitch's real login page in the same cookie jar the player iframe uses.
  */
 export const createTwitchWebSession = (options: {
+  /** True when sign-in must stay inside the app window (Steam Game Mode, fullscreen). */
+  readonly embed: () => boolean
   readonly parent: () => BrowserWindow | undefined
   readonly session: Session
   readonly userAgent: () => string
 }) => {
   let pending: Promise<PlayerSessionSnapshot> | undefined
-  let loginWindow: BrowserWindow | undefined
+  let loginWindow: LoginSurface | undefined
 
   const twitchCookies = async (name?: string): Promise<Cookie[]> =>
     (await options.session.cookies.get(name === undefined ? {} : { name })).filter(isTwitchCookie)
@@ -82,7 +89,7 @@ export const createTwitchWebSession = (options: {
    */
   const openTwitchWindow = (
     signedIn: boolean,
-    afterSignIn: (window: BrowserWindow) => void,
+    afterSignIn: (window: LoginSurface) => void,
   ): Promise<PlayerSessionSnapshot> => {
     if (pending !== undefined) {
       loginWindow?.focus()
@@ -90,21 +97,16 @@ export const createTwitchWebSession = (options: {
     }
     const attempt = new Promise<PlayerSessionSnapshot>((resolve) => {
       const parent = options.parent()
-      const window = new BrowserWindow({
-        autoHideMenuBar: true,
-        backgroundColor: "#0e0e10",
-        height: 760,
-        modal: parent !== undefined,
-        ...(parent === undefined ? {} : { parent }),
-        title: "Sign in with Twitch",
-        width: 520,
-        webPreferences: {
-          contextIsolation: true,
-          nodeIntegration: false,
-          sandbox: true,
-          session: options.session,
-        },
-      })
+      const webPreferences = {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+        session: options.session,
+      }
+      const window =
+        parent !== undefined && options.embed()
+          ? createEmbeddedSurface(parent, webPreferences)
+          : createWindowSurface(parent, webPreferences)
       loginWindow = window
       // Twitch rejects some embedded-browser user agents; present as plain Chromium.
       window.webContents.setUserAgent(options.userAgent())
@@ -120,7 +122,7 @@ export const createTwitchWebSession = (options: {
       const continueAfterSignIn = (delay: number): void => {
         if (continueTimer !== undefined) return
         continueTimer = setTimeout(() => {
-          if (!window.isDestroyed()) afterSignIn(window)
+          if (!window.isClosed()) afterSignIn(window)
         }, delay)
       }
       const onCookieChanged = (
@@ -140,7 +142,7 @@ export const createTwitchWebSession = (options: {
       }
       options.session.cookies.on("changed", onCookieChanged)
 
-      window.on("closed", () => {
+      window.onClosed(() => {
         if (continueTimer !== undefined) clearTimeout(continueTimer)
         options.session.cookies.removeListener("changed", onCookieChanged)
         loginWindow = undefined
@@ -185,33 +187,33 @@ export const createTwitchWebSession = (options: {
     })
   }
 
-  const activateDevice = async (window: BrowserWindow, device: DeviceActivation): Promise<void> => {
+  const activateDevice = async (window: LoginSurface, device: DeviceActivation): Promise<void> => {
     let activation: Awaited<ReturnType<DeviceActivation["begin"]>>
     try {
       activation = await device.begin()
     } catch {
       activation = undefined
     }
-    if (window.isDestroyed()) return
+    if (window.isClosed()) return
     if (activation === undefined) {
       window.close()
       return
     }
     window.setTitle("Allow VacuumStream on Twitch")
     await window.loadURL(activation.url).catch(() => undefined)
-    while (!window.isDestroyed()) {
+    while (!window.isClosed()) {
       await new Promise((resolve) => setTimeout(resolve, activation.intervalSeconds * 1000))
-      if (window.isDestroyed()) return
+      if (window.isClosed()) return
       const state = await device.poll().catch(() => "pending" as const)
       if (state === "pending") continue
       // Leave a denied or expired activation on screen so the viewer sees Twitch's message.
-      if (state === "done" && !window.isDestroyed()) window.close()
+      if (state === "done") window.close()
       return
     }
   }
 
   const signOut = async (): Promise<PlayerSessionSnapshot> => {
-    if (loginWindow !== undefined && !loginWindow.isDestroyed()) loginWindow.close()
+    loginWindow?.close()
     const cookies = await twitchCookies()
     await Promise.all(
       cookies.map((cookie) =>

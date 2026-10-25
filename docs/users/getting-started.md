@@ -73,6 +73,10 @@ For personalized discovery and ad-free viewing on channels you subscribe to:
 4. Confirm on that page. The window closes by itself, the account action becomes **Sign out**,
    and the card shows that the player is signed in too.
 
+In Steam Game Mode, or whenever VacuumStream is fullscreen, Twitch's pages open inside the app
+window rather than as a separate window. Press **B** (Escape) to cancel. To type, open Steam's
+on-screen keyboard (**Steam + X**) when a text field on Twitch's page is selected.
+
 This signs in two things at once: VacuumStream's read-only access to your followed channels,
 and the Twitch player itself, which is what lets subscriber and Turbo ad-free benefits apply.
 **Sign out** signs out of both.

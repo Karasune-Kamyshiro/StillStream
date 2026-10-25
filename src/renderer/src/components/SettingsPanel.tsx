@@ -13,6 +13,7 @@ import type {
   PlayerSessionSnapshot,
   SettingsSnapshot,
 } from "../../../shared/contracts"
+import { registerBackDismissal } from "../focus-navigation"
 
 type SettingsPanelProps = {
   readonly auth: AuthSnapshot
@@ -74,6 +75,10 @@ export const SettingsPanel = ({
   const secondaryFocusId = settingsSecondaryFocusId(auth, playerSession)
   const belowAccountId = secondaryFocusId ?? "settings-client-id"
   const primaryRef = useRef<HTMLButtonElement>(null)
+  // While Twitch's sign-in is open (possibly as a layer over this screen in Steam Game Mode),
+  // Back belongs to it: the same B press closes the layer and must not also leave Settings.
+  const [setupOpen, setSetupOpen] = useState(false)
+  useEffect(() => (setupOpen ? registerBackDismissal(() => true) : undefined), [setupOpen])
   const secondaryFocused = useRef(false)
   // A secondary action can vanish under the controller (code shown, player signed in);
   // hand focus to the account button instead of dropping it on the page.
@@ -123,10 +128,15 @@ export const SettingsPanel = ({
   // Opens Twitch once: login (skipped when the player already has a session), then the
   // prefilled device activation, so both sign-ins finish with a single confirmation.
   const runSetup = async (isCurrent: () => boolean): Promise<void> => {
-    const result = await window.vacuumStream.auth.setup()
-    if (!isCurrent()) return
-    onAuthChange(result.auth)
-    setPlayerSession(result.player)
+    setSetupOpen(true)
+    try {
+      const result = await window.vacuumStream.auth.setup()
+      if (!isCurrent()) return
+      onAuthChange(result.auth)
+      setPlayerSession(result.player)
+    } finally {
+      setSetupOpen(false)
+    }
   }
 
   // Secondary actions: the code-on-another-device fallback, or finishing the player sign-in.

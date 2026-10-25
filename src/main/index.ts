@@ -10,6 +10,7 @@ import { PlaybackProgressStore } from "./playback-progress-store"
 import { createPlayerFocusGuard } from "./player-focus-guard"
 import { SettingsStore } from "./settings-store"
 import { TokenVault } from "./token-vault"
+import { shouldEmbedLogin } from "./twitch-login-surface"
 import { TwitchService } from "./twitch-service"
 import { createTwitchWebSession, plainChromiumUserAgent } from "./twitch-web-session"
 
@@ -115,6 +116,7 @@ const createWindow = async (): Promise<void> => {
     mainWindow,
     playbackProgress: new PlaybackProgressStore(app.getPath("userData")),
     playerSession: createTwitchWebSession({
+      embed: () => shouldEmbedLogin(mainWindow, runningInSteamGameMode, process.env),
       parent: () => (mainWindow.isDestroyed() ? undefined : mainWindow),
       session: session.defaultSession,
       userAgent: () => plainChromiumUserAgent(app.userAgentFallback),
