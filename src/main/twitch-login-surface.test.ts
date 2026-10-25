@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { shouldEmbedLogin } from "./twitch-login-surface"
+import { adjustedZoomFactor, shouldEmbedLogin, tvZoomFactor } from "./twitch-login-surface"
 
 const window = (fullscreen: boolean, destroyed = false) => ({
   isDestroyed: () => destroyed,
@@ -20,5 +20,23 @@ describe("embedded Twitch sign-in", () => {
     expect(shouldEmbedLogin(window(false), false, { XDG_CURRENT_DESKTOP: "KDE" })).toBe(false)
     expect(shouldEmbedLogin(window(true, true), true, {})).toBe(false)
     expect(shouldEmbedLogin(undefined, true, {})).toBe(false)
+  })
+})
+
+describe("TV zoom for the embedded sign-in", () => {
+  it("matches 100% at 1080p, 200% at 1440p and 250% at 4K, and blends in between", () => {
+    expect(tvZoomFactor(1280)).toBe(1)
+    expect(tvZoomFactor(1920)).toBe(1)
+    expect(tvZoomFactor(2560)).toBe(2)
+    expect(tvZoomFactor(3840)).toBe(2.5)
+    expect(tvZoomFactor(2240)).toBeCloseTo(1.5)
+    expect(tvZoomFactor(3200)).toBeCloseTo(2.25)
+  })
+
+  it("keeps the physical size beyond 4K and clamps manual adjustments", () => {
+    expect(tvZoomFactor(7680)).toBe(5)
+    expect(adjustedZoomFactor(2.5, 0.5)).toBe(3)
+    expect(adjustedZoomFactor(1, -2)).toBe(0.5)
+    expect(adjustedZoomFactor(4.5, 1)).toBe(5)
   })
 })

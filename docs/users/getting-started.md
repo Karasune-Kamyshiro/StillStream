@@ -76,6 +76,8 @@ For personalized discovery and ad-free viewing on channels you subscribe to:
 In Steam Game Mode, or whenever VacuumStream is fullscreen, Twitch's pages open inside the app
 window rather than as a separate window. Press **B** (Escape) to cancel. To type, open Steam's
 on-screen keyboard (**Steam + X**) when a text field on Twitch's page is selected.
+Twitch's pages scale with the screen there (about 250% on a 4K TV); **Ctrl + plus/minus**
+adjusts the size and **Ctrl + 0** resets it.
 
 This signs in two things at once: VacuumStream's read-only access to your followed channels,
 and the Twitch player itself, which is what lets subscriber and Turbo ad-free benefits apply.
