@@ -1,14 +1,16 @@
 import { X509Certificate } from "node:crypto"
 import { join } from "node:path"
-import { app, BrowserWindow, dialog, safeStorage, session } from "electron"
+import { app, BrowserWindow, dialog, powerSaveBlocker, safeStorage, session } from "electron"
 import { createChatInput } from "./chat-input"
 import { FavouritesStore } from "./favourites-store"
 import { type StaticHttpsServer, startStaticHttpsServer } from "./https-server"
 import { registerIpc } from "./ipc"
+import { createPlaybackKeepAwake } from "./playback-keep-awake"
 import { PlaybackProgressStore } from "./playback-progress-store"
 import { SettingsStore } from "./settings-store"
 import { TokenVault } from "./token-vault"
 import { TwitchService } from "./twitch-service"
+import { createTwitchWebSession, plainChromiumUserAgent } from "./twitch-web-session"
 
 let staticServer: StaticHttpsServer | undefined
 let primaryWindow: BrowserWindow | undefined
@@ -45,7 +47,12 @@ const createWindow = async (): Promise<void> => {
   })
 
   primaryWindow = mainWindow
+  const keepAwake = createPlaybackKeepAwake(
+    () => (mainWindow.isDestroyed() ? undefined : mainWindow.webContents),
+    powerSaveBlocker,
+  )
   mainWindow.on("closed", () => {
+    keepAwake.dispose()
     primaryWindow = undefined
   })
 
@@ -104,6 +111,11 @@ const createWindow = async (): Promise<void> => {
     favourites: new FavouritesStore(app.getPath("userData")),
     mainWindow,
     playbackProgress: new PlaybackProgressStore(app.getPath("userData")),
+    playerSession: createTwitchWebSession({
+      parent: () => (mainWindow.isDestroyed() ? undefined : mainWindow),
+      session: session.defaultSession,
+      userAgent: () => plainChromiumUserAgent(app.userAgentFallback),
+    }),
     rendererOrigin,
     runningInSteamGameMode,
     twitch: new TwitchService(new SettingsStore(app.getPath("userData")), tokenVault),

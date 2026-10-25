@@ -71,6 +71,17 @@ const makeBridge = (auth: AuthSnapshot) =>
       remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>().mockResolvedValue(undefined),
       save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>().mockResolvedValue(undefined),
     },
+    playerSession: {
+      signIn: vi
+        .fn<VacuumStreamApi["playerSession"]["signIn"]>()
+        .mockResolvedValue({ signedIn: false }),
+      signOut: vi
+        .fn<VacuumStreamApi["playerSession"]["signOut"]>()
+        .mockResolvedValue({ signedIn: false }),
+      snapshot: vi
+        .fn<VacuumStreamApi["playerSession"]["snapshot"]>()
+        .mockResolvedValue({ signedIn: false }),
+    },
     settings: {
       saveClientId: vi.fn<VacuumStreamApi["settings"]["saveClientId"]>(),
       snapshot: vi
@@ -85,6 +96,7 @@ const makeBridge = (auth: AuthSnapshot) =>
       restoreShellFullscreen: vi
         .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
+      setFullscreen: vi.fn<VacuumStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
       toggleFullscreen: vi.fn<VacuumStreamApi["system"]["toggleFullscreen"]>(),
     },
   }) satisfies VacuumStreamApi

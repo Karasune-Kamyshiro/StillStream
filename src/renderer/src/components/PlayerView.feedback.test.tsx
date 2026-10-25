@@ -106,7 +106,7 @@ const mountPlayer = async (source: PlayerSource): Promise<HTMLDivElement> => {
       <PlayerView
         onBack={() => undefined}
         onPastBroadcasts={() => undefined}
-        onToggleFullscreen={() => undefined}
+        onSetFullscreen={async () => false}
         source={source}
       />,
     ),

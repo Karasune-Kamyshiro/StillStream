@@ -18,13 +18,19 @@ import type { ChatInput } from "./chat-input"
 import type { FavouritesStore } from "./favourites-store"
 import type { PlaybackProgressStore } from "./playback-progress-store"
 import type { TwitchService } from "./twitch-service"
-import { activateEmbeddedPlayer, restoreShellFullscreen } from "./window-controls"
+import type { TwitchWebSession } from "./twitch-web-session"
+import {
+  activateEmbeddedPlayer,
+  restoreShellFullscreen,
+  setWindowFullscreen,
+} from "./window-controls"
 
 type IpcOptions = {
   readonly chatInput: Pick<ChatInput, "begin" | "end" | "press">
   readonly favourites: Pick<FavouritesStore, "add" | "list" | "remove">
   readonly mainWindow: BrowserWindow
   readonly playbackProgress: Pick<PlaybackProgressStore, "get" | "list" | "remove" | "save">
+  readonly playerSession: Pick<TwitchWebSession, "signIn" | "signOut" | "snapshot">
   readonly rendererOrigin: string
   readonly runningInSteamGameMode: boolean
   readonly twitch: TwitchService
@@ -149,6 +155,21 @@ export const registerIpc = (options: IpcOptions): void => {
     const [bookmark] = z.tuple([PlaybackProgressSaveInputSchema]).parse(input)
     await options.playbackProgress.save(bookmark)
   })
+  ipcMain.handle(CHANNELS.playerSessionSnapshot, async (event, ...input: unknown[]) => {
+    authorize(event)
+    z.tuple([]).parse(input)
+    return options.playerSession.snapshot()
+  })
+  ipcMain.handle(CHANNELS.playerSessionSignIn, async (event, ...input: unknown[]) => {
+    authorize(event)
+    z.tuple([]).parse(input)
+    return options.playerSession.signIn()
+  })
+  ipcMain.handle(CHANNELS.playerSessionSignOut, async (event, ...input: unknown[]) => {
+    authorize(event)
+    z.tuple([]).parse(input)
+    return options.playerSession.signOut()
+  })
   ipcMain.handle(CHANNELS.systemActivateEmbeddedPlayer, async (event, input: unknown) => {
     authorize(event)
     return activateEmbeddedPlayer(options.mainWindow.webContents, z.boolean().parse(input))
@@ -160,6 +181,10 @@ export const registerIpc = (options: IpcOptions): void => {
   ipcMain.handle(CHANNELS.systemRestoreShellFullscreen, (event) => {
     authorize(event)
     return restoreShellFullscreen(options.mainWindow, options.runningInSteamGameMode)
+  })
+  ipcMain.handle(CHANNELS.systemSetFullscreen, (event, input: unknown) => {
+    authorize(event)
+    return setWindowFullscreen(options.mainWindow, z.boolean().parse(input))
   })
   ipcMain.handle(CHANNELS.systemToggleFullscreen, (event) => {
     authorize(event)

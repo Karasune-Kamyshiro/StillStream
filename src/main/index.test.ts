@@ -141,6 +141,7 @@ const setup = (ownsProfile = true) => {
     app,
     BrowserWindow,
     dialog: { showErrorBox },
+    powerSaveBlocker: { isStarted: vi.fn(() => false), start: vi.fn(() => 1), stop: vi.fn() },
     safeStorage: {},
     session: { defaultSession },
   }))

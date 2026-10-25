@@ -135,7 +135,7 @@ const NavigablePlayer = ({
     <PlayerView
       onBack={onBack}
       onPastBroadcasts={() => undefined}
-      onToggleFullscreen={() => undefined}
+      onSetFullscreen={async () => false}
       source={source}
     />
   )

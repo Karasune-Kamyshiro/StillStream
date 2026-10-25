@@ -19,6 +19,7 @@ import {
   PlaybackProgressListSchema,
   PlaybackProgressRemoveInputSchema,
   PlaybackProgressSaveInputSchema,
+  PlayerSessionSnapshotSchema,
   SettingsSnapshotSchema,
   StreamCardSchema,
   type VacuumStreamApi,
@@ -122,6 +123,20 @@ const api = {
         .invoke(CHANNELS.playbackProgressSave, PlaybackProgressSaveInputSchema.parse(bookmark))
         .then((value) => z.void().parse(value)),
   },
+  playerSession: {
+    signIn: () =>
+      ipcRenderer
+        .invoke(CHANNELS.playerSessionSignIn)
+        .then((value) => PlayerSessionSnapshotSchema.parse(value)),
+    signOut: () =>
+      ipcRenderer
+        .invoke(CHANNELS.playerSessionSignOut)
+        .then((value) => PlayerSessionSnapshotSchema.parse(value)),
+    snapshot: () =>
+      ipcRenderer
+        .invoke(CHANNELS.playerSessionSnapshot)
+        .then((value) => PlayerSessionSnapshotSchema.parse(value)),
+  },
   settings: {
     saveClientId: (clientId) =>
       ipcRenderer
@@ -141,6 +156,10 @@ const api = {
       ipcRenderer.invoke(CHANNELS.systemIsSteamGameMode).then((value) => Boolean(value)),
     restoreShellFullscreen: () =>
       ipcRenderer.invoke(CHANNELS.systemRestoreShellFullscreen).then((value) => Boolean(value)),
+    setFullscreen: (fullscreen) =>
+      ipcRenderer
+        .invoke(CHANNELS.systemSetFullscreen, z.boolean().parse(fullscreen))
+        .then((value) => Boolean(value)),
     toggleFullscreen: () =>
       ipcRenderer.invoke(CHANNELS.systemToggleFullscreen).then((value) => Boolean(value)),
   },

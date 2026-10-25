@@ -2,6 +2,7 @@ import type { BrowserWindow } from "electron"
 import { z } from "zod"
 
 type FullscreenWindow = Pick<BrowserWindow, "setFullScreen">
+type StatefulFullscreenWindow = Pick<BrowserWindow, "isFullScreen" | "setFullScreen">
 type ScriptFrame = {
   readonly executeJavaScript: (code: string, userGesture?: boolean) => Promise<unknown>
   readonly url: string
@@ -85,4 +86,14 @@ export const restoreShellFullscreen = (
 ): boolean => {
   mainWindow.setFullScreen(runningInSteamGameMode)
   return runningInSteamGameMode
+}
+
+// Returns the previous state so a temporary fullscreen (stream fullscreen) can be undone exactly.
+export const setWindowFullscreen = (
+  mainWindow: StatefulFullscreenWindow,
+  fullscreen: boolean,
+): boolean => {
+  const previous = mainWindow.isFullScreen()
+  if (previous !== fullscreen) mainWindow.setFullScreen(fullscreen)
+  return previous
 }

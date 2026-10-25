@@ -77,6 +77,12 @@ export const PlaybackBookmarkValueSchema = z
 export const PlaybackBookmarkSchema = PlaybackBookmarkValueSchema.safeExtend({
   videoId: PlaybackProgressGetInputSchema,
 })
+export const PlayerSessionSnapshotSchema = z.strictObject({
+  login: FavouriteLoginSchema.optional(),
+  signedIn: z.boolean(),
+})
+export type PlayerSessionSnapshot = z.infer<typeof PlayerSessionSnapshotSchema>
+
 export const PlaybackProgressListSchema = z.array(PlaybackBookmarkSchema).max(100)
 export const PlaybackProgressSaveInputSchema = PlaybackBookmarkSchema
 
@@ -236,6 +242,11 @@ export interface VacuumStreamApi {
     readonly remove: (videoId: string) => Promise<void>
     readonly save: (bookmark: PlaybackBookmark) => Promise<void>
   }
+  readonly playerSession: {
+    readonly signIn: () => Promise<PlayerSessionSnapshot>
+    readonly signOut: () => Promise<PlayerSessionSnapshot>
+    readonly snapshot: () => Promise<PlayerSessionSnapshot>
+  }
   readonly settings: {
     readonly saveClientId: (clientId: string) => Promise<SettingsSnapshot>
     readonly snapshot: () => Promise<SettingsSnapshot>
@@ -244,6 +255,8 @@ export interface VacuumStreamApi {
     readonly activateEmbeddedPlayer: (audible: boolean) => Promise<boolean>
     readonly isSteamGameMode: () => Promise<boolean>
     readonly restoreShellFullscreen: () => Promise<boolean>
+    /** Sets window fullscreen and resolves with the previous state. */
+    readonly setFullscreen: (fullscreen: boolean) => Promise<boolean>
     readonly toggleFullscreen: () => Promise<boolean>
   }
 }

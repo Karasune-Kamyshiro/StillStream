@@ -84,6 +84,7 @@ beforeEach(() => {
     favourites,
     mainWindow: { webContents } as BrowserWindow,
     playbackProgress,
+    playerSession: { signIn: vi.fn(), signOut: vi.fn(), snapshot: vi.fn() },
     rendererOrigin: "https://localhost:1234",
     runningInSteamGameMode: false,
     twitch: new TwitchService(
@@ -180,6 +181,7 @@ describe("chat input capability", () => {
       "chatInput",
       "favourites",
       "playbackProgress",
+      "playerSession",
       "settings",
       "system",
     ])
@@ -188,6 +190,7 @@ describe("chat input capability", () => {
       "activateEmbeddedPlayer",
       "isSteamGameMode",
       "restoreShellFullscreen",
+      "setFullscreen",
       "toggleFullscreen",
     ])
     await api.chatInput.begin(session)

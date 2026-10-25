@@ -1,7 +1,17 @@
-import { CheckCircleIcon, CopyIcon, SignInIcon, SignOutIcon } from "@phosphor-icons/react"
+import {
+  CheckCircleIcon,
+  CopyIcon,
+  MonitorPlayIcon,
+  SignInIcon,
+  SignOutIcon,
+} from "@phosphor-icons/react"
 import { QRCodeSVG } from "qrcode.react"
 import { type ComponentProps, useEffect, useRef, useState } from "react"
-import type { AuthSnapshot, SettingsSnapshot } from "../../../shared/contracts"
+import type {
+  AuthSnapshot,
+  PlayerSessionSnapshot,
+  SettingsSnapshot,
+} from "../../../shared/contracts"
 
 type SettingsPanelProps = {
   readonly auth: AuthSnapshot
@@ -48,6 +58,43 @@ export const SettingsPanel = ({
         : SignInIcon
 
   useEffect(() => setClientId(settings.clientId), [settings.clientId])
+
+  const [playerSession, setPlayerSession] = useState<PlayerSessionSnapshot | undefined>(undefined)
+  const [playerBusy, setPlayerBusy] = useState(false)
+  const playerPending = useRef(false)
+  useEffect(() => {
+    let current = true
+    void window.vacuumStream.playerSession.snapshot().then(
+      (snapshot) => {
+        if (current) setPlayerSession(snapshot)
+      },
+      () => {
+        if (current) setPlayerSession({ signedIn: false })
+      },
+    )
+    return () => {
+      current = false
+    }
+  }, [])
+
+  const activatePlayerSession = async (): Promise<void> => {
+    if (playerPending.current || playerSession === undefined) return
+    playerPending.current = true
+    setPlayerBusy(true)
+    setError("")
+    try {
+      setPlayerSession(
+        await (playerSession.signedIn
+          ? window.vacuumStream.playerSession.signOut()
+          : window.vacuumStream.playerSession.signIn()),
+      )
+    } catch {
+      setError("Twitch player sign-in could not be completed")
+    } finally {
+      playerPending.current = false
+      setPlayerBusy(false)
+    }
+  }
 
   const save: SubmitHandler = async (event) => {
     event.preventDefault()
@@ -147,7 +194,7 @@ export const SettingsPanel = ({
             aria-busy={busy}
             aria-disabled={busy || needsClientId}
             className="primary-button"
-            data-focus-down="settings-client-id"
+            data-focus-down="settings-player-session"
             data-focus-id={accountFocusId}
             data-focus-left="nav-settings"
             data-focus-up="nav-settings"
@@ -161,6 +208,43 @@ export const SettingsPanel = ({
               : auth.kind === "authorizing"
                 ? "Open Twitch activation"
                 : "Sign in on another device"}
+          </button>
+        </div>
+      </section>
+
+      <section aria-labelledby="player-session-heading" className="settings-card">
+        <div>
+          <h2 id="player-session-heading">Twitch player</h2>
+          <p>
+            Sign in on Twitch's own page so the player knows who is watching. Subscriptions and
+            Turbo then remove ads exactly as on twitch.tv. This is separate from device sign-in.
+          </p>
+        </div>
+        <div className="account-status">
+          {playerSession?.signedIn === true ? (
+            <span>
+              Player signed in
+              {playerSession.login === undefined ? "" : ` as ${playerSession.login}`}
+            </span>
+          ) : null}
+          <button
+            aria-busy={playerBusy}
+            aria-disabled={playerBusy || playerSession === undefined}
+            className="primary-button"
+            data-focus-down="settings-client-id"
+            data-focus-id="settings-player-session"
+            data-focus-left="nav-settings"
+            data-focus-up={accountFocusId}
+            data-focusable="true"
+            onClick={activatePlayerSession}
+            type="button"
+          >
+            {playerSession?.signedIn === true ? (
+              <SignOutIcon aria-hidden="true" />
+            ) : (
+              <MonitorPlayIcon aria-hidden="true" />
+            )}
+            {playerSession?.signedIn === true ? "Sign player out" : "Sign in to the player"}
           </button>
         </div>
       </section>
@@ -180,7 +264,7 @@ export const SettingsPanel = ({
               autoComplete="off"
               data-focus-down="settings-save"
               data-focus-id="settings-client-id"
-              data-focus-up={accountFocusId}
+              data-focus-up="settings-player-session"
               data-focusable="true"
               id="client-id"
               onChange={(event) => setClientId(event.currentTarget.value)}

@@ -135,7 +135,7 @@ const NavigablePlayer = ({ source }: { readonly source: PlayerSource }) => {
     <PlayerView
       onBack={() => undefined}
       onPastBroadcasts={() => undefined}
-      onToggleFullscreen={() => undefined}
+      onSetFullscreen={async () => false}
       source={source}
     />
   )
@@ -157,7 +157,7 @@ const mountPlayer = async (
         <PlayerView
           onBack={() => undefined}
           onPastBroadcasts={() => undefined}
-          onToggleFullscreen={() => undefined}
+          onSetFullscreen={async () => false}
           source={source}
         />
       ),

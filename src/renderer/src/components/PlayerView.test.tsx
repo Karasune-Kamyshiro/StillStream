@@ -42,7 +42,7 @@ const playerView = (playerSource: PlayerSource = source, onBack = () => undefine
   <PlayerView
     onBack={onBack}
     onPastBroadcasts={() => undefined}
-    onToggleFullscreen={() => undefined}
+    onSetFullscreen={async () => false}
     source={playerSource}
   />
 )

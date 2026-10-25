@@ -676,3 +676,69 @@
     display: none;
   }
 }
+
+/* Stream fullscreen: only the player remains; Back or Enter restores the controls. */
+.player-view--immersive {
+  position: relative;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  background: #000;
+}
+
+.player-view--immersive > :not(.player-stage, .player-immersive-exit) {
+  display: none;
+}
+
+.player-view--immersive .player-stage,
+.player-view--immersive .player-stage:has(.player-chat) {
+  grid-template-columns: minmax(0, 1fr);
+  min-block-size: 0;
+}
+
+.player-view--immersive .player-chat {
+  display: none;
+}
+
+.player-view--immersive .player-frame {
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+
+.player-immersive-exit {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: var(--space-4);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-scrim);
+  color: var(--color-text);
+  pointer-events: auto;
+  animation: player-immersive-hint 3.5s var(--ease-out) forwards;
+}
+
+/* The hint fades away but stays focused; pointer users can hover to find it again. */
+.player-immersive-exit:hover {
+  animation: none;
+  opacity: 1;
+}
+
+@keyframes player-immersive-hint {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-immersive-exit {
+    animation-timing-function: steps(1, end);
+  }
+}

@@ -86,6 +86,17 @@ const makeBridge = (auth: AuthSnapshot) =>
       remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>(),
       save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>(),
     },
+    playerSession: {
+      signIn: vi
+        .fn<VacuumStreamApi["playerSession"]["signIn"]>()
+        .mockResolvedValue({ signedIn: false }),
+      signOut: vi
+        .fn<VacuumStreamApi["playerSession"]["signOut"]>()
+        .mockResolvedValue({ signedIn: false }),
+      snapshot: vi
+        .fn<VacuumStreamApi["playerSession"]["snapshot"]>()
+        .mockResolvedValue({ signedIn: false }),
+    },
     settings: {
       saveClientId: vi.fn<VacuumStreamApi["settings"]["saveClientId"]>(),
       snapshot: vi
@@ -98,6 +109,7 @@ const makeBridge = (auth: AuthSnapshot) =>
       restoreShellFullscreen: vi
         .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
+      setFullscreen: vi.fn<VacuumStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
       toggleFullscreen: vi.fn<VacuumStreamApi["system"]["toggleFullscreen"]>(),
     },
   }) satisfies VacuumStreamApi
@@ -191,11 +203,15 @@ describe("Settings in the mounted App", () => {
         await key(compact ? "ArrowDown" : "ArrowRight")
         expectFocus(id)
         await key("ArrowDown")
+        expectFocus("settings-player-session")
+        await key("ArrowDown")
         expectFocus("settings-client-id")
         await key("ArrowDown")
         expectFocus("settings-save")
         await key("ArrowUp")
         expectFocus("settings-client-id")
+        await key("ArrowUp")
+        expectFocus("settings-player-session")
         await key("ArrowUp")
         expectFocus(id)
         await key("ArrowLeft")
@@ -215,17 +231,23 @@ describe("Settings in the mounted App", () => {
       container.innerHTML = renderToStaticMarkup(<App />)
       expect(target("nav-settings").getAttribute("data-focus-right")).toBe(id)
       expect(target("nav-settings").getAttribute("data-focus-down")).toBe(id)
-      expect(target(id).getAttribute("data-focus-down")).toBe("settings-client-id")
+      expect(target(id).getAttribute("data-focus-down")).toBe("settings-player-session")
+      expect(target("settings-player-session").getAttribute("data-focus-up")).toBe(id)
+      expect(target("settings-player-session").getAttribute("data-focus-down")).toBe(
+        "settings-client-id",
+      )
       expect(target(id).getAttribute("data-focus-left")).toBe("nav-settings")
       expect(target(id).getAttribute("data-focus-up")).toBe("nav-settings")
-      expect(target("settings-client-id").getAttribute("data-focus-up")).toBe(id)
+      expect(target("settings-client-id").getAttribute("data-focus-up")).toBe(
+        "settings-player-session",
+      )
       expect(target("settings-client-id").getAttribute("data-focus-down")).toBe("settings-save")
       expect(target("settings-save").getAttribute("data-focus-up")).toBe("settings-client-id")
       expect(
         [...container.querySelectorAll(".settings-card")].map((card) =>
           card.getAttribute("aria-labelledby"),
         ),
-      ).toEqual(["account-heading", "developer-app-heading"])
+      ).toEqual(["account-heading", "player-session-heading", "developer-app-heading"])
       expect(
         container.querySelectorAll(
           '#account-heading ~ button, [aria-labelledby="account-heading"] button',
@@ -255,7 +277,7 @@ describe("Settings in the mounted App", () => {
     expect(target("settings-logout")).toBe(outgoing)
     expectFocus("settings-logout")
     await key("ArrowDown")
-    expectFocus("settings-client-id")
+    expectFocus("settings-player-session")
     expect(bridge.settings.saveClientId).not.toHaveBeenCalled()
     expect(loadPlayer).not.toHaveBeenCalled()
     expect(Player).not.toHaveBeenCalled()

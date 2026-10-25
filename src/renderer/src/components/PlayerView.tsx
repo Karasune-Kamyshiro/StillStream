@@ -1,5 +1,6 @@
 import {
   ArrowLeftIcon,
+  CornersInIcon,
   CornersOutIcon,
   FilmStripIcon,
   PauseIcon,
@@ -37,7 +38,8 @@ export type PlayerSource =
 type PlayerViewProps = {
   readonly onBack: () => void
   readonly onPastBroadcasts: (userId: string) => void
-  readonly onToggleFullscreen: () => void
+  /** Sets window fullscreen and resolves with the previous state. */
+  readonly onSetFullscreen: (fullscreen: boolean) => Promise<boolean>
   readonly source: PlayerSource
 }
 
@@ -64,7 +66,7 @@ const formatTime = (seconds: number | undefined, showHours: boolean): string => 
 export const PlayerView = ({
   onBack,
   onPastBroadcasts,
-  onToggleFullscreen,
+  onSetFullscreen,
   source,
 }: PlayerViewProps) => {
   const [frameState, setFrameState] = useState<"loading" | "offline" | "ready" | "startup-error">(
@@ -77,6 +79,13 @@ export const PlayerView = ({
   const [position, setPosition] = useState<number | undefined>(undefined)
   const [duration, setDuration] = useState<number | undefined>(undefined)
   const [seekTransportOpen, setSeekTransportOpen] = useState(false)
+  // Stream fullscreen: the toolbar, submenus and chat hide so the video fills the window.
+  const [immersive, setImmersive] = useState(false)
+  const immersiveRef = useRef(false)
+  const immersiveGenerationRef = useRef(0)
+  const restoreWindowedRef = useRef(false)
+  const immersiveExitRef = useRef<HTMLButtonElement>(null)
+  const fullscreenButtonRef = useRef<HTMLButtonElement>(null)
   const autoStartGenerationRef = useRef(0)
   const autoStartTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const backButtonRef = useRef<HTMLButtonElement>(null)
@@ -106,8 +115,58 @@ export const PlayerView = ({
     return true
   }, [seekTransportOpen])
 
+  const enterImmersive = (): void => {
+    if (immersiveRef.current) return
+    immersiveRef.current = true
+    const generation = immersiveGenerationRef.current + 1
+    immersiveGenerationRef.current = generation
+    dismissQualityChooser()
+    dismissCaptionsChooser()
+    setSeekTransportOpen(false)
+    setImmersive(true)
+    void onSetFullscreen(true).then(
+      (wasFullscreen) => {
+        if (immersiveGenerationRef.current !== generation) return
+        // Only undo a fullscreen this mode created; an app already fullscreen stays that way.
+        restoreWindowedRef.current = !wasFullscreen
+        if (!immersiveRef.current && !wasFullscreen) {
+          restoreWindowedRef.current = false
+          void onSetFullscreen(false).catch(() => undefined)
+        }
+      },
+      () => undefined,
+    )
+  }
+
+  const exitImmersive = useCallback((): boolean => {
+    if (!immersiveRef.current) return false
+    immersiveRef.current = false
+    setImmersive(false)
+    if (restoreWindowedRef.current) {
+      restoreWindowedRef.current = false
+      void onSetFullscreen(false).catch(() => undefined)
+    }
+    const fullscreenButton = fullscreenButtonRef.current
+    if (fullscreenButton !== null) {
+      markControllerFocus(fullscreenButton)
+      fullscreenButton.focus()
+    }
+    return true
+  }, [onSetFullscreen])
+
+  useEffect(() => {
+    if (!immersive) return
+    // Keep keyboard and controller input in the shell, not inside the Twitch iframe.
+    const exitButton = immersiveExitRef.current
+    if (exitButton !== null) {
+      markControllerFocus(exitButton)
+      exitButton.focus()
+    }
+  }, [immersive])
+
   // Back closes the submenu the viewer is in, or the first one still open, before leaving.
   const dismissSubmenu = useCallback((): boolean => {
+    if (exitImmersive()) return true
     const focused = document.activeElement
     const submenus = [
       { dismiss: dismissQualityChooser, id: "player-quality-chooser" },
@@ -120,7 +179,7 @@ export const PlayerView = ({
     return focusedSubmenu === undefined
       ? submenus.some(({ dismiss }) => dismiss())
       : focusedSubmenu.dismiss()
-  }, [dismissCaptionsChooser, dismissQualityChooser, dismissSeekTransport])
+  }, [dismissCaptionsChooser, dismissQualityChooser, dismissSeekTransport, exitImmersive])
 
   useEffect(() => registerBackDismissal(dismissSubmenu), [dismissSubmenu])
 
@@ -232,6 +291,7 @@ export const PlayerView = ({
         })
         player.addEventListener(api.Player.PLAYING, () => {
           if (!active || !initialized || offline || player === undefined) return
+          setPaused(false)
           refreshQualities(player)
           refreshTimeline("playing")
         })
@@ -371,12 +431,32 @@ export const PlayerView = ({
 
   return (
     <main
-      className={
-        source.kind === "video" && seekTransportOpen
-          ? "player-view player-view--video"
-          : "player-view"
-      }
+      className={[
+        "player-view",
+        source.kind === "video" && seekTransportOpen ? "player-view--video" : undefined,
+        immersive ? "player-view--immersive" : undefined,
+      ]
+        .filter((name) => name !== undefined)
+        .join(" ")}
     >
+      {immersive ? (
+        <button
+          aria-label="Show player controls"
+          className="player-immersive-exit"
+          data-focus-down="player-immersive-exit"
+          data-focus-id="player-immersive-exit"
+          data-focus-left="player-immersive-exit"
+          data-focus-right="player-immersive-exit"
+          data-focus-up="player-immersive-exit"
+          data-focusable="true"
+          onClick={exitImmersive}
+          ref={immersiveExitRef}
+          type="button"
+        >
+          <CornersInIcon aria-hidden="true" />
+          Press Back or Enter to show controls
+        </button>
+      ) : null}
       <header className="player-toolbar">
         <button
           data-focus-down={
@@ -490,12 +570,13 @@ export const PlayerView = ({
         {chatEnterButton}
         {chatReloadButton}
         <button
-          aria-label="Toggle fullscreen"
+          aria-label="Fullscreen stream"
           data-focus-id="player-fullscreen"
           data-focus-left={toolbarFullscreenLeft}
           data-focus-right="player-back"
           data-focusable="true"
-          onClick={onToggleFullscreen}
+          onClick={enterImmersive}
+          ref={fullscreenButtonRef}
           type="button"
         >
           <CornersOutIcon aria-hidden="true" />

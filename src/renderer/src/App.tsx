@@ -106,7 +106,7 @@ export const App = () => {
         }
         onBack={controller.navigateHome}
         onPastBroadcasts={(userId) => void controller.showPastBroadcasts(userId)}
-        onToggleFullscreen={() => void window.vacuumStream.system.toggleFullscreen()}
+        onSetFullscreen={(fullscreen) => window.vacuumStream.system.setFullscreen(fullscreen)}
         source={controller.screen.source}
       />
     )
