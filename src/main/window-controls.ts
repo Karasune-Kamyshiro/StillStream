@@ -46,7 +46,8 @@ export const activateEmbeddedPlayer = async (
         video.muted = true;
       } else {
         video.muted = false;
-        if (video.volume === 0) video.volume = 0.5;
+        // TV setups control loudness on the TV or system; the player plays at full volume.
+        video.volume = 1;
       }
     }
     const beforeTime = video.currentTime;

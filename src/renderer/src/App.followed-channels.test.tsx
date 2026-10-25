@@ -122,6 +122,12 @@ const makeBridge = (auth: AuthSnapshot) =>
       remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>().mockResolvedValue(undefined),
       save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>().mockResolvedValue(undefined),
     },
+    preferences: {
+      setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
+      snapshot: vi
+        .fn<VacuumStreamApi["preferences"]["snapshot"]>()
+        .mockResolvedValue({ startScreen: "home" }),
+    },
     playerSession: {
       signIn: vi
         .fn<VacuumStreamApi["playerSession"]["signIn"]>()
@@ -184,6 +190,7 @@ class Player implements twitchPlayer.TwitchPlayerInstance {
   seek = vi.fn()
   setMuted = vi.fn()
   setQuality = vi.fn()
+  setVolume = vi.fn()
 }
 
 let root: Root | undefined

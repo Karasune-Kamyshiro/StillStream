@@ -11,8 +11,9 @@ export type Screen =
   | { readonly kind: "player"; readonly source: PlayerSource }
   | { readonly kind: "videos"; readonly userId: string }
 
-export const shouldNavigateHomeOnBack = (screen: Screen): boolean =>
-  screen.kind !== "browse" || screen.route !== "home"
+/** Back leaves anything but the start screen itself (Home, or Following when preferred). */
+export const shouldNavigateHomeOnBack = (screen: Screen, home: RouteName = "home"): boolean =>
+  screen.kind !== "browse" || screen.route !== home || screen.followingMode === "all"
 
 export const screenEntryFocusId = (screen: Screen): string => {
   switch (screen.kind) {

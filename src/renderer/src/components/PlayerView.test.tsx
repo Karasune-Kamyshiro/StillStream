@@ -89,6 +89,7 @@ const installPlayerHarness = (
   const seek = vi.fn()
   let activationIndex = 0
   let muted = true
+  const setVolume = vi.fn<(volume: number) => void>()
   const setMuted = vi.fn((nextMuted: boolean) => {
     muted = nextMuted
   })
@@ -125,6 +126,7 @@ const installPlayerHarness = (
     readonly seek = seek
     readonly setMuted = setMuted
     readonly setQuality = setQuality
+    readonly setVolume = setVolume
   }
   const activateEmbeddedPlayer = vi.fn(async (_audible: boolean) => {
     const result = activationResults[activationIndex] ?? false
@@ -223,6 +225,7 @@ const installPlayerHarness = (
       },
       playbackProgress: progress,
       settings: { snapshot: async () => ({ clientId: "client", secureStorage: false }) },
+      preferences: { snapshot: async () => ({ startScreen: "home" as const }) },
       system: { activateEmbeddedPlayer, restoreShellFullscreen },
     },
   })
@@ -262,6 +265,7 @@ const installPlayerHarness = (
     seek,
     setMuted,
     setQuality,
+    setVolume,
   }
 }
 
@@ -785,7 +789,10 @@ describe("Twitch player surface", () => {
   it("retries audible playback until progressing media is confirmed", async () => {
     // Given a ready Twitch embed whose first activation finds no playable media
     vi.useFakeTimers()
-    const { activateEmbeddedPlayer, listeners, setMuted } = installPlayerHarness([false, true])
+    const { activateEmbeddedPlayer, listeners, setMuted, setVolume } = installPlayerHarness([
+      false,
+      true,
+    ])
     const container = document.createElement("div")
     document.body.append(container)
     const root = createRoot(container)
@@ -799,6 +806,8 @@ describe("Twitch player surface", () => {
     expect(activateEmbeddedPlayer).toHaveBeenNthCalledWith(1, true)
     expect(activateEmbeddedPlayer).toHaveBeenNthCalledWith(2, true)
     expect(setMuted).toHaveBeenCalledWith(false)
+    // A TV app plays at full volume rather than Twitch's half-volume default.
+    expect(setVolume).toHaveBeenCalledExactlyOnceWith(1)
     expect(
       container.querySelector<HTMLButtonElement>("[data-focus-id=player-playback]")?.ariaLabel,
     ).toBe("Pause")

@@ -8,6 +8,7 @@ import { registerIpc } from "./ipc"
 import { createPlaybackKeepAwake } from "./playback-keep-awake"
 import { PlaybackProgressStore } from "./playback-progress-store"
 import { createPlayerFocusGuard } from "./player-focus-guard"
+import { PreferencesStore } from "./preferences-store"
 import { SettingsStore } from "./settings-store"
 import { TokenVault } from "./token-vault"
 import { shouldEmbedLogin } from "./twitch-login-surface"
@@ -115,6 +116,7 @@ const createWindow = async (): Promise<void> => {
     favourites: new FavouritesStore(app.getPath("userData")),
     mainWindow,
     playbackProgress: new PlaybackProgressStore(app.getPath("userData")),
+    preferences: new PreferencesStore(app.getPath("userData")),
     playerSession: createTwitchWebSession({
       embed: () => shouldEmbedLogin(mainWindow, runningInSteamGameMode, process.env),
       parent: () => (mainWindow.isDestroyed() ? undefined : mainWindow),

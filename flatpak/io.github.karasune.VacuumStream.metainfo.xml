@@ -66,6 +66,16 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/VacuumStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/VacuumStream</url>
   <releases>
+    <release version="0.2.1-fork.5" date="2026-10-25">
+      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.5</url>
+      <description>
+        <p>Living-room comfort.</p>
+        <ul>
+          <li>Streams start at full volume instead of Twitch's half-volume default, so they match the rest of the system.</li>
+          <li>A Settings option opens Following instead of Home at startup, after leaving a stream and on Back.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.1-fork.4" date="2026-10-25">
       <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.4</url>
       <description>

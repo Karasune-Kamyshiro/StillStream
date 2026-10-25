@@ -61,6 +61,7 @@ describe("IPC credential redaction defects", () => {
         remove: vi.fn(),
         save: vi.fn(),
       },
+      preferences: { load: vi.fn(), setStartScreen: vi.fn() },
       playerSession: { setup: vi.fn(), signIn: vi.fn(), signOut: vi.fn(), snapshot: vi.fn() },
       rendererOrigin: "https://localhost:1234",
       runningInSteamGameMode: false,

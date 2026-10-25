@@ -12,6 +12,7 @@ import type {
   AuthSnapshot,
   PlayerSessionSnapshot,
   SettingsSnapshot,
+  StartScreen,
 } from "../../../shared/contracts"
 import { registerBackDismissal } from "../focus-navigation"
 
@@ -20,7 +21,10 @@ type SettingsPanelProps = {
   readonly onAccountRequest: () => () => boolean
   readonly onAuthChange: (auth: AuthSnapshot) => void
   readonly onSettingsChange: (settings: SettingsSnapshot, resetAuth: boolean) => void
+  /** Saves the start-screen preference; the card is hidden when absent. */
+  readonly onStartScreenChange?: (startScreen: StartScreen) => Promise<void>
   readonly settings: SettingsSnapshot
+  readonly startScreen?: StartScreen
 }
 
 type SubmitHandler = NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -54,10 +58,13 @@ export const SettingsPanel = ({
   onAccountRequest,
   onAuthChange,
   onSettingsChange,
+  onStartScreenChange,
   settings,
+  startScreen = "home",
 }: SettingsPanelProps) => {
   const [clientId, setClientId] = useState(settings.clientId)
   const [busy, setBusy] = useState(false)
+  const [startScreenBusy, setStartScreenBusy] = useState(false)
   const [error, setError] = useState("")
   const pending = useRef(false)
   const accountFocusId = settingsAccountFocusId(auth)
@@ -320,6 +327,9 @@ export const SettingsPanel = ({
               value={clientId}
             />
             <button
+              {...(onStartScreenChange === undefined
+                ? {}
+                : { "data-focus-down": "settings-start-following" })}
               data-focus-id="settings-save"
               data-focus-left="nav-settings"
               data-focus-up="settings-client-id"
@@ -333,6 +343,38 @@ export const SettingsPanel = ({
           </div>
         </form>
       </section>
+
+      {onStartScreenChange === undefined ? null : (
+        <section aria-labelledby="start-screen-heading" className="settings-card">
+          <div>
+            <h2 id="start-screen-heading">Start screen</h2>
+            <p>
+              Choose where VacuumStream opens, and where Back and leaving a stream return to.
+              Following needs a signed-in account; without one the app opens on Home.
+            </p>
+          </div>
+          <label className="settings-toggle">
+            <input
+              checked={startScreen === "following"}
+              data-focus-id="settings-start-following"
+              data-focus-left="nav-settings"
+              data-focus-up="settings-save"
+              data-focusable="true"
+              disabled={startScreenBusy}
+              onChange={(event) => {
+                const next = event.currentTarget.checked ? "following" : "home"
+                setStartScreenBusy(true)
+                setError("")
+                void onStartScreenChange(next)
+                  .catch(() => setError("The start screen could not be saved"))
+                  .finally(() => setStartScreenBusy(false))
+              }}
+              type="checkbox"
+            />
+            <span>Open Following instead of Home</span>
+          </label>
+        </section>
+      )}
       {error !== "" ? (
         <p className="error-message" role="alert">
           {error}

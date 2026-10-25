@@ -76,6 +76,7 @@ const installHarness = (saved?: PlaybackBookmark) => {
       },
       playbackProgress: progress,
       settings: { snapshot: async () => ({ clientId: "client", secureStorage: false }) },
+      preferences: { snapshot: async () => ({ startScreen: "home" as const }) },
       system: { activateEmbeddedPlayer, restoreShellFullscreen },
     },
   })
@@ -110,6 +111,7 @@ const installHarness = (saved?: PlaybackBookmark) => {
       readonly seek = vi.fn()
       readonly setMuted = vi.fn()
       readonly setQuality = vi.fn()
+      readonly setVolume = vi.fn()
     }
     const api = { Player: TestPlayer }
     Object.defineProperty(window, "Twitch", { configurable: true, value: api })

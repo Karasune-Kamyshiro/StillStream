@@ -96,6 +96,12 @@ const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<VacuumStreamApi["auth"][
       remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>(),
       save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>(),
     },
+    preferences: {
+      setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
+      snapshot: vi
+        .fn<VacuumStreamApi["preferences"]["snapshot"]>()
+        .mockResolvedValue({ startScreen: "home" }),
+    },
     playerSession: {
       signIn: vi
         .fn<VacuumStreamApi["playerSession"]["signIn"]>()
@@ -268,7 +274,7 @@ describe("Settings in the mounted App", () => {
         [...container.querySelectorAll(".settings-card")].map((card) =>
           card.getAttribute("aria-labelledby"),
         ),
-      ).toEqual(["account-heading", "developer-app-heading"])
+      ).toEqual(["account-heading", "developer-app-heading", "start-screen-heading"])
       expect(
         container.querySelectorAll(
           '#account-heading ~ button, [aria-labelledby="account-heading"] button',
@@ -504,4 +510,45 @@ describe("Settings in the mounted App", () => {
       expect(container.querySelector(".settings-panel")).toBeNull()
     },
   )
+})
+
+describe("Start screen preference", () => {
+  const start = async (auth: AuthSnapshot, startScreen: "following" | "home") => {
+    const bridge = makeBridge(auth)
+    bridge.preferences.snapshot.mockResolvedValue({ startScreen })
+    bridge.preferences.setStartScreen.mockImplementation(async (next) => ({ startScreen: next }))
+    vi.stubGlobal("vacuumStream", bridge)
+    root = createRoot(container)
+    await act(async () => root?.render(<App />))
+    return bridge
+  }
+
+  it("opens Following at startup and returns there on Back when the viewer prefers it", async () => {
+    await start(authenticated, "following")
+    expect(controller().screen).toEqual({ kind: "browse", route: "following" })
+    await act(async () => controller().navigate("search"))
+    await key("Escape")
+    expect(controller().screen).toEqual({ kind: "browse", route: "following" })
+    // Back on the start screen itself stays put.
+    await key("Escape")
+    expect(controller().screen).toEqual({ kind: "browse", route: "following" })
+  })
+
+  it("keeps guests on Home even when Following is preferred", async () => {
+    await start({ kind: "guest" }, "following")
+    expect(controller().screen).toEqual({ kind: "browse", route: "home" })
+  })
+
+  it("saves the choice from the Settings checkbox", async () => {
+    const bridge = await start(authenticated, "home")
+    await activate("nav-settings")
+    const toggle = target("settings-start-following")
+    if (!(toggle instanceof HTMLInputElement)) throw new Error("Missing start screen checkbox")
+    expect(toggle.checked).toBe(false)
+    expect(target("settings-save").getAttribute("data-focus-down")).toBe("settings-start-following")
+    await activate("settings-start-following")
+    expect(bridge.preferences.setStartScreen).toHaveBeenCalledExactlyOnceWith("following")
+    expect(controller().startScreen).toBe("following")
+    expect(toggle.checked).toBe(true)
+  })
 })

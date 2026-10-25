@@ -76,6 +76,12 @@ const makeBridge = (items: readonly PlaybackBookmark[], auth: AuthSnapshot) => {
         bookmarks.set(item.videoId, item)
       }),
     },
+    preferences: {
+      setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
+      snapshot: vi
+        .fn<VacuumStreamApi["preferences"]["snapshot"]>()
+        .mockResolvedValue({ startScreen: "home" }),
+    },
     playerSession: {
       signIn: vi
         .fn<VacuumStreamApi["playerSession"]["signIn"]>()
@@ -197,6 +203,7 @@ const mount = async (
     readonly isPaused = () => true
     readonly pause = () => undefined
     readonly setMuted = () => undefined
+    readonly setVolume = vi.fn()
   }
   vi.stubGlobal("Twitch", { Player: TestPlayer })
   root = createRoot(container)

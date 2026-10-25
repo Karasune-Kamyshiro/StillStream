@@ -147,6 +147,12 @@ const makeBridge = (auth: AuthSnapshot) =>
       remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>(),
       save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>(),
     },
+    preferences: {
+      setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
+      snapshot: vi
+        .fn<VacuumStreamApi["preferences"]["snapshot"]>()
+        .mockResolvedValue({ startScreen: "home" }),
+    },
     playerSession: {
       signIn: vi
         .fn<VacuumStreamApi["playerSession"]["signIn"]>()

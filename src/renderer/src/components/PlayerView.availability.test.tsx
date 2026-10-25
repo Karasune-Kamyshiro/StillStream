@@ -112,6 +112,7 @@ const installHarness = () => {
     readonly setQuality = vi.fn((quality: string) => {
       this.state.current = quality
     })
+    readonly setVolume = vi.fn()
 
     readonly emit = (event: keyof typeof events): void => {
       const listener = this.listeners.get(events[event])

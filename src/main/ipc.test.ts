@@ -84,6 +84,7 @@ beforeEach(() => {
     favourites,
     mainWindow: { webContents } as BrowserWindow,
     playbackProgress,
+    preferences: { load: vi.fn(), setStartScreen: vi.fn() },
     playerSession: { setup: vi.fn(), signIn: vi.fn(), signOut: vi.fn(), snapshot: vi.fn() },
     rendererOrigin: "https://localhost:1234",
     runningInSteamGameMode: false,
@@ -182,6 +183,7 @@ describe("chat input capability", () => {
       "favourites",
       "playbackProgress",
       "playerSession",
+      "preferences",
       "settings",
       "system",
     ])

@@ -26,6 +26,7 @@ export interface TwitchPlayerInstance {
   readonly seek: (seconds: number) => void
   readonly setMuted: (muted: boolean) => void
   readonly setQuality: (qualityId: string) => void
+  readonly setVolume: (volume: number) => void
 }
 
 export type TwitchQuality = {

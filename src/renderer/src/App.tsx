@@ -402,7 +402,9 @@ export const App = () => {
             }}
             onAuthChange={controller.setAuth}
             onSettingsChange={controller.updateSettings}
+            onStartScreenChange={controller.updateStartScreen}
             settings={controller.settings}
+            startScreen={controller.startScreen}
           />
         ) : null}
       </div>

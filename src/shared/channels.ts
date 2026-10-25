@@ -17,6 +17,8 @@ export const CHANNELS = {
   favouritesAdd: "favourites:add",
   favouritesList: "favourites:list",
   favouritesRemove: "favourites:remove",
+  preferencesSetStartScreen: "preferences:set-start-screen",
+  preferencesSnapshot: "preferences:snapshot",
   playerSessionSignIn: "player-session:sign-in",
   playerSessionSignOut: "player-session:sign-out",
   playerSessionSnapshot: "player-session:snapshot",

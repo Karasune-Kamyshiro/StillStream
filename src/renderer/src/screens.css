@@ -183,6 +183,21 @@
   gap: var(--space-3);
 }
 
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  align-self: start;
+  cursor: pointer;
+}
+
+.settings-toggle input {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
 .account-status__player {
   color: var(--color-text-muted);
 }

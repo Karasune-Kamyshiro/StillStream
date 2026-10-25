@@ -12,11 +12,13 @@ import {
   PlaybackProgressRemoveInputSchema,
   PlaybackProgressSaveInputSchema,
   SearchInputSchema,
+  StartScreenSchema,
   VideosInputSchema,
 } from "../shared/contracts"
 import type { ChatInput } from "./chat-input"
 import type { FavouritesStore } from "./favourites-store"
 import type { PlaybackProgressStore } from "./playback-progress-store"
+import type { PreferencesStore } from "./preferences-store"
 import type { TwitchService } from "./twitch-service"
 import type { TwitchWebSession } from "./twitch-web-session"
 import {
@@ -30,6 +32,7 @@ type IpcOptions = {
   readonly favourites: Pick<FavouritesStore, "add" | "list" | "remove">
   readonly mainWindow: BrowserWindow
   readonly playbackProgress: Pick<PlaybackProgressStore, "get" | "list" | "remove" | "save">
+  readonly preferences: Pick<PreferencesStore, "load" | "setStartScreen">
   readonly playerSession: Pick<TwitchWebSession, "setup" | "signIn" | "signOut" | "snapshot">
   readonly rendererOrigin: string
   readonly runningInSteamGameMode: boolean
@@ -177,6 +180,16 @@ export const registerIpc = (options: IpcOptions): void => {
     authorize(event)
     const [bookmark] = z.tuple([PlaybackProgressSaveInputSchema]).parse(input)
     await options.playbackProgress.save(bookmark)
+  })
+  ipcMain.handle(CHANNELS.preferencesSnapshot, async (event, ...input: unknown[]) => {
+    authorize(event)
+    z.tuple([]).parse(input)
+    return options.preferences.load()
+  })
+  ipcMain.handle(CHANNELS.preferencesSetStartScreen, async (event, ...input: unknown[]) => {
+    authorize(event)
+    const [startScreen] = z.tuple([StartScreenSchema]).parse(input)
+    return options.preferences.setStartScreen(startScreen)
   })
   ipcMain.handle(CHANNELS.playerSessionSnapshot, async (event, ...input: unknown[]) => {
     authorize(event)

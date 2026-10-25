@@ -265,6 +265,8 @@ export const PlayerView = ({
         }
         if (playbackStarted) {
           player.setMuted(false)
+          // Twitch's embed starts at half volume; a TV app should match the rest of the system.
+          player.setVolume(1)
           setMuted(false)
           setPaused(false)
           return

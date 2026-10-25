@@ -70,6 +70,7 @@ const installHarness = () => {
       this.state.muted = muted
     })
     readonly setQuality = vi.fn()
+    readonly setVolume = vi.fn()
 
     readonly emit = (event: PlayerEvent): void => {
       const listener = this.listeners.get(events[event])

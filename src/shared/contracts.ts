@@ -77,6 +77,11 @@ export const PlaybackBookmarkValueSchema = z
 export const PlaybackBookmarkSchema = PlaybackBookmarkValueSchema.safeExtend({
   videoId: PlaybackProgressGetInputSchema,
 })
+export const StartScreenSchema = z.enum(["home", "following"])
+export type StartScreen = z.infer<typeof StartScreenSchema>
+export const PreferencesSnapshotSchema = z.strictObject({ startScreen: StartScreenSchema })
+export type PreferencesSnapshot = z.infer<typeof PreferencesSnapshotSchema>
+
 export const PlayerSessionSnapshotSchema = z.strictObject({
   login: FavouriteLoginSchema.optional(),
   signedIn: z.boolean(),
@@ -248,6 +253,10 @@ export interface VacuumStreamApi {
     readonly list: () => Promise<readonly PlaybackBookmark[]>
     readonly remove: (videoId: string) => Promise<void>
     readonly save: (bookmark: PlaybackBookmark) => Promise<void>
+  }
+  readonly preferences: {
+    readonly setStartScreen: (startScreen: StartScreen) => Promise<PreferencesSnapshot>
+    readonly snapshot: () => Promise<PreferencesSnapshot>
   }
   readonly playerSession: {
     readonly signIn: () => Promise<PlayerSessionSnapshot>

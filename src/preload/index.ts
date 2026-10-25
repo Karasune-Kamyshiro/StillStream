@@ -21,7 +21,9 @@ import {
   PlaybackProgressRemoveInputSchema,
   PlaybackProgressSaveInputSchema,
   PlayerSessionSnapshotSchema,
+  PreferencesSnapshotSchema,
   SettingsSnapshotSchema,
+  StartScreenSchema,
   StreamCardSchema,
   type VacuumStreamApi,
   VideoCardSchema,
@@ -125,6 +127,16 @@ const api = {
       ipcRenderer
         .invoke(CHANNELS.playbackProgressSave, PlaybackProgressSaveInputSchema.parse(bookmark))
         .then((value) => z.void().parse(value)),
+  },
+  preferences: {
+    setStartScreen: (startScreen) =>
+      ipcRenderer
+        .invoke(CHANNELS.preferencesSetStartScreen, StartScreenSchema.parse(startScreen))
+        .then((value) => PreferencesSnapshotSchema.parse(value)),
+    snapshot: () =>
+      ipcRenderer
+        .invoke(CHANNELS.preferencesSnapshot)
+        .then((value) => PreferencesSnapshotSchema.parse(value)),
   },
   playerSession: {
     signIn: () =>

@@ -4,6 +4,7 @@ import type {
   CategoryCard,
   ChannelCard,
   SettingsSnapshot,
+  StartScreen,
   StreamCard,
   VideoCard,
 } from "../../shared/contracts"
@@ -75,6 +76,14 @@ export const useAppController = () => {
   )
   const previousScreen = useRef(screen)
   const identity = auth.kind === "authenticated" ? auth.login : undefined
+  // Start-screen preference. Following needs an account, so guests always start on Home.
+  const [startScreen, setStartScreen] = useState<StartScreen>("home")
+  const [preferencesReady, setPreferencesReady] = useState(false)
+  const [authReady, setAuthReady] = useState(false)
+  const startScreenApplied = useRef(false)
+  const viewerNavigated = useRef(false)
+  const startRoute: StartScreen =
+    startScreen === "following" && identity !== undefined ? "following" : "home"
   const {
     catalog: followedChannels,
     invalidate: invalidateDirectory,
@@ -116,14 +125,20 @@ export const useAppController = () => {
   )
   const navigate = useCallback(
     (route: RouteName): void => {
+      viewerNavigated.current = true
       changeScreen({ kind: "browse", route })
     },
     [changeScreen],
   )
+  // "Home" is the viewer's start screen: Back and leaving a stream return there.
   const navigateHome = useCallback((): void => {
     void window.vacuumStream.system.restoreShellFullscreen()
-    navigate("home")
-  }, [navigate])
+    navigate(startRoute)
+  }, [navigate, startRoute])
+  const updateStartScreen = useCallback(async (next: StartScreen): Promise<void> => {
+    const saved = await window.vacuumStream.preferences.setStartScreen(next)
+    setStartScreen(saved.startScreen)
+  }, [])
   const updateAuth = useCallback(
     (nextAuth: AuthSnapshot): void => {
       const nextIdentity = nextAuth.kind === "authenticated" ? nextAuth.login : undefined
@@ -189,6 +204,20 @@ export const useAppController = () => {
       .catch((error: unknown) => {
         if (active) updateAuth({ kind: "error", message: errorMessage(error) })
       })
+      .finally(() => {
+        if (active) setAuthReady(true)
+      })
+    void window.vacuumStream.preferences
+      .snapshot()
+      .then(
+        (preferences) => {
+          if (active) setStartScreen(preferences.startScreen)
+        },
+        () => undefined,
+      )
+      .finally(() => {
+        if (active) setPreferencesReady(true)
+      })
     return () => {
       active = false
       catalogRequestEpoch.current += 1
@@ -197,6 +226,22 @@ export const useAppController = () => {
       videoRequest.current = undefined
     }
   }, [updateAuth])
+
+  // Once the preference and the account are known, open the start screen, unless the viewer has
+  // already moved somewhere themselves.
+  useEffect(() => {
+    if (startScreenApplied.current || !preferencesReady || !authReady) return
+    startScreenApplied.current = true
+    const current = currentScreen.current
+    if (
+      startRoute === "following" &&
+      !viewerNavigated.current &&
+      current.kind === "browse" &&
+      current.route === "home"
+    ) {
+      changeScreen({ kind: "browse", route: "following" })
+    }
+  }, [authReady, changeScreen, preferencesReady, startRoute])
 
   useEffect(() => {
     if (auth.kind !== "authorizing") return
@@ -239,7 +284,7 @@ export const useAppController = () => {
           event.preventDefault()
           return
         }
-        if (shouldNavigateHomeOnBack(screen)) {
+        if (shouldNavigateHomeOnBack(screen, startRoute)) {
           event.preventDefault()
           navigateHome()
         }
@@ -247,7 +292,7 @@ export const useAppController = () => {
     }
     document.addEventListener("keydown", onShortcut)
     return () => document.removeEventListener("keydown", onShortcut)
-  }, [navigate, navigateHome, screen])
+  }, [navigate, navigateHome, screen, startRoute])
 
   const loadShelf = useCallback(
     (route: ShelfRoute, operation: CatalogOperation | "retry"): Promise<void> => {
@@ -496,6 +541,8 @@ export const useAppController = () => {
     searchResults,
     setAuth: updateAuth,
     settings,
+    startScreen,
+    updateStartScreen,
     showAllChannels: () => {
       if (identity === undefined) {
         setNotice("Sign in to see all the channels you follow")
