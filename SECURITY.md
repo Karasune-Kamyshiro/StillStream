@@ -2,13 +2,13 @@
 
 ## Report a vulnerability
 
-Use [GitHub private vulnerability reporting](https://github.com/eliottness/VacuumStream/security/advisories/new).
+Use [GitHub private vulnerability reporting](https://github.com/Karasune-Kamyshiro/VacuumStream/security/advisories/new).
 Do not disclose a vulnerability, working exploit, or account token in a public issue.
 Include the affected version, reproduction steps, impact, and sanitized evidence.
 
 This is an early-stage, volunteer-maintained project. Security fixes target `main` and the
 latest release; older versions do not have a separate support branch. There is no guaranteed
-response time. If private reporting is unavailable, ask @eliottness for a private contact route
+response time. If private reporting is unavailable, ask @Karasune-Kamyshiro for a private contact route
 without posting vulnerability details.
 
 ## Data handling

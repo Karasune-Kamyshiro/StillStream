@@ -1,6 +1,6 @@
 # VacuumStream
 
-[![CI](https://github.com/eliottness/VacuumStream/actions/workflows/ci.yml/badge.svg)](https://github.com/eliottness/VacuumStream/actions/workflows/ci.yml)
+[![CI](https://github.com/Karasune-Kamyshiro/VacuumStream/actions/workflows/ci.yml/badge.svg)](https://github.com/Karasune-Kamyshiro/VacuumStream/actions/workflows/ci.yml)
 
 A controller-first Twitch client for Linux TVs and handhelds. Browse from the sofa with
 four arrow keys, Enter, and Escape, or a gamepad. Playback uses Twitch's official player.
@@ -16,7 +16,7 @@ are not currently provided.
 
 ## Get started
 
-Download an AppImage or Flatpak from [GitHub Releases](https://github.com/eliottness/VacuumStream/releases),
+Download an AppImage or Flatpak from [GitHub Releases](https://github.com/Karasune-Kamyshiro/VacuumStream/releases),
 then follow the [installation and first-run guide](docs/users/getting-started.md).
 If there is no published release yet, use the [source setup](docs/contributing/development.md).
 
@@ -43,9 +43,11 @@ If there is no published release yet, use the [source setup](docs/contributing/d
 
 ## Project
 
-Maintained by [Eliott Bouhana (@eliottness)](https://github.com/eliottness), with contributions
-credited in [Git history](https://github.com/eliottness/VacuumStream/graphs/contributors).
-The application ID is `io.github.eliottness.VacuumStream`.
+This is a fork maintained by [@Karasune-Kamyshiro](https://github.com/Karasune-Kamyshiro). VacuumStream
+was created by [Eliott Bouhana (@eliottness)](https://github.com/eliottness); see the
+[original repository](https://github.com/eliottness/VacuumStream) and its
+[contributors](https://github.com/eliottness/VacuumStream/graphs/contributors).
+The application ID is `io.github.karasune.VacuumStream`.
 
 Inspired by VacuumTube's controller-first approach. Twitch has no equivalent supported
 Leanback interface, so VacuumStream provides its own interface using Helix, Device Code Flow,

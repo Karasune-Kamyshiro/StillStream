@@ -1,6 +1,6 @@
 {
   "name": "vacuumstream",
-  "version": "0.2.1",
+  "version": "0.2.1-fork.1",
   "description": "A controller-first Twitch client for Linux HTPCs",
   "author": {
     "name": "Eliott Bouhana",
@@ -8,19 +8,19 @@
   },
   "license": "MIT",
   "private": true,
-  "homepage": "https://github.com/eliottness/VacuumStream",
+  "homepage": "https://github.com/Karasune-Kamyshiro/VacuumStream",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eliottness/VacuumStream.git"
+    "url": "https://github.com/Karasune-Kamyshiro/VacuumStream.git"
   },
   "bugs": {
-    "url": "https://github.com/eliottness/VacuumStream/issues"
+    "url": "https://github.com/Karasune-Kamyshiro/VacuumStream/issues"
   },
   "packageManager": "bun@1.4.2",
   "engines": {
     "node": ">=24.20.0"
   },
-  "desktopName": "io.github.eliottness.VacuumStream.desktop",
+  "desktopName": "io.github.karasune.VacuumStream.desktop",
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
@@ -71,7 +71,7 @@
   },
   "build": {
     "afterPack": "./scripts/after-pack.cjs",
-    "appId": "io.github.eliottness.VacuumStream",
+    "appId": "io.github.karasune.VacuumStream",
     "artifactName": "${productName}-${version}-${arch}.${ext}",
     "productName": "VacuumStream",
     "asar": true,

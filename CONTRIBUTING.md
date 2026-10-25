@@ -12,7 +12,7 @@ documentation fixes, and code contributions are welcome.
 
 ## Issues and pull requests
 
-Use the [issue templates](https://github.com/eliottness/VacuumStream/issues/new/choose) for bugs
+Use the [issue templates](https://github.com/Karasune-Kamyshiro/VacuumStream/issues/new/choose) for bugs
 and feature requests. Include your version, distribution, installation method, and reproduction
 steps. Describe whether you used native gamepad input or Steam Input keyboard mapping.
 
@@ -34,5 +34,5 @@ desktop metadata, and unpacked Electron packaging. Release builds run separately
 - Contributions use the project's [MIT license](LICENSE). Credit comes from Git authorship;
   there is no manually maintained contributor roster to keep in sync.
 
-Be respectful and specific in discussions. Maintainer: [@eliottness](https://github.com/eliottness).
+Be respectful and specific in discussions. Fork maintainer: [@Karasune-Kamyshiro](https://github.com/Karasune-Kamyshiro); original author: [@eliottness](https://github.com/eliottness).
 Report vulnerabilities privately using [SECURITY.md](SECURITY.md), not public issues.

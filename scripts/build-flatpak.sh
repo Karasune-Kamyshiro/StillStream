@@ -4,7 +4,7 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 BUILD_DIR="${ROOT_DIR}/.flatpak-build"
 REPOSITORY_DIR="${ROOT_DIR}/.flatpak-repository"
-MANIFEST="${ROOT_DIR}/flatpak/io.github.eliottness.VacuumStream.yml"
+MANIFEST="${ROOT_DIR}/flatpak/io.github.karasune.VacuumStream.yml"
 
 if [[ "${1:-}" == "--help" && "$#" == 1 ]]; then
   printf 'Usage: bash scripts/build-flatpak.sh [--skip-pack]\nBuild an x86_64 Flatpak; --skip-pack reuses dist/linux-unpacked.\n'
@@ -43,5 +43,5 @@ flatpak-builder \
   "${MANIFEST}"
 flatpak build-bundle --arch=x86_64 \
   --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
-  "${REPOSITORY_DIR}" "${BUNDLE}" io.github.eliottness.VacuumStream
+  "${REPOSITORY_DIR}" "${BUNDLE}" io.github.karasune.VacuumStream
 printf 'Built %s\n' "${BUNDLE}"

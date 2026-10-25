@@ -143,7 +143,7 @@ Flatpak's `--device=input` exposes the sandbox to all host input devices, not on
 and fallback X11 has weaker isolation than Wayland. These are accepted HTPC compatibility
 tradeoffs: Wayland remains preferred, no filesystem access is granted, and packages must be
 built from reviewed source. Release assets include SHA-256 checksums, not cryptographic signatures.
-The application ID is `io.github.eliottness.VacuumStream` across Electron and Flatpak metadata.
+The application ID is `io.github.karasune.VacuumStream` across Electron and Flatpak metadata.
 
 ## External constraints
 

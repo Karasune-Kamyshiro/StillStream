@@ -4,7 +4,7 @@
 
 ## Choose a download
 
-Use the [Releases page](https://github.com/eliottness/VacuumStream/releases). The supported
+Use the [Releases page](https://github.com/Karasune-Kamyshiro/VacuumStream/releases). The supported
 build architecture is Linux **x86_64** (also called AMD64). Choose Flatpak for immutable
 gaming systems, or AppImage for a standalone executable. VacuumStream is not on Flathub.
 If no release exists, [build from source](../contributing/development.md).
@@ -28,7 +28,7 @@ Requires Flatpak 1.16 or newer for gamepad device permissions. In Desktop Mode:
 ```bash
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak install --user ./VacuumStream-0.2.1-x86_64.flatpak
-flatpak run io.github.eliottness.VacuumStream
+flatpak run io.github.karasune.VacuumStream
 ```
 
 The bundle references Flathub for runtime dependencies; this does not make it a Flathub release.
@@ -257,7 +257,7 @@ Install in Desktop Mode. Add VacuumStream from the application list as a non-Ste
 If adding it manually, use `/usr/bin/flatpak` as the executable and this launch argument:
 
 ```text
-run io.github.eliottness.VacuumStream
+run io.github.karasune.VacuumStream
 ```
 
 Return to Gaming Mode. Use the Steam Input mapping above if needed. VacuumStream starts
