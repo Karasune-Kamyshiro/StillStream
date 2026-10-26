@@ -1,5 +1,13 @@
-import { type RefObject, useCallback, useLayoutEffect, useRef, useState } from "react"
-import type { ChatTheme } from "../../../shared/contracts"
+import {
+  type CSSProperties,
+  type RefObject,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
+import type { ChatLayout } from "../../../shared/contracts"
+import { CHAT_TEXT_SCALE, type ChatAppearance, DEFAULT_CHAT_APPEARANCE } from "../chat-appearance"
 import {
   CHAT_GAMEPAD_EVENT,
   type ChatGamepadAction,
@@ -22,8 +30,17 @@ type ChatSession = {
 export const usePlayerChat = (
   source: PlayerSource,
   backButtonRef: RefObject<HTMLButtonElement | null>,
-  chatTheme: ChatTheme = "dark",
+  appearance: ChatAppearance = DEFAULT_CHAT_APPEARANCE,
+  onLayoutChange?: (layout: ChatLayout) => void,
 ) => {
+  const chatTheme = appearance.theme
+  // The saved layout is the default; the player's switch changes it for now and for later.
+  const [layout, setLayout] = useState<ChatLayout>(appearance.layout)
+  const savedLayout = useRef(appearance.layout)
+  if (savedLayout.current !== appearance.layout) {
+    savedLayout.current = appearance.layout
+    setLayout(appearance.layout)
+  }
   const [chat, setChat] = useState({ nonce: 0, source, visible: false })
   const [interacting, setInteracting] = useState(false)
   const [error, setError] = useState("")
@@ -225,7 +242,21 @@ export const usePlayerChat = (
     ) : null,
     chatPane:
       visible && source.kind === "live" ? (
-        <aside aria-label="Live chat" className="player-chat" id="player-chat-pane">
+        <aside
+          aria-label="Live chat"
+          className={
+            layout === "overlay"
+              ? `player-chat player-chat--overlay player-chat--${appearance.position} player-chat--size-${appearance.size}`
+              : "player-chat player-chat--beside"
+          }
+          id="player-chat-pane"
+          style={
+            {
+              "--chat-overlay-opacity": Number(appearance.opacity) / 100,
+              "--chat-text-scale": CHAT_TEXT_SCALE[appearance.textSize],
+            } as CSSProperties
+          }
+        >
           <div className="player-chat__frame">
             <iframe
               key={chat.nonce}
@@ -243,7 +274,7 @@ export const usePlayerChat = (
         data-focus-down="player-chat"
         data-focus-id="player-chat-reload"
         data-focus-left="player-chat-enter"
-        data-focus-right="player-fullscreen"
+        data-focus-right="player-chat-layout"
         data-focus-up="player-chat"
         data-focusable="true"
         onClick={reloadChat}
@@ -253,8 +284,31 @@ export const usePlayerChat = (
         Reload chat
       </button>
     ) : null,
+    chatLayoutButton: visible ? (
+      <button
+        aria-checked={layout === "overlay"}
+        aria-controls="player-chat-pane"
+        className="player-chat-layout"
+        data-focus-down="player-chat"
+        data-focus-id="player-chat-layout"
+        data-focus-left="player-chat-reload"
+        data-focus-right="player-fullscreen"
+        data-focus-up="player-chat"
+        data-focusable="true"
+        onClick={() => {
+          const next = layout === "overlay" ? "beside" : "overlay"
+          setLayout(next)
+          onLayoutChange?.(next)
+        }}
+        ref={attachAction}
+        role="switch"
+        type="button"
+      >
+        Over video
+      </button>
+    ) : null,
     fullscreenLeft: visible
-      ? "player-chat-reload"
+      ? "player-chat-layout"
       : source.kind === "live"
         ? "player-chat"
         : "player-vods",

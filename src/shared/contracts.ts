@@ -81,8 +81,31 @@ export const StartScreenSchema = z.enum(["home", "following"])
 export type StartScreen = z.infer<typeof StartScreenSchema>
 export const ChatThemeSchema = z.enum(["dark", "light"])
 export type ChatTheme = z.infer<typeof ChatThemeSchema>
+/** Chat beside the video (the stage splits) or on top of it. */
+export const ChatLayoutSchema = z.enum(["beside", "overlay"])
+export type ChatLayout = z.infer<typeof ChatLayoutSchema>
+export const ChatOverlayPositionSchema = z.enum([
+  "right",
+  "left",
+  "top-right",
+  "bottom-right",
+  "top-left",
+  "bottom-left",
+])
+export type ChatOverlayPosition = z.infer<typeof ChatOverlayPositionSchema>
+export const ChatOverlaySizeSchema = z.enum(["small", "medium", "large"])
+export type ChatOverlaySize = z.infer<typeof ChatOverlaySizeSchema>
+export const ChatOverlayOpacitySchema = z.enum(["100", "85", "70", "50"])
+export type ChatOverlayOpacity = z.infer<typeof ChatOverlayOpacitySchema>
+export const ChatTextSizeSchema = z.enum(["small", "normal", "large", "xlarge"])
+export type ChatTextSize = z.infer<typeof ChatTextSizeSchema>
 // Defaults keep older preference files valid as new options are added.
 export const PreferencesSnapshotSchema = z.strictObject({
+  chatLayout: ChatLayoutSchema.default("beside"),
+  chatOverlayOpacity: ChatOverlayOpacitySchema.default("85"),
+  chatOverlayPosition: ChatOverlayPositionSchema.default("right"),
+  chatOverlaySize: ChatOverlaySizeSchema.default("medium"),
+  chatTextSize: ChatTextSizeSchema.default("normal"),
   chatTheme: ChatThemeSchema.default("dark"),
   /** Undefined until the viewer chooses; Twitch's own player default then applies. */
   lowLatency: z.boolean().optional(),
@@ -90,7 +113,14 @@ export const PreferencesSnapshotSchema = z.strictObject({
   quality: z.string().min(1).max(64).optional(),
   startScreen: StartScreenSchema.default("home"),
 })
+/** Every preference at its default, as for a first launch. */
+export const defaultPreferences = (): PreferencesSnapshot => PreferencesSnapshotSchema.parse({})
 export const PreferencesUpdateSchema = z.strictObject({
+  chatLayout: ChatLayoutSchema.optional(),
+  chatOverlayOpacity: ChatOverlayOpacitySchema.optional(),
+  chatOverlayPosition: ChatOverlayPositionSchema.optional(),
+  chatOverlaySize: ChatOverlaySizeSchema.optional(),
+  chatTextSize: ChatTextSizeSchema.optional(),
   chatTheme: ChatThemeSchema.optional(),
   lowLatency: z.boolean().optional(),
   quality: z.string().min(1).max(64).optional(),

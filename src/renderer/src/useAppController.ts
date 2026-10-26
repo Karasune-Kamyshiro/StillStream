@@ -10,6 +10,7 @@ import type {
   StreamCard,
   VideoCard,
 } from "../../shared/contracts"
+import { defaultPreferences } from "../../shared/contracts"
 import type { RouteName } from "./components/Navigation"
 import { PREVIEW_CATEGORIES } from "./demo-data"
 import { dismissOpenSurface } from "./focus-navigation"
@@ -79,10 +80,7 @@ export const useAppController = () => {
   const previousScreen = useRef(screen)
   const identity = auth.kind === "authenticated" ? auth.login : undefined
   // Start-screen preference. Following needs an account, so guests always start on Home.
-  const [preferences, setPreferences] = useState<PreferencesSnapshot>({
-    chatTheme: "dark",
-    startScreen: "home",
-  })
+  const [preferences, setPreferences] = useState<PreferencesSnapshot>(defaultPreferences)
   const { startScreen } = preferences
   const [preferencesReady, setPreferencesReady] = useState(false)
   const [authReady, setAuthReady] = useState(false)

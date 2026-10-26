@@ -1,3 +1,4 @@
+import { defaultPreferences } from "../../../shared/contracts"
 // @vitest-environment jsdom
 
 import { act } from "react"
@@ -77,7 +78,7 @@ const installHarness = (saved?: PlaybackBookmark) => {
       playbackProgress: progress,
       settings: { snapshot: async () => ({ clientId: "client", secureStorage: false }) },
       preferences: {
-        snapshot: async () => ({ chatTheme: "dark" as const, startScreen: "home" as const }),
+        snapshot: async () => defaultPreferences(),
       },
       system: {
         activateEmbeddedPlayer,

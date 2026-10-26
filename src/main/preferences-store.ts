@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import {
+  defaultPreferences,
   type PreferencesSnapshot,
   PreferencesSnapshotSchema,
   type PreferencesUpdate,
@@ -8,7 +9,7 @@ import {
   type StartScreen,
 } from "../shared/contracts"
 
-const defaults = (): PreferencesSnapshot => PreferencesSnapshotSchema.parse({})
+const defaults = defaultPreferences
 
 const isMissingFile = (error: unknown): boolean =>
   error instanceof Error && "code" in error && error.code === "ENOENT"
@@ -48,7 +49,8 @@ export class PreferencesStore {
     return this.update({ startScreen })
   }
 
-  public update(input: PreferencesUpdate): Promise<PreferencesSnapshot> {
+  // Async so invalid input rejects like any other failure; the queue is still set synchronously.
+  public async update(input: PreferencesUpdate): Promise<PreferencesSnapshot> {
     const update = PreferencesUpdateSchema.parse(input)
     const write = this.#writes.then(async () => {
       const next = PreferencesSnapshotSchema.parse({ ...(await this.load()), ...update })

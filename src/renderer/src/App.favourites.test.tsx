@@ -1,3 +1,4 @@
+import { defaultPreferences } from "../../shared/contracts"
 // @vitest-environment jsdom
 
 import { act } from "react"
@@ -104,7 +105,7 @@ const makeBridge = (items: readonly Favourite[], auth: AuthSnapshot, withContinu
       update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
       snapshot: vi
         .fn<VacuumStreamApi["preferences"]["snapshot"]>()
-        .mockResolvedValue({ chatTheme: "dark", startScreen: "home" }),
+        .mockResolvedValue(defaultPreferences()),
     },
     playerSession: {
       signIn: vi

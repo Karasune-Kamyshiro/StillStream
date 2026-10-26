@@ -1,3 +1,4 @@
+import { defaultPreferences } from "../../../shared/contracts"
 // @vitest-environment jsdom
 
 import { EventEmitter } from "node:events"
@@ -226,7 +227,7 @@ const installPlayerHarness = (
       playbackProgress: progress,
       settings: { snapshot: async () => ({ clientId: "client", secureStorage: false }) },
       preferences: {
-        snapshot: async () => ({ chatTheme: "dark" as const, startScreen: "home" as const }),
+        snapshot: async () => defaultPreferences(),
       },
       system: {
         activateEmbeddedPlayer,
@@ -864,6 +865,55 @@ describe("Twitch player surface", () => {
     expect(activateEmbeddedPlayer).toHaveBeenCalledWith(false)
     expect(document.activeElement).not.toBe(container.querySelector("iframe"))
 
+    await act(async () => root.unmount())
+  })
+})
+
+describe("chat over the video", () => {
+  it("switches between beside and overlay, saves the layout, and keeps chat in stream fullscreen", async () => {
+    installPlayerHarness([true])
+    const onChatLayoutChange = vi.fn()
+    const container = document.createElement("div")
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () =>
+      root.render(
+        <PlayerView
+          chatAppearance={{
+            layout: "beside",
+            opacity: "70",
+            position: "bottom-left",
+            size: "large",
+            textSize: "xlarge",
+            theme: "light",
+          }}
+          onBack={() => undefined}
+          onChatLayoutChange={onChatLayoutChange}
+          onPastBroadcasts={() => undefined}
+          onSetFullscreen={async () => false}
+          source={source}
+        />,
+      ),
+    )
+    await act(async () => buttonById(container, "player-chat").click())
+    const pane = (): HTMLElement | null => container.querySelector("#player-chat-pane")
+    expect(pane()?.className).toBe("player-chat player-chat--beside")
+    expect(container.querySelector<HTMLIFrameElement>(".player-chat iframe")?.src).toBe(
+      "https://www.twitch.tv/embed/twitch/chat?parent=localhost",
+    )
+    expect(pane()?.style.getPropertyValue("--chat-text-scale")).toBe("1.5")
+    const layout = buttonById(container, "player-chat-layout")
+    expect(layout.getAttribute("aria-checked")).toBe("false")
+    await act(async () => layout.click())
+    expect(onChatLayoutChange).toHaveBeenCalledExactlyOnceWith("overlay")
+    expect(layout.getAttribute("aria-checked")).toBe("true")
+    expect(pane()?.className).toBe(
+      "player-chat player-chat--overlay player-chat--bottom-left player-chat--size-large",
+    )
+    expect(pane()?.style.getPropertyValue("--chat-overlay-opacity")).toBe("0.7")
+    await act(async () => buttonById(container, "player-fullscreen").click())
+    expect(container.querySelector(".player-view--immersive")).not.toBeNull()
+    expect(pane()).not.toBeNull()
     await act(async () => root.unmount())
   })
 })
@@ -2419,6 +2469,7 @@ describe("live chat sidebar", () => {
         ...route,
         "player-chat-enter",
         "player-chat-reload",
+        "player-chat-layout",
         "player-fullscreen",
       ]
       buttonById(container, "player-back").focus()
@@ -2434,7 +2485,9 @@ describe("live chat sidebar", () => {
       await move("ArrowDown", "player-chat")
       await move("ArrowDown", "player-chat-enter")
       await move("ArrowDown", "player-chat-reload")
+      await move("ArrowRight", "player-chat-layout")
       await move("ArrowRight", "player-fullscreen")
+      await move("ArrowLeft", "player-chat-layout")
       await move("ArrowLeft", "player-chat-reload")
       await move("ArrowLeft", "player-chat-enter")
       await move("ArrowLeft", "player-chat")

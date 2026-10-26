@@ -205,6 +205,22 @@
   background: var(--color-accent);
 }
 
+.settings-options {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}
+
+.settings-cycle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.settings-cycle strong {
+  color: var(--color-accent);
+}
+
 .account-status__player {
   color: var(--color-text-muted);
 }
@@ -469,6 +485,7 @@
   grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
+.player-chat-layout[aria-checked="true"],
 .player-quality__latency[aria-checked="true"] {
   box-shadow: inset 0 -0.2rem var(--color-accent-strong);
 }
@@ -555,12 +572,13 @@
 }
 
 .player-stage {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(400px, 1fr);
   min-block-size: 300px;
 }
 
-.player-stage:has(.player-chat) {
+.player-stage:has(.player-chat--beside) {
   grid-template-columns: minmax(400px, 1fr) 32rem;
   min-block-size: 450px;
 }
@@ -571,9 +589,52 @@
 }
 
 .player-chat {
-  --player-chat-scale: calc(1.5 * 1rem / 16px);
+  --player-chat-scale: calc(var(--chat-text-scale, 1) * 1.5 * 1rem / 16px);
   min-inline-size: 0;
   min-block-size: 450px;
+}
+
+/* Chat on top of the video. Twitch's chat page is opaque, so transparency fades the whole pane. */
+.player-chat--overlay {
+  position: absolute;
+  z-index: 2;
+  inset-block: 0;
+  inline-size: var(--chat-overlay-width, 30%);
+  min-inline-size: 16rem;
+  min-block-size: 0;
+  overflow: hidden;
+  opacity: var(--chat-overlay-opacity, 0.85);
+  box-shadow: var(--shadow-panel);
+}
+
+.player-chat--size-small {
+  --chat-overlay-width: 22%;
+}
+
+.player-chat--size-large {
+  --chat-overlay-width: 40%;
+}
+
+.player-chat--right,
+.player-chat--top-right,
+.player-chat--bottom-right {
+  inset-inline-end: 0;
+}
+
+.player-chat--left,
+.player-chat--top-left,
+.player-chat--bottom-left {
+  inset-inline-start: 0;
+}
+
+.player-chat--top-right,
+.player-chat--top-left {
+  inset-block-end: 50%;
+}
+
+.player-chat--bottom-right,
+.player-chat--bottom-left {
+  inset-block-start: 50%;
 }
 
 /* Scale the complete cross-origin frame, compensating both axes without clipping its UI. */
@@ -671,7 +732,7 @@
 }
 
 @media (width < 64rem) {
-  .player-stage:has(.player-chat) {
+  .player-stage:has(.player-chat--beside) {
     grid-template-columns: minmax(400px, 1fr);
     grid-template-rows: minmax(300px, 1fr) minmax(450px, 1fr);
     min-block-size: 750px;
@@ -724,14 +785,20 @@
   display: none;
 }
 
-.player-view--immersive .player-stage,
-.player-view--immersive .player-stage:has(.player-chat) {
+.player-view--immersive .player-stage {
   grid-template-columns: minmax(0, 1fr);
   min-block-size: 0;
 }
 
+/* Fullscreen keeps a visible chat, side by side or on top, as a read-only view: input stays with
+   the app (Back, play/pause), so the cross-origin chat can never capture keys or clicks. */
+.player-view--immersive .player-stage:has(.player-chat--beside) {
+  grid-template-columns: minmax(0, 1fr) 32rem;
+}
+
 .player-view--immersive .player-chat {
-  display: none;
+  min-block-size: 0;
+  pointer-events: none;
 }
 
 .player-view--immersive .player-frame {

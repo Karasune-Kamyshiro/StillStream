@@ -1,6 +1,7 @@
 import { BroadcastIcon, SignInIcon } from "@phosphor-icons/react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
+import { chatAppearance } from "./chat-appearance"
 import { CategoryShelf } from "./components/CategoryShelf"
 import { CategoryView } from "./components/CategoryView"
 import { ContinueWatchingShelf, recordingTitle } from "./components/ContinueWatchingShelf"
@@ -104,11 +105,12 @@ export const App = () => {
             ? controller.screen.source.channel
             : controller.screen.source.videoId
         }
-        chatTheme={controller.preferences.chatTheme}
+        chatAppearance={chatAppearance(controller.preferences)}
         {...(controller.preferences.lowLatency === undefined
           ? {}
           : { lowLatency: controller.preferences.lowLatency })}
         onBack={controller.navigateHome}
+        onChatLayoutChange={(chatLayout) => void controller.updatePreferences({ chatLayout })}
         onLowLatencyChange={(lowLatency) => void controller.updatePreferences({ lowLatency })}
         onPastBroadcasts={(userId) => void controller.showPastBroadcasts(userId)}
         onQualityChange={(quality) => void controller.updatePreferences({ quality })}
@@ -411,8 +413,8 @@ export const App = () => {
             }}
             onAuthChange={controller.setAuth}
             onSettingsChange={controller.updateSettings}
-            chatTheme={controller.preferences.chatTheme}
-            onChatThemeChange={(chatTheme) => controller.updatePreferences({ chatTheme })}
+            chatAppearance={chatAppearance(controller.preferences)}
+            onChatPreferencesChange={controller.updatePreferences}
             onStartScreenChange={controller.updateStartScreen}
             settings={controller.settings}
             startScreen={controller.startScreen}

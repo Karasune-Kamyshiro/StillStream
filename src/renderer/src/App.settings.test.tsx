@@ -1,3 +1,4 @@
+import { defaultPreferences, PreferencesSnapshotSchema } from "../../shared/contracts"
 // @vitest-environment jsdom
 
 import { act } from "react"
@@ -101,7 +102,7 @@ const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<VacuumStreamApi["auth"][
       update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
       snapshot: vi
         .fn<VacuumStreamApi["preferences"]["snapshot"]>()
-        .mockResolvedValue({ chatTheme: "dark", startScreen: "home" }),
+        .mockResolvedValue(defaultPreferences()),
     },
     playerSession: {
       signIn: vi
@@ -524,9 +525,9 @@ describe("Settings in the mounted App", () => {
 describe("Start screen preference", () => {
   const start = async (auth: AuthSnapshot, startScreen: "following" | "home") => {
     const bridge = makeBridge(auth)
-    bridge.preferences.snapshot.mockResolvedValue({ chatTheme: "dark", startScreen })
+    bridge.preferences.snapshot.mockResolvedValue({ ...defaultPreferences(), startScreen })
     bridge.preferences.setStartScreen.mockImplementation(async (next) => ({
-      chatTheme: "dark",
+      ...defaultPreferences(),
       startScreen: next,
     }))
     vi.stubGlobal("vacuumStream", bridge)
@@ -568,5 +569,47 @@ describe("Start screen preference", () => {
     await activate("settings-start-following")
     expect(bridge.preferences.setStartScreen).toHaveBeenLastCalledWith("home")
     expect(toggle.getAttribute("aria-checked")).toBe("false")
+  })
+})
+
+describe("Chat preferences", () => {
+  it("saves each chat option from Settings, cycling values with the remote's OK", async () => {
+    const bridge = makeBridge(authenticated)
+    let saved = defaultPreferences()
+    bridge.preferences.snapshot.mockResolvedValue(saved)
+    bridge.preferences.update.mockImplementation(async (update) => {
+      saved = PreferencesSnapshotSchema.parse({ ...saved, ...update })
+      return saved
+    })
+    vi.stubGlobal("vacuumStream", bridge)
+    root = createRoot(container)
+    await act(async () => root?.render(<App />))
+    await activate("nav-settings")
+    for (const id of [
+      "settings-chat-dark",
+      "settings-chat-overlay",
+      "settings-chat-position",
+      "settings-chat-size",
+      "settings-chat-opacity",
+      "settings-chat-text",
+    ]) {
+      expect(target(id)).toBeInstanceOf(HTMLButtonElement)
+    }
+    expect(target("settings-chat-dark").getAttribute("aria-checked")).toBe("true")
+    await activate("settings-chat-dark")
+    await activate("settings-chat-overlay")
+    await activate("settings-chat-position")
+    await activate("settings-chat-position")
+    await activate("settings-chat-text")
+    expect(bridge.preferences.update.mock.calls.map(([update]) => update)).toEqual([
+      { chatTheme: "light" },
+      { chatLayout: "overlay" },
+      { chatOverlayPosition: "bottom-right" },
+      { chatOverlayPosition: "top-right" },
+      { chatTextSize: "large" },
+    ])
+    expect(target("settings-chat-position").textContent).toBe("Overlay positionTop right")
+    expect(target("settings-chat-overlay").getAttribute("aria-checked")).toBe("true")
+    expect(target("settings-chat-text").getAttribute("data-focus-up")).toBe("settings-chat-opacity")
   })
 })

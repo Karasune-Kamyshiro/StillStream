@@ -11,18 +11,28 @@ import { QRCodeSVG } from "qrcode.react"
 import { type ComponentProps, useEffect, useRef, useState } from "react"
 import type {
   AuthSnapshot,
-  ChatTheme,
+  ChatOverlayOpacity,
+  ChatOverlayPosition,
+  ChatOverlaySize,
+  ChatTextSize,
   PlayerSessionSnapshot,
+  PreferencesUpdate,
   SettingsSnapshot,
   StartScreen,
 } from "../../../shared/contracts"
+import {
+  CHAT_OVERLAY_LABELS,
+  type ChatAppearance,
+  DEFAULT_CHAT_APPEARANCE,
+  nextOption,
+} from "../chat-appearance"
 import { registerBackDismissal } from "../focus-navigation"
 
 type SettingsPanelProps = {
   readonly auth: AuthSnapshot
-  readonly chatTheme?: ChatTheme
-  /** Saves the chat theme; the switch is hidden when absent. */
-  readonly onChatThemeChange?: (chatTheme: ChatTheme) => Promise<void>
+  readonly chatAppearance?: ChatAppearance
+  /** Saves chat preferences; the Chat card is hidden when absent. */
+  readonly onChatPreferencesChange?: (update: PreferencesUpdate) => Promise<void>
   readonly onAccountRequest: () => () => boolean
   readonly onAuthChange: (auth: AuthSnapshot) => void
   readonly onSettingsChange: (settings: SettingsSnapshot, resetAuth: boolean) => void
@@ -106,10 +116,50 @@ const SettingsSwitch = ({
   )
 }
 
+/** A value that steps to its next choice on every press (OK, Space, A), wrapping around. */
+const SettingsCycle = ({
+  focusDown,
+  focusId,
+  focusUp,
+  label,
+  onNext,
+  value,
+}: {
+  readonly focusDown?: string | undefined
+  readonly focusId: string
+  readonly focusUp: string
+  readonly label: string
+  readonly onNext: () => Promise<void>
+  readonly value: string
+}) => {
+  const [busy, setBusy] = useState(false)
+  return (
+    <button
+      aria-busy={busy}
+      aria-disabled={busy}
+      className="settings-cycle"
+      {...(focusDown === undefined ? {} : { "data-focus-down": focusDown })}
+      data-focus-id={focusId}
+      data-focus-left="nav-settings"
+      data-focus-up={focusUp}
+      data-focusable="true"
+      onClick={() => {
+        if (busy) return
+        setBusy(true)
+        void onNext().finally(() => setBusy(false))
+      }}
+      type="button"
+    >
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </button>
+  )
+}
+
 export const SettingsPanel = ({
   auth,
-  chatTheme = "dark",
-  onChatThemeChange,
+  chatAppearance = DEFAULT_CHAT_APPEARANCE,
+  onChatPreferencesChange,
   onAccountRequest,
   onAuthChange,
   onSettingsChange,
@@ -409,7 +459,7 @@ export const SettingsPanel = ({
           </div>
           <SettingsSwitch
             checked={startScreen === "following"}
-            focusDown={onChatThemeChange === undefined ? undefined : "settings-chat-dark"}
+            focusDown={onChatPreferencesChange === undefined ? undefined : "settings-chat-dark"}
             focusId="settings-start-following"
             focusUp="settings-save"
             label="Open Following instead of Home"
@@ -423,26 +473,150 @@ export const SettingsPanel = ({
         </section>
       )}
 
-      {onChatThemeChange === undefined ? null : (
+      {onChatPreferencesChange === undefined ? null : (
         <section aria-labelledby="chat-heading" className="settings-card">
           <div>
             <h2 id="chat-heading">Chat</h2>
-            <p>Twitch's chat beside the player. Takes effect the next time chat opens.</p>
+            <p>
+              Twitch's chat beside the video or on top of it, also in stream fullscreen. Changes
+              apply the next time chat opens; Over video in the player switches the layout live.
+            </p>
           </div>
-          <SettingsSwitch
-            checked={chatTheme === "dark"}
-            focusId="settings-chat-dark"
-            focusUp={
-              onStartScreenChange === undefined ? "settings-save" : "settings-start-following"
-            }
-            label="Dark chat"
-            onChange={(checked) => {
-              setError("")
-              return onChatThemeChange(checked ? "dark" : "light").catch(() =>
-                setError("The chat theme could not be saved"),
+          <div className="settings-options">
+            {(() => {
+              const save = (update: PreferencesUpdate, failure: string): Promise<void> => {
+                setError("")
+                return onChatPreferencesChange(update).catch(() => setError(failure))
+              }
+              const chain = [
+                "settings-chat-dark",
+                "settings-chat-overlay",
+                "settings-chat-position",
+                "settings-chat-size",
+                "settings-chat-opacity",
+                "settings-chat-text",
+              ] as const
+              const above = (id: (typeof chain)[number]): string => {
+                const index = chain.indexOf(id)
+                return index === 0
+                  ? onStartScreenChange === undefined
+                    ? "settings-save"
+                    : "settings-start-following"
+                  : (chain[index - 1] ?? "settings-save")
+              }
+              const below = (id: (typeof chain)[number]): string | undefined =>
+                chain[chain.indexOf(id) + 1]
+              return (
+                <>
+                  <SettingsSwitch
+                    checked={chatAppearance.theme === "dark"}
+                    focusDown={below("settings-chat-dark")}
+                    focusId="settings-chat-dark"
+                    focusUp={above("settings-chat-dark")}
+                    label="Dark chat"
+                    onChange={(checked) =>
+                      save(
+                        { chatTheme: checked ? "dark" : "light" },
+                        "The chat theme could not be saved",
+                      )
+                    }
+                  />
+                  <SettingsSwitch
+                    checked={chatAppearance.layout === "overlay"}
+                    focusDown={below("settings-chat-overlay")}
+                    focusId="settings-chat-overlay"
+                    focusUp={above("settings-chat-overlay")}
+                    label="Show chat over the video"
+                    onChange={(checked) =>
+                      save(
+                        { chatLayout: checked ? "overlay" : "beside" },
+                        "The chat layout could not be saved",
+                      )
+                    }
+                  />
+                  <SettingsCycle
+                    focusDown={below("settings-chat-position")}
+                    focusId="settings-chat-position"
+                    focusUp={above("settings-chat-position")}
+                    label="Overlay position"
+                    onNext={() =>
+                      save(
+                        {
+                          chatOverlayPosition: nextOption<ChatOverlayPosition>(
+                            [
+                              "right",
+                              "bottom-right",
+                              "top-right",
+                              "left",
+                              "bottom-left",
+                              "top-left",
+                            ],
+                            chatAppearance.position,
+                          ),
+                        },
+                        "The overlay position could not be saved",
+                      )
+                    }
+                    value={CHAT_OVERLAY_LABELS.position[chatAppearance.position]}
+                  />
+                  <SettingsCycle
+                    focusDown={below("settings-chat-size")}
+                    focusId="settings-chat-size"
+                    focusUp={above("settings-chat-size")}
+                    label="Overlay size"
+                    onNext={() =>
+                      save(
+                        {
+                          chatOverlaySize: nextOption<ChatOverlaySize>(
+                            ["small", "medium", "large"],
+                            chatAppearance.size,
+                          ),
+                        },
+                        "The overlay size could not be saved",
+                      )
+                    }
+                    value={CHAT_OVERLAY_LABELS.size[chatAppearance.size]}
+                  />
+                  <SettingsCycle
+                    focusDown={below("settings-chat-opacity")}
+                    focusId="settings-chat-opacity"
+                    focusUp={above("settings-chat-opacity")}
+                    label="Overlay opacity"
+                    onNext={() =>
+                      save(
+                        {
+                          chatOverlayOpacity: nextOption<ChatOverlayOpacity>(
+                            ["100", "85", "70", "50"],
+                            chatAppearance.opacity,
+                          ),
+                        },
+                        "The overlay opacity could not be saved",
+                      )
+                    }
+                    value={CHAT_OVERLAY_LABELS.opacity[chatAppearance.opacity]}
+                  />
+                  <SettingsCycle
+                    focusDown={below("settings-chat-text")}
+                    focusId="settings-chat-text"
+                    focusUp={above("settings-chat-text")}
+                    label="Chat text size"
+                    onNext={() =>
+                      save(
+                        {
+                          chatTextSize: nextOption<ChatTextSize>(
+                            ["small", "normal", "large", "xlarge"],
+                            chatAppearance.textSize,
+                          ),
+                        },
+                        "The chat text size could not be saved",
+                      )
+                    }
+                    value={CHAT_OVERLAY_LABELS.textSize[chatAppearance.textSize]}
+                  />
+                </>
               )
-            }}
-          />
+            })()}
+          </div>
         </section>
       )}
       {error !== "" ? (

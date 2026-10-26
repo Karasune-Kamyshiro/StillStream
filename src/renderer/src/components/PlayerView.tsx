@@ -9,7 +9,8 @@ import {
   SpeakerSimpleXIcon,
 } from "@phosphor-icons/react"
 import { cloneElement, useCallback, useEffect, useRef, useState } from "react"
-import type { ChatTheme } from "../../../shared/contracts"
+import type { ChatLayout } from "../../../shared/contracts"
+import type { ChatAppearance } from "../chat-appearance"
 import { markControllerFocus, registerBackDismissal } from "../focus-navigation"
 import {
   createTwitchPlayerOptions,
@@ -37,10 +38,11 @@ export type PlayerSource =
     }
 
 type PlayerViewProps = {
-  readonly chatTheme?: ChatTheme
+  readonly chatAppearance?: ChatAppearance
   /** Saved low-latency choice; undefined keeps Twitch's own default. */
   readonly lowLatency?: boolean
   readonly onBack: () => void
+  readonly onChatLayoutChange?: (layout: ChatLayout) => void
   readonly onLowLatencyChange?: (enabled: boolean) => void
   readonly onPastBroadcasts: (userId: string) => void
   /** Remembers the quality the viewer picked, for new streams. */
@@ -75,9 +77,10 @@ const formatTime = (seconds: number | undefined, showHours: boolean): string => 
 }
 
 export const PlayerView = ({
-  chatTheme = "dark",
+  chatAppearance,
   lowLatency,
   onBack,
+  onChatLayoutChange,
   onLowLatencyChange,
   onPastBroadcasts,
   onQualityChange,
@@ -112,8 +115,15 @@ export const PlayerView = ({
     source,
     onBack,
   )
-  const { chatButton, chatEnterButton, chatHint, chatPane, chatReloadButton, fullscreenLeft } =
-    usePlayerChat(source, backButtonRef, chatTheme)
+  const {
+    chatButton,
+    chatEnterButton,
+    chatHint,
+    chatLayoutButton,
+    chatPane,
+    chatReloadButton,
+    fullscreenLeft,
+  } = usePlayerChat(source, backButtonRef, chatAppearance, onChatLayoutChange)
 
   // Low latency exists only for live streams. Twitch reports the mode; the saved choice is
   // re-applied once per stream, after playback starts and the player's controls exist.
@@ -640,6 +650,7 @@ export const PlayerView = ({
         {chatButton}
         {chatEnterButton}
         {chatReloadButton}
+        {chatLayoutButton}
         <button
           aria-label="Fullscreen stream"
           data-focus-id="player-fullscreen"
