@@ -8,7 +8,7 @@ import { ContinueWatchingShelf, recordingTitle } from "./components/ContinueWatc
 import { FavouritesShelf } from "./components/FavouritesShelf"
 import { FollowedChannelsView } from "./components/FollowedChannelsView"
 import { Navigation, type RouteName } from "./components/Navigation"
-import { PlayerView } from "./components/PlayerView"
+import { type FullscreenCarry, PlayerView } from "./components/PlayerView"
 import { SearchView } from "./components/SearchView"
 import { SettingsPanel, settingsAccountFocusId } from "./components/SettingsPanel"
 import { StreamShelf } from "./components/StreamShelf"
@@ -32,6 +32,7 @@ export const App = () => {
   const controller = useAppController()
   const favourites = useFavourites()
   const accountGeneration = useRef(0)
+  const fullscreenCarry = useRef<FullscreenCarry>({ immersive: false, restoreWindowed: false })
   const accountContext = useRef({
     auth: controller.auth,
     clientId: controller.settings.clientId,
@@ -97,9 +98,17 @@ export const App = () => {
     [],
   )
 
+  // Stream fullscreen survives switching channels from the live panel, but not leaving the player.
+  if (controller.screen.kind !== "player") {
+    fullscreenCarry.current.immersive = false
+    fullscreenCarry.current.restoreWindowed = false
+  }
   if (controller.screen.kind === "player") {
     return (
       <PlayerView
+        fullscreenCarry={fullscreenCarry.current}
+        onSwitchStream={controller.openStream}
+        signedIn={controller.auth.kind === "authenticated"}
         key={
           controller.screen.source.kind === "live"
             ? controller.screen.source.channel

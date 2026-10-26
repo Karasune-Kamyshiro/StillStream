@@ -32,6 +32,8 @@ export const usePlayerChat = (
   backButtonRef: RefObject<HTMLButtonElement | null>,
   appearance: ChatAppearance = DEFAULT_CHAT_APPEARANCE,
   onLayoutChange?: (layout: ChatLayout) => void,
+  /** The toolbar control to the right of the chat group. */
+  nextId = "player-fullscreen",
 ) => {
   const chatTheme = appearance.theme
   // The saved layout is the default; the player's switch changes it for now and for later.
@@ -201,7 +203,7 @@ export const usePlayerChat = (
           data-focus-down={visible ? "player-chat-enter" : "player-chat"}
           data-focus-id="player-chat"
           data-focus-left="player-vods"
-          data-focus-right={visible ? "player-chat-enter" : "player-fullscreen"}
+          data-focus-right={visible ? "player-chat-enter" : nextId}
           data-focus-up="player-back"
           data-focusable="true"
           onClick={toggleChat}
@@ -292,7 +294,7 @@ export const usePlayerChat = (
         data-focus-down="player-chat"
         data-focus-id="player-chat-layout"
         data-focus-left="player-chat-reload"
-        data-focus-right="player-fullscreen"
+        data-focus-right={nextId}
         data-focus-up="player-chat"
         data-focusable="true"
         onClick={() => {

@@ -3,20 +3,21 @@ import { defaultPreferences } from "../../../shared/contracts"
 
 import { EventEmitter } from "node:events"
 import type { BrowserWindow, WebFrameMain } from "electron"
-import { act, StrictMode } from "react"
+import { act, StrictMode, useEffect } from "react"
 import { createRoot } from "react-dom/client"
 import { renderToStaticMarkup } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { createChatInput } from "../../../main/chat-input"
-import type { PlaybackBookmark, VacuumStreamApi } from "../../../shared/contracts"
+import type { PlaybackBookmark, StreamCard, VacuumStreamApi } from "../../../shared/contracts"
 import { App } from "../App"
 import {
   CHAT_GAMEPAD_EVENT,
+  dismissOpenSurface,
   dispatchControllerKey,
   useControllerNavigation,
 } from "../focus-navigation"
 import type { TwitchPlayerOptions } from "../twitch-player"
-import { type PlayerSource, PlayerView } from "./PlayerView"
+import { type FullscreenCarry, type PlayerSource, PlayerView } from "./PlayerView"
 
 const source = {
   channel: "twitch",
@@ -918,6 +919,126 @@ describe("chat over the video", () => {
   })
 })
 
+describe("stream fullscreen controls and the live panel", () => {
+  const liveStream = (login: string): StreamCard => ({
+    category: "Just Chatting",
+    id: `stream-${login}`,
+    startedAt: "2026-10-26T20:00:00Z",
+    tags: [],
+    thumbnailUrl: `https://example.com/${login}.jpg`,
+    title: `${login} live`,
+    userId: `id-${login}`,
+    userLogin: login,
+    userName: login,
+    viewerCount: 1200,
+  })
+
+  const mountFullscreenPlayer = async (
+    carry: FullscreenCarry,
+    onSwitchStream: (stream: StreamCard) => void,
+  ) => {
+    installNavigationSurface()
+    const onSetFullscreen = vi.fn(async () => false)
+    const Navigable = () => {
+      useControllerNavigation()
+      // Back (Escape) reaches open surfaces as in the real app controller.
+      useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent): void => {
+          if (event.key === "Escape") dismissOpenSurface()
+        }
+        document.addEventListener("keydown", onKeyDown)
+        return () => document.removeEventListener("keydown", onKeyDown)
+      }, [])
+      return (
+        <PlayerView
+          fullscreenCarry={carry}
+          onBack={() => undefined}
+          onPastBroadcasts={() => undefined}
+          onSetFullscreen={onSetFullscreen}
+          onSwitchStream={onSwitchStream}
+          signedIn
+          source={source}
+        />
+      )
+    }
+    const container = document.createElement("div")
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () => root.render(<Navigable />))
+    return { container, onSetFullscreen, root }
+  }
+
+  it("keeps fullscreen on OK/A, toggles playback, and leaves only on Back", async () => {
+    const harness = installPlayerHarness([true])
+    const carry = { immersive: false, restoreWindowed: false }
+    const { container, onSetFullscreen, root } = await mountFullscreenPlayer(carry, vi.fn())
+    await act(async () => harness.emit("ready"))
+    harness.activateEmbeddedPlayer.mockClear()
+    await act(async () => buttonById(container, "player-fullscreen").click())
+    expect(onSetFullscreen).toHaveBeenCalledWith(true)
+    const surface = buttonById(container, "player-immersive-exit")
+    expect(document.activeElement).toBe(surface)
+    expect(carry.immersive).toBe(true)
+    await pressKey(container, "Enter")
+    expect(harness.activateEmbeddedPlayer).toHaveBeenCalledExactlyOnceWith(false)
+    expect(container.querySelector(".player-view--immersive")).not.toBeNull()
+    await pressKey(container, "Escape")
+    expect(container.querySelector(".player-view--immersive")).toBeNull()
+    expect(document.activeElement).toBe(buttonById(container, "player-fullscreen"))
+    expect(carry.immersive).toBe(false)
+    await act(async () => root.unmount())
+  })
+
+  it("opens followed live channels with Down, closes with Up, and switches streams in fullscreen", async () => {
+    const harness = installPlayerHarness([true])
+    harness.catalog.followed.mockResolvedValue({
+      cursor: undefined,
+      items: [liveStream("first"), liveStream("twitch"), liveStream("other")],
+    })
+    const carry = { immersive: false, restoreWindowed: false }
+    const onSwitchStream = vi.fn()
+    const { container, root } = await mountFullscreenPlayer(carry, onSwitchStream)
+    await act(async () => harness.emit("ready"))
+    await act(async () => buttonById(container, "player-fullscreen").click())
+    await pressKey(container, "ArrowDown")
+    expect(harness.catalog.followed).toHaveBeenCalledExactlyOnceWith({ first: 30 })
+    // The playing channel is marked and focused first.
+    expect(document.activeElement).toBe(buttonById(container, "live-panel-twitch"))
+    expect(document.activeElement?.getAttribute("aria-current")).toBe("true")
+    await pressKey(container, "ArrowUp")
+    expect(container.querySelector(".live-panel")).toBeNull()
+    expect(document.activeElement).toBe(buttonById(container, "player-immersive-exit"))
+    await pressKey(container, "ArrowDown")
+    await pressKey(container, "ArrowRight")
+    expect(document.activeElement).toBe(buttonById(container, "live-panel-other"))
+    await pressKey(container, "Enter")
+    expect(onSwitchStream).toHaveBeenCalledExactlyOnceWith(liveStream("other"))
+    // The next player mounts in stream fullscreen.
+    expect(carry.immersive).toBe(true)
+    await act(async () => root.unmount())
+  })
+
+  it("starts in stream fullscreen after a switch and offers the panel from the toolbar", async () => {
+    const harness = installPlayerHarness([true])
+    harness.catalog.followed.mockResolvedValue({ cursor: undefined, items: [] })
+    const { container, root } = await mountFullscreenPlayer(
+      { immersive: true, restoreWindowed: true },
+      vi.fn(),
+    )
+    expect(container.querySelector(".player-view--immersive")).not.toBeNull()
+    await pressKey(container, "Escape")
+    await act(async () => buttonById(container, "player-live").click())
+    expect(container.querySelector(".live-panel")?.textContent).toContain(
+      "None of the channels you follow are live.",
+    )
+    expect(document.activeElement).toBe(buttonById(container, "live-panel-close"))
+    await pressKey(container, "Escape")
+    expect(container.querySelector(".live-panel")).toBeNull()
+    expect(document.activeElement).toBe(buttonById(container, "player-live"))
+    await act(async () => root.unmount())
+  })
+})
+
 describe("default quality", () => {
   it("requests the saved quality once per stream and remembers a new choice", async () => {
     const quality = { available: ["auto", "1080p60", "720p60"] as unknown, current: "auto" }
@@ -1792,11 +1913,14 @@ describe("controller captions", () => {
       "player-muted",
       "player-quality",
       "player-captions",
+      "player-live",
       "player-fullscreen",
     ]) {
       await pressKey(container, "ArrowRight")
       expect(document.activeElement).toBe(buttonById(container, id))
     }
+    await pressKey(container, "ArrowLeft")
+    expect(document.activeElement).toBe(buttonById(container, "player-live"))
     await pressKey(container, "ArrowLeft")
     expect(document.activeElement).toBe(buttonById(container, "player-captions"))
     await pressKey(container, "ArrowLeft")

@@ -1,5 +1,6 @@
 import {
   ArrowLeftIcon,
+  BroadcastIcon,
   CornersInIcon,
   CornersOutIcon,
   FilmStripIcon,
@@ -9,7 +10,7 @@ import {
   SpeakerSimpleXIcon,
 } from "@phosphor-icons/react"
 import { cloneElement, useCallback, useEffect, useRef, useState } from "react"
-import type { ChatLayout } from "../../../shared/contracts"
+import type { ChatLayout, StreamCard } from "../../../shared/contracts"
 import type { ChatAppearance } from "../chat-appearance"
 import { markControllerFocus, registerBackDismissal } from "../focus-navigation"
 import {
@@ -18,6 +19,7 @@ import {
   TWITCH_PLAYER_ENDED,
   type TwitchPlayerInstance,
 } from "../twitch-player"
+import { LivePanel } from "./LivePanel"
 import { usePlayerCaptions } from "./usePlayerCaptions"
 import { usePlayerChat } from "./usePlayerChat"
 import { usePlayerQuality } from "./usePlayerQuality"
@@ -37,8 +39,16 @@ export type PlayerSource =
       readonly videoId: string
     }
 
+/** Survives a channel switch from the live panel, so stream fullscreen carries over. */
+export type FullscreenCarry = { immersive: boolean; restoreWindowed: boolean }
+
 type PlayerViewProps = {
   readonly chatAppearance?: ChatAppearance
+  readonly fullscreenCarry?: FullscreenCarry
+  /** Switches to another live stream from the live panel; the panel is hidden when absent. */
+  readonly onSwitchStream?: (stream: StreamCard) => void
+  /** Whether a Twitch account is connected, for the live panel's followed channels. */
+  readonly signedIn?: boolean
   /** Saved low-latency choice; undefined keeps Twitch's own default. */
   readonly lowLatency?: boolean
   readonly onBack: () => void
@@ -78,6 +88,9 @@ const formatTime = (seconds: number | undefined, showHours: boolean): string => 
 
 export const PlayerView = ({
   chatAppearance,
+  fullscreenCarry,
+  onSwitchStream,
+  signedIn = false,
   lowLatency,
   onBack,
   onChatLayoutChange,
@@ -99,10 +112,18 @@ export const PlayerView = ({
   const [duration, setDuration] = useState<number | undefined>(undefined)
   const [seekTransportOpen, setSeekTransportOpen] = useState(false)
   // Stream fullscreen: the toolbar, submenus and chat hide so the video fills the window.
-  const [immersive, setImmersive] = useState(false)
-  const immersiveRef = useRef(false)
+  const [immersive, setImmersive] = useState(fullscreenCarry?.immersive ?? false)
+  const immersiveRef = useRef(fullscreenCarry?.immersive ?? false)
   const immersiveGenerationRef = useRef(0)
-  const restoreWindowedRef = useRef(false)
+  const restoreWindowedRef = useRef(fullscreenCarry?.restoreWindowed ?? false)
+  const syncCarry = (): void => {
+    if (fullscreenCarry === undefined) return
+    fullscreenCarry.immersive = immersiveRef.current
+    fullscreenCarry.restoreWindowed = restoreWindowedRef.current
+  }
+  const [livePanelOpen, setLivePanelOpen] = useState(false)
+  const livePanelOpenRef = useRef(false)
+  const liveButtonRef = useRef<HTMLButtonElement>(null)
   const immersiveExitRef = useRef<HTMLButtonElement>(null)
   const fullscreenButtonRef = useRef<HTMLButtonElement>(null)
   const autoStartGenerationRef = useRef(0)
@@ -123,7 +144,13 @@ export const PlayerView = ({
     chatPane,
     chatReloadButton,
     fullscreenLeft,
-  } = usePlayerChat(source, backButtonRef, chatAppearance, onChatLayoutChange)
+  } = usePlayerChat(
+    source,
+    backButtonRef,
+    chatAppearance,
+    onChatLayoutChange,
+    onSwitchStream === undefined ? "player-fullscreen" : "player-live",
+  )
 
   // Low latency exists only for live streams. Twitch reports the mode; the saved choice is
   // re-applied once per stream, after playback starts and the player's controls exist.
@@ -180,6 +207,7 @@ export const PlayerView = ({
     dismissCaptionsChooser()
     setSeekTransportOpen(false)
     setImmersive(true)
+    syncCarry()
     void onSetFullscreen(true).then(
       (wasFullscreen) => {
         if (immersiveGenerationRef.current !== generation) return
@@ -189,6 +217,7 @@ export const PlayerView = ({
           restoreWindowedRef.current = false
           void onSetFullscreen(false).catch(() => undefined)
         }
+        syncCarry()
       },
       () => undefined,
     )
@@ -202,13 +231,62 @@ export const PlayerView = ({
       restoreWindowedRef.current = false
       void onSetFullscreen(false).catch(() => undefined)
     }
+    if (fullscreenCarry !== undefined) {
+      fullscreenCarry.immersive = false
+      fullscreenCarry.restoreWindowed = false
+    }
     const fullscreenButton = fullscreenButtonRef.current
     if (fullscreenButton !== null) {
       markControllerFocus(fullscreenButton)
       fullscreenButton.focus()
     }
     return true
-  }, [onSetFullscreen])
+  }, [fullscreenCarry, onSetFullscreen])
+
+  const openLivePanel = (): void => {
+    if (onSwitchStream === undefined) return
+    dismissQualityChooser()
+    dismissCaptionsChooser()
+    setSeekTransportOpen(false)
+    livePanelOpenRef.current = true
+    setLivePanelOpen(true)
+  }
+  const closeLivePanel = useCallback((): boolean => {
+    if (!livePanelOpenRef.current) return false
+    livePanelOpenRef.current = false
+    setLivePanelOpen(false)
+    const target = immersiveRef.current ? immersiveExitRef.current : liveButtonRef.current
+    if (target !== null) {
+      markControllerFocus(target)
+      target.focus()
+    }
+    return true
+  }, [])
+  const switchStream = (stream: StreamCard): void => {
+    if (source.kind === "live" && stream.userLogin === source.channel) {
+      closeLivePanel()
+      return
+    }
+    livePanelOpenRef.current = false
+    setLivePanelOpen(false)
+    syncCarry()
+    onSwitchStream?.(stream)
+  }
+
+  // Stream fullscreen: Down opens the live panel along the bottom edge. OK, A and Space reach the
+  // fullscreen surface as a click (play/pause); Back is handled by the dismissal stack.
+  useEffect(() => {
+    if (!immersive || livePanelOpen || onSwitchStream === undefined) return
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== "ArrowDown" || document.activeElement !== immersiveExitRef.current) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      livePanelOpenRef.current = true
+      setLivePanelOpen(true)
+    }
+    document.addEventListener("keydown", onKeyDown, true)
+    return () => document.removeEventListener("keydown", onKeyDown, true)
+  }, [immersive, livePanelOpen, onSwitchStream])
 
   // Main reports Escape pressed while the Twitch iframe holds keyboard focus (after a click on
   // the video). Take focus back: leave stream fullscreen, or return to the toolbar.
@@ -236,6 +314,7 @@ export const PlayerView = ({
 
   // Back closes the submenu the viewer is in, or the first one still open, before leaving.
   const dismissSubmenu = useCallback((): boolean => {
+    if (closeLivePanel()) return true
     if (exitImmersive()) return true
     const focused = document.activeElement
     const submenus = [
@@ -249,7 +328,13 @@ export const PlayerView = ({
     return focusedSubmenu === undefined
       ? submenus.some(({ dismiss }) => dismiss())
       : focusedSubmenu.dismiss()
-  }, [dismissCaptionsChooser, dismissQualityChooser, dismissSeekTransport, exitImmersive])
+  }, [
+    closeLivePanel,
+    dismissCaptionsChooser,
+    dismissQualityChooser,
+    dismissSeekTransport,
+    exitImmersive,
+  ])
 
   useEffect(() => registerBackDismissal(dismissSubmenu), [dismissSubmenu])
 
@@ -485,6 +570,8 @@ export const PlayerView = ({
     player.seek(destination)
   }
 
+  // The control after the chat/VOD group: the Live button when present, else fullscreen.
+  const afterToolbarId = onSwitchStream === undefined ? "player-fullscreen" : "player-live"
   const showHours = duration !== undefined && duration >= 3600
   const unknownBroadcaster = source.kind === "video" && source.userId === "0"
   const seekTransportUsable =
@@ -492,14 +579,10 @@ export const PlayerView = ({
   const captionsRight = unknownBroadcaster
     ? seekTransportUsable
       ? "player-seek"
-      : "player-fullscreen"
+      : afterToolbarId
     : "player-vods"
   const vodsRight =
-    source.kind === "live"
-      ? "player-chat"
-      : seekTransportUsable
-        ? "player-seek"
-        : "player-fullscreen"
+    source.kind === "live" ? "player-chat" : seekTransportUsable ? "player-seek" : afterToolbarId
   const seekLeft = unknownBroadcaster ? "player-captions" : "player-vods"
   const toolbarFullscreenLeft =
     source.kind === "video" ? (seekTransportUsable ? "player-seek" : seekLeft) : fullscreenLeft
@@ -520,7 +603,8 @@ export const PlayerView = ({
     >
       {immersive ? (
         <button
-          aria-label="Show player controls"
+          aria-label={paused ? "Play" : "Pause"}
+          aria-describedby="player-immersive-hint"
           className="player-immersive-exit"
           data-focus-down="player-immersive-exit"
           data-focus-id="player-immersive-exit"
@@ -528,14 +612,22 @@ export const PlayerView = ({
           data-focus-right="player-immersive-exit"
           data-focus-up="player-immersive-exit"
           data-focusable="true"
-          onClick={exitImmersive}
+          // OK, A, Space and a click toggle playback; a double click leaves like Back does.
+          onClick={togglePlayback}
+          onDoubleClick={exitImmersive}
           ref={immersiveExitRef}
           type="button"
         >
-          <span className="player-immersive-exit__hint">
+          <span className="player-immersive-exit__hint" id="player-immersive-hint">
             <CornersInIcon aria-hidden="true" />
-            Press Back or Enter, or click, to show controls
+            OK / A / Space: play or pause ·{" "}
+            {onSwitchStream === undefined ? "" : "Down: live channels · "}Back: controls
           </span>
+          {paused && frameState === "ready" ? (
+            <span aria-hidden="true" className="player-immersive-exit__paused">
+              <PauseIcon weight="fill" />
+            </span>
+          ) : null}
         </button>
       ) : null}
       <header className="player-toolbar">
@@ -636,7 +728,7 @@ export const PlayerView = ({
             data-focus-down={seekTransportOpen ? "player-seek-back-5m" : "player-seek"}
             data-focus-id="player-seek"
             data-focus-left={seekLeft}
-            data-focus-right="player-fullscreen"
+            data-focus-right={afterToolbarId}
             data-focus-up="player-back"
             data-focusable="true"
             disabled={!seekTransportUsable}
@@ -651,10 +743,26 @@ export const PlayerView = ({
         {chatEnterButton}
         {chatReloadButton}
         {chatLayoutButton}
+        {onSwitchStream === undefined ? null : (
+          <button
+            aria-controls={livePanelOpen ? "live-panel" : undefined}
+            aria-expanded={livePanelOpen}
+            data-focus-id="player-live"
+            data-focus-left={toolbarFullscreenLeft}
+            data-focus-right="player-fullscreen"
+            data-focusable="true"
+            onClick={() => (livePanelOpen ? closeLivePanel() : openLivePanel())}
+            ref={liveButtonRef}
+            type="button"
+          >
+            <BroadcastIcon aria-hidden="true" />
+            Live
+          </button>
+        )}
         <button
           aria-label="Fullscreen stream"
           data-focus-id="player-fullscreen"
-          data-focus-left={toolbarFullscreenLeft}
+          data-focus-left={onSwitchStream === undefined ? toolbarFullscreenLeft : "player-live"}
           data-focus-right="player-back"
           data-focusable="true"
           onClick={enterImmersive}
@@ -707,6 +815,14 @@ export const PlayerView = ({
           <div className="twitch-player-root" id="twitch-player-root" />
         </div>
         {chatPane}
+        {livePanelOpen && onSwitchStream !== undefined ? (
+          <LivePanel
+            currentChannel={source.kind === "live" ? source.channel : undefined}
+            onClose={closeLivePanel}
+            onSelect={switchStream}
+            signedIn={signedIn}
+          />
+        ) : null}
       </div>
     </main>
   )

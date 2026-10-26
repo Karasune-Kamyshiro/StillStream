@@ -836,6 +836,87 @@
   animation: player-immersive-hint 3.5s var(--ease-out) forwards;
 }
 
+.player-immersive-exit__paused {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(4rem, 12vmin, 10rem);
+  color: var(--color-text);
+  filter: drop-shadow(0 0.25rem 1rem rgb(0 0 0 / 60%));
+  pointer-events: none;
+}
+
+/* Followed live channels along the bottom edge, over the video (also in stream fullscreen). */
+.live-panel {
+  position: absolute;
+  z-index: 3;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: linear-gradient(to top, rgb(14 14 16 / 96%), rgb(14 14 16 / 88%) 70%, transparent);
+}
+
+.live-panel__heading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.live-panel__hint,
+.live-panel__message {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.live-panel__reel {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-1);
+  overflow-x: auto;
+  list-style: none;
+  scroll-padding-inline: var(--space-4);
+}
+
+.live-panel__card {
+  display: grid;
+  inline-size: clamp(14rem, 18vw, 24rem);
+  gap: var(--space-1);
+  padding: var(--space-2);
+  text-align: start;
+}
+
+.live-panel__card img {
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-control);
+  background: var(--color-raised);
+}
+
+.live-panel__card[aria-current="true"] {
+  box-shadow: inset 0 -0.2rem var(--color-accent-strong);
+}
+
+.live-panel__name {
+  font-weight: 700;
+}
+
+.live-panel__meta,
+.live-panel__title {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-panel__close {
+  justify-self: start;
+}
+
 @keyframes player-immersive-hint {
   0%,
   70% {
