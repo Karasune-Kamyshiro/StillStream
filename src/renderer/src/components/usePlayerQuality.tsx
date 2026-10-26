@@ -13,9 +13,19 @@ const focusControl = (element: HTMLButtonElement | null): void => {
   element.focus()
 }
 
+export type LowLatencyControl = {
+  readonly busy: boolean
+  /** True/false as reported by Twitch, null when unsupported, undefined while unknown. */
+  readonly enabled: boolean | null | undefined
+  readonly onToggle: () => void
+}
+
+const LOW_LATENCY_ID = "player-quality-low-latency"
+
 export const usePlayerQuality = (
   playerRef: RefObject<TwitchPlayerInstance | undefined>,
   ready: boolean,
+  lowLatency?: LowLatencyControl,
 ) => {
   const [open, setOpen] = useState(false)
   const [qualities, setQualities] = useState<readonly TwitchQuality[]>([])
@@ -57,7 +67,11 @@ export const usePlayerQuality = (
   useLayoutEffect(() => {
     // Recover shell focus when a refreshed list removes the focused option.
     if (open && (focusOnOpen.current || document.activeElement === document.body)) {
-      focusControl(chooserRef.current?.querySelector<HTMLButtonElement>("button") ?? null)
+      focusControl(
+        chooserRef.current?.querySelector<HTMLButtonElement>(
+          "button:not(.player-quality__latency)",
+        ) ?? null,
+      )
       focusOnOpen.current = false
     }
   })
@@ -65,7 +79,11 @@ export const usePlayerQuality = (
   const openChooser = (): void => {
     if (ready && playerRef.current !== undefined) refreshQualities(playerRef.current)
     if (open) {
-      focusControl(chooserRef.current?.querySelector<HTMLButtonElement>("button") ?? null)
+      focusControl(
+        chooserRef.current?.querySelector<HTMLButtonElement>(
+          "button:not(.player-quality__latency)",
+        ) ?? null,
+      )
     } else {
       focusOnOpen.current = true
       setOpen(true)
@@ -98,6 +116,9 @@ export const usePlayerQuality = (
   const firstId =
     qualities[0] === undefined ? "player-quality-close" : optionFocusId(qualities[0].id)
   const lastQuality = qualities.at(-1)
+  // Row order: qualities, Close, then Low latency (live only), wrapping around. Opening the
+  // chooser still lands on the first quality (or Close), never on the latency switch.
+  const wrapId = lowLatency === undefined ? "player-quality-close" : LOW_LATENCY_ID
 
   return {
     qualityButton: (
@@ -142,9 +163,7 @@ export const usePlayerQuality = (
               data-focus-down="player-quality-close"
               data-focus-id={optionFocusId(quality.id)}
               data-focus-left={
-                index === 0
-                  ? "player-quality-close"
-                  : optionFocusId(qualities[index - 1]?.id ?? quality.id)
+                index === 0 ? wrapId : optionFocusId(qualities[index - 1]?.id ?? quality.id)
               }
               data-focus-right={
                 index === qualities.length - 1
@@ -167,7 +186,7 @@ export const usePlayerQuality = (
           data-focus-left={
             lastQuality === undefined ? "player-quality" : optionFocusId(lastQuality.id)
           }
-          data-focus-right={firstId}
+          data-focus-right={lowLatency === undefined ? firstId : LOW_LATENCY_ID}
           data-focus-up="player-quality"
           data-focusable="true"
           onClick={closeChooser}
@@ -175,6 +194,39 @@ export const usePlayerQuality = (
         >
           Close
         </button>
+        {lowLatency === undefined ? null : (
+          <button
+            aria-busy={lowLatency.busy}
+            aria-checked={lowLatency.enabled === true}
+            aria-disabled={lowLatency.busy || lowLatency.enabled === null}
+            className="player-quality__latency"
+            data-focus-down="player-quality-close"
+            data-focus-id={LOW_LATENCY_ID}
+            data-focus-left="player-quality-close"
+            data-focus-right={firstId}
+            data-focus-up="player-quality"
+            data-focusable="true"
+            onClick={() => {
+              if (!lowLatency.busy && lowLatency.enabled !== null) lowLatency.onToggle()
+            }}
+            role="switch"
+            title={
+              lowLatency.enabled === null
+                ? "Twitch's player does not offer low latency control for this stream"
+                : undefined
+            }
+            type="button"
+          >
+            Low latency:{" "}
+            {lowLatency.enabled === null
+              ? "unavailable"
+              : lowLatency.enabled === undefined
+                ? "…"
+                : lowLatency.enabled
+                  ? "On"
+                  : "Off"}
+          </button>
+        )}
       </section>
     ) : null,
     dismissQualityChooser: dismissChooser,

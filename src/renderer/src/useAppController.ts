@@ -3,6 +3,8 @@ import type {
   AuthSnapshot,
   CategoryCard,
   ChannelCard,
+  PreferencesSnapshot,
+  PreferencesUpdate,
   SettingsSnapshot,
   StartScreen,
   StreamCard,
@@ -77,7 +79,11 @@ export const useAppController = () => {
   const previousScreen = useRef(screen)
   const identity = auth.kind === "authenticated" ? auth.login : undefined
   // Start-screen preference. Following needs an account, so guests always start on Home.
-  const [startScreen, setStartScreen] = useState<StartScreen>("home")
+  const [preferences, setPreferences] = useState<PreferencesSnapshot>({
+    chatTheme: "dark",
+    startScreen: "home",
+  })
+  const { startScreen } = preferences
   const [preferencesReady, setPreferencesReady] = useState(false)
   const [authReady, setAuthReady] = useState(false)
   const startScreenApplied = useRef(false)
@@ -136,8 +142,10 @@ export const useAppController = () => {
     navigate(startRoute)
   }, [navigate, startRoute])
   const updateStartScreen = useCallback(async (next: StartScreen): Promise<void> => {
-    const saved = await window.vacuumStream.preferences.setStartScreen(next)
-    setStartScreen(saved.startScreen)
+    setPreferences(await window.vacuumStream.preferences.setStartScreen(next))
+  }, [])
+  const updatePreferences = useCallback(async (update: PreferencesUpdate): Promise<void> => {
+    setPreferences(await window.vacuumStream.preferences.update(update))
   }, [])
   const updateAuth = useCallback(
     (nextAuth: AuthSnapshot): void => {
@@ -211,7 +219,7 @@ export const useAppController = () => {
       .snapshot()
       .then(
         (preferences) => {
-          if (active) setStartScreen(preferences.startScreen)
+          if (active) setPreferences(preferences)
         },
         () => undefined,
       )
@@ -541,7 +549,9 @@ export const useAppController = () => {
     searchResults,
     setAuth: updateAuth,
     settings,
+    preferences,
     startScreen,
+    updatePreferences,
     updateStartScreen,
     showAllChannels: () => {
       if (identity === undefined) {

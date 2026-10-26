@@ -137,7 +137,7 @@ const installHarness = () => {
   }
   vi.stubGlobal("vacuumStream", {
     playbackProgress: progress,
-    system: { activateEmbeddedPlayer },
+    system: { activateEmbeddedPlayer, setPlayerLowLatency: async () => true },
   })
   const finishSdkLoad = async (): Promise<void> => {
     const script = element<HTMLScriptElement>(

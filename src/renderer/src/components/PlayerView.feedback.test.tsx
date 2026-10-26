@@ -86,7 +86,7 @@ const installHarness = () => {
       remove: vi.fn(async () => undefined),
       save: vi.fn(async () => undefined),
     },
-    system: { activateEmbeddedPlayer },
+    system: { activateEmbeddedPlayer, setPlayerLowLatency: async () => true },
   })
   window.Twitch = { Player: TestPlayer }
   const player = (): TestPlayer => {

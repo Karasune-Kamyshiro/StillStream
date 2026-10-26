@@ -76,8 +76,14 @@ const installHarness = (saved?: PlaybackBookmark) => {
       },
       playbackProgress: progress,
       settings: { snapshot: async () => ({ clientId: "client", secureStorage: false }) },
-      preferences: { snapshot: async () => ({ startScreen: "home" as const }) },
-      system: { activateEmbeddedPlayer, restoreShellFullscreen },
+      preferences: {
+        snapshot: async () => ({ chatTheme: "dark" as const, startScreen: "home" as const }),
+      },
+      system: {
+        activateEmbeddedPlayer,
+        restoreShellFullscreen,
+        setPlayerLowLatency: async () => true,
+      },
     },
   })
   // Publish this SDK only when a simulated script download (or controlled startup) succeeds.

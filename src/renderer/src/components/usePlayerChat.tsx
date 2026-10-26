@@ -1,4 +1,5 @@
 import { type RefObject, useCallback, useLayoutEffect, useRef, useState } from "react"
+import type { ChatTheme } from "../../../shared/contracts"
 import {
   CHAT_GAMEPAD_EVENT,
   type ChatGamepadAction,
@@ -21,6 +22,7 @@ type ChatSession = {
 export const usePlayerChat = (
   source: PlayerSource,
   backButtonRef: RefObject<HTMLButtonElement | null>,
+  chatTheme: ChatTheme = "dark",
 ) => {
   const [chat, setChat] = useState({ nonce: 0, source, visible: false })
   const [interacting, setInteracting] = useState(false)
@@ -228,7 +230,8 @@ export const usePlayerChat = (
             <iframe
               key={chat.nonce}
               ref={attachFrame}
-              src={`https://www.twitch.tv/embed/${encodeURIComponent(source.channel)}/chat?parent=localhost`}
+              // Twitch's chat embed ignores theme=dark; darkpopout is its dark-theme switch.
+              src={`https://www.twitch.tv/embed/${encodeURIComponent(source.channel)}/chat?parent=localhost${chatTheme === "dark" ? "&darkpopout" : ""}`}
               tabIndex={interacting ? 0 : -1}
               title={`Live chat for ${source.channel}`}
             />

@@ -19,6 +19,7 @@ export const CHANNELS = {
   favouritesRemove: "favourites:remove",
   preferencesSetStartScreen: "preferences:set-start-screen",
   preferencesSnapshot: "preferences:snapshot",
+  preferencesUpdate: "preferences:update",
   playerSessionSignIn: "player-session:sign-in",
   playerSessionSignOut: "player-session:sign-out",
   playerSessionSnapshot: "player-session:snapshot",
@@ -31,6 +32,7 @@ export const CHANNELS = {
   systemActivateEmbeddedPlayer: "system:activate-embedded-player",
   systemIsSteamGameMode: "system:is-steam-game-mode",
   systemRestoreShellFullscreen: "system:restore-shell-fullscreen",
+  systemSetPlayerLowLatency: "system:set-player-low-latency",
   systemSetFullscreen: "system:set-fullscreen",
   systemToggleFullscreen: "system:toggle-fullscreen",
 } as const

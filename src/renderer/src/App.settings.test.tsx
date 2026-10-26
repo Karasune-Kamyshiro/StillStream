@@ -98,9 +98,10 @@ const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<VacuumStreamApi["auth"][
     },
     preferences: {
       setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
+      update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
       snapshot: vi
         .fn<VacuumStreamApi["preferences"]["snapshot"]>()
-        .mockResolvedValue({ startScreen: "home" }),
+        .mockResolvedValue({ chatTheme: "dark", startScreen: "home" }),
     },
     playerSession: {
       signIn: vi
@@ -125,6 +126,9 @@ const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<VacuumStreamApi["auth"][
       restoreShellFullscreen: vi
         .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
+      setPlayerLowLatency: vi
+        .fn<VacuumStreamApi["system"]["setPlayerLowLatency"]>()
+        .mockResolvedValue(null),
       setFullscreen: vi.fn<VacuumStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
       toggleFullscreen: vi.fn<VacuumStreamApi["system"]["toggleFullscreen"]>(),
     },
@@ -274,7 +278,12 @@ describe("Settings in the mounted App", () => {
         [...container.querySelectorAll(".settings-card")].map((card) =>
           card.getAttribute("aria-labelledby"),
         ),
-      ).toEqual(["account-heading", "developer-app-heading", "start-screen-heading"])
+      ).toEqual([
+        "account-heading",
+        "developer-app-heading",
+        "start-screen-heading",
+        "chat-heading",
+      ])
       expect(
         container.querySelectorAll(
           '#account-heading ~ button, [aria-labelledby="account-heading"] button',
@@ -515,8 +524,11 @@ describe("Settings in the mounted App", () => {
 describe("Start screen preference", () => {
   const start = async (auth: AuthSnapshot, startScreen: "following" | "home") => {
     const bridge = makeBridge(auth)
-    bridge.preferences.snapshot.mockResolvedValue({ startScreen })
-    bridge.preferences.setStartScreen.mockImplementation(async (next) => ({ startScreen: next }))
+    bridge.preferences.snapshot.mockResolvedValue({ chatTheme: "dark", startScreen })
+    bridge.preferences.setStartScreen.mockImplementation(async (next) => ({
+      chatTheme: "dark",
+      startScreen: next,
+    }))
     vi.stubGlobal("vacuumStream", bridge)
     root = createRoot(container)
     await act(async () => root?.render(<App />))

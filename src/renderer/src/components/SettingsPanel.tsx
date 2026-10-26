@@ -11,6 +11,7 @@ import { QRCodeSVG } from "qrcode.react"
 import { type ComponentProps, useEffect, useRef, useState } from "react"
 import type {
   AuthSnapshot,
+  ChatTheme,
   PlayerSessionSnapshot,
   SettingsSnapshot,
   StartScreen,
@@ -19,6 +20,9 @@ import { registerBackDismissal } from "../focus-navigation"
 
 type SettingsPanelProps = {
   readonly auth: AuthSnapshot
+  readonly chatTheme?: ChatTheme
+  /** Saves the chat theme; the switch is hidden when absent. */
+  readonly onChatThemeChange?: (chatTheme: ChatTheme) => Promise<void>
   readonly onAccountRequest: () => () => boolean
   readonly onAuthChange: (auth: AuthSnapshot) => void
   readonly onSettingsChange: (settings: SettingsSnapshot, resetAuth: boolean) => void
@@ -54,8 +58,58 @@ const errorMessage = (error: unknown): string =>
       ? error.message
       : "An unexpected error occurred"
 
+/**
+ * An on/off option. A button rather than a checkbox: TV remotes send Enter for OK, which never
+ * toggles a checkbox (only Space does). Buttons activate on Enter, Space and a controller A.
+ */
+const SettingsSwitch = ({
+  checked,
+  focusDown,
+  focusId,
+  focusUp,
+  label,
+  onChange,
+}: {
+  readonly checked: boolean
+  readonly focusDown?: string | undefined
+  readonly focusId: string
+  readonly focusUp: string
+  readonly label: string
+  readonly onChange: (checked: boolean) => Promise<void>
+}) => {
+  const [busy, setBusy] = useState(false)
+  return (
+    <button
+      aria-busy={busy}
+      aria-checked={checked}
+      aria-disabled={busy}
+      className="settings-toggle"
+      {...(focusDown === undefined ? {} : { "data-focus-down": focusDown })}
+      data-focus-id={focusId}
+      data-focus-left="nav-settings"
+      data-focus-up={focusUp}
+      data-focusable="true"
+      onClick={() => {
+        // aria-disabled keeps controller focus while saving; ignore presses meanwhile.
+        if (busy) return
+        setBusy(true)
+        void onChange(!checked).finally(() => setBusy(false))
+      }}
+      role="switch"
+      type="button"
+    >
+      <span aria-hidden="true" className="settings-toggle__box">
+        {checked ? <CheckIcon weight="bold" /> : null}
+      </span>
+      {label}
+    </button>
+  )
+}
+
 export const SettingsPanel = ({
   auth,
+  chatTheme = "dark",
+  onChatThemeChange,
   onAccountRequest,
   onAuthChange,
   onSettingsChange,
@@ -65,7 +119,6 @@ export const SettingsPanel = ({
 }: SettingsPanelProps) => {
   const [clientId, setClientId] = useState(settings.clientId)
   const [busy, setBusy] = useState(false)
-  const [startScreenBusy, setStartScreenBusy] = useState(false)
   const [error, setError] = useState("")
   const pending = useRef(false)
   const accountFocusId = settingsAccountFocusId(auth)
@@ -354,35 +407,42 @@ export const SettingsPanel = ({
               Following needs a signed-in account; without one the app opens on Home.
             </p>
           </div>
-          {/* A button, not a checkbox: TV remotes send Enter for OK, which never toggles a
-              checkbox (only Space does). Buttons activate on Enter, Space and a controller A. */}
-          <button
-            aria-busy={startScreenBusy}
-            aria-checked={startScreen === "following"}
-            aria-disabled={startScreenBusy}
-            className="settings-toggle"
-            data-focus-id="settings-start-following"
-            data-focus-left="nav-settings"
-            data-focus-up="settings-save"
-            data-focusable="true"
-            onClick={() => {
-              // aria-disabled keeps controller focus while saving; ignore presses meanwhile.
-              if (startScreenBusy) return
-              const next = startScreen === "following" ? "home" : "following"
-              setStartScreenBusy(true)
+          <SettingsSwitch
+            checked={startScreen === "following"}
+            focusDown={onChatThemeChange === undefined ? undefined : "settings-chat-dark"}
+            focusId="settings-start-following"
+            focusUp="settings-save"
+            label="Open Following instead of Home"
+            onChange={(checked) => {
               setError("")
-              void onStartScreenChange(next)
-                .catch(() => setError("The start screen could not be saved"))
-                .finally(() => setStartScreenBusy(false))
+              return onStartScreenChange(checked ? "following" : "home").catch(() =>
+                setError("The start screen could not be saved"),
+              )
             }}
-            role="switch"
-            type="button"
-          >
-            <span aria-hidden="true" className="settings-toggle__box">
-              {startScreen === "following" ? <CheckIcon weight="bold" /> : null}
-            </span>
-            Open Following instead of Home
-          </button>
+          />
+        </section>
+      )}
+
+      {onChatThemeChange === undefined ? null : (
+        <section aria-labelledby="chat-heading" className="settings-card">
+          <div>
+            <h2 id="chat-heading">Chat</h2>
+            <p>Twitch's chat beside the player. Takes effect the next time chat opens.</p>
+          </div>
+          <SettingsSwitch
+            checked={chatTheme === "dark"}
+            focusId="settings-chat-dark"
+            focusUp={
+              onStartScreenChange === undefined ? "settings-save" : "settings-start-following"
+            }
+            label="Dark chat"
+            onChange={(checked) => {
+              setError("")
+              return onChatThemeChange(checked ? "dark" : "light").catch(() =>
+                setError("The chat theme could not be saved"),
+              )
+            }}
+          />
         </section>
       )}
       {error !== "" ? (

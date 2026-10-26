@@ -120,6 +120,16 @@ describe("bounded native chat transport", () => {
     expect(debuggerApi.detach).toHaveBeenCalledExactlyOnceWith()
   })
 
+  it("accepts the dark-theme chat embed exactly as the renderer builds it", async () => {
+    const { controller, debuggerApi, frame } = setup()
+    frame.url = "https://www.twitch.tv/embed/twitch/chat?parent=localhost&darkpopout"
+    controller.begin(first)
+    await controller.press(first, "activate")
+    expect(debuggerApi.attach).toHaveBeenCalledTimes(1)
+    expect(debuggerApi.sendCommand).toHaveBeenCalledTimes(2)
+    controller.end(first)
+  })
+
   it("rejects missing and stale sessions before attachment or dispatch without ending the current session", async () => {
     const { controller, debuggerApi, contents } = setup()
     await expect(controller.press(first, "next")).rejects.toThrow("expired")
@@ -187,6 +197,8 @@ describe("bounded native chat transport", () => {
     "https://www.twitch.tv.evil.test/embed/twitch/chat?parent=localhost",
     "https://www.twitch.tv/embed/twitch/chat?parent=evil.test",
     "https://www.twitch.tv/embed/twitch/chat?parent=localhost&extra=1",
+    "https://www.twitch.tv/embed/twitch/chat?parent=localhost&darkpopout&extra=1",
+    "https://www.twitch.tv/embed/twitch/chat?parent=localhost&darkpopout=1",
     "https://www.twitch.tv/embed/twitch/chat?parent=localhost#other",
     "https://www.twitch.tv/embed/two%2Fparts/chat?parent=localhost",
     "about:blank",

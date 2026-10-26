@@ -79,7 +79,21 @@ export const PlaybackBookmarkSchema = PlaybackBookmarkValueSchema.safeExtend({
 })
 export const StartScreenSchema = z.enum(["home", "following"])
 export type StartScreen = z.infer<typeof StartScreenSchema>
-export const PreferencesSnapshotSchema = z.strictObject({ startScreen: StartScreenSchema })
+export const ChatThemeSchema = z.enum(["dark", "light"])
+export type ChatTheme = z.infer<typeof ChatThemeSchema>
+// Defaults keep older preference files valid as new options are added.
+export const PreferencesSnapshotSchema = z.strictObject({
+  chatTheme: ChatThemeSchema.default("dark"),
+  /** Undefined until the viewer chooses; Twitch's own player default then applies. */
+  lowLatency: z.boolean().optional(),
+  startScreen: StartScreenSchema.default("home"),
+})
+export const PreferencesUpdateSchema = z.strictObject({
+  chatTheme: ChatThemeSchema.optional(),
+  lowLatency: z.boolean().optional(),
+  startScreen: StartScreenSchema.optional(),
+})
+export type PreferencesUpdate = z.infer<typeof PreferencesUpdateSchema>
 export type PreferencesSnapshot = z.infer<typeof PreferencesSnapshotSchema>
 
 export const PlayerSessionSnapshotSchema = z.strictObject({
@@ -256,6 +270,7 @@ export interface VacuumStreamApi {
   }
   readonly preferences: {
     readonly setStartScreen: (startScreen: StartScreen) => Promise<PreferencesSnapshot>
+    readonly update: (update: PreferencesUpdate) => Promise<PreferencesSnapshot>
     readonly snapshot: () => Promise<PreferencesSnapshot>
   }
   readonly playerSession: {
@@ -271,6 +286,11 @@ export interface VacuumStreamApi {
     readonly activateEmbeddedPlayer: (audible: boolean) => Promise<boolean>
     readonly isSteamGameMode: () => Promise<boolean>
     readonly restoreShellFullscreen: () => Promise<boolean>
+    /**
+     * Reads (null) or sets the live low-latency mode of the official player. Resolves with the
+     * mode Twitch reports, or null when this player build offers no such control.
+     */
+    readonly setPlayerLowLatency: (enabled: boolean | null) => Promise<boolean | null>
     /** Sets window fullscreen and resolves with the previous state. */
     readonly setFullscreen: (fullscreen: boolean) => Promise<boolean>
     readonly toggleFullscreen: () => Promise<boolean>

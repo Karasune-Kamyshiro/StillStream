@@ -9,6 +9,7 @@ import {
   SpeakerSimpleXIcon,
 } from "@phosphor-icons/react"
 import { cloneElement, useCallback, useEffect, useRef, useState } from "react"
+import type { ChatTheme } from "../../../shared/contracts"
 import { markControllerFocus, registerBackDismissal } from "../focus-navigation"
 import {
   createTwitchPlayerOptions,
@@ -36,7 +37,11 @@ export type PlayerSource =
     }
 
 type PlayerViewProps = {
+  readonly chatTheme?: ChatTheme
+  /** Saved low-latency choice; undefined keeps Twitch's own default. */
+  readonly lowLatency?: boolean
   readonly onBack: () => void
+  readonly onLowLatencyChange?: (enabled: boolean) => void
   readonly onPastBroadcasts: (userId: string) => void
   /** Sets window fullscreen and resolves with the previous state. */
   readonly onSetFullscreen: (fullscreen: boolean) => Promise<boolean>
@@ -67,7 +72,10 @@ const formatTime = (seconds: number | undefined, showHours: boolean): string => 
 }
 
 export const PlayerView = ({
+  chatTheme = "dark",
+  lowLatency,
   onBack,
+  onLowLatencyChange,
   onPastBroadcasts,
   onSetFullscreen,
   source,
@@ -100,9 +108,38 @@ export const PlayerView = ({
     onBack,
   )
   const { chatButton, chatEnterButton, chatHint, chatPane, chatReloadButton, fullscreenLeft } =
-    usePlayerChat(source, backButtonRef)
+    usePlayerChat(source, backButtonRef, chatTheme)
+
+  // Low latency exists only for live streams. Twitch reports the mode; the saved choice is
+  // re-applied once per stream, after playback starts and the player's controls exist.
+  const [latencyMode, setLatencyMode] = useState<boolean | null | undefined>(undefined)
+  const [latencyBusy, setLatencyBusy] = useState(false)
+  const latencyRequested = useRef(false)
+  const lowLatencyPreference = useRef(lowLatency)
+  lowLatencyPreference.current = lowLatency
+  const syncLowLatency = useCallback((request: boolean | null): void => {
+    setLatencyBusy(true)
+    void window.vacuumStream.system
+      .setPlayerLowLatency(request)
+      .then(
+        (mode) => setLatencyMode(mode),
+        () => setLatencyMode(null),
+      )
+      .finally(() => setLatencyBusy(false))
+  }, [])
+  const toggleLowLatency = (): void => {
+    const next = !(latencyMode ?? lowLatency ?? false)
+    onLowLatencyChange?.(next)
+    syncLowLatency(next)
+  }
   const { dismissQualityChooser, qualityButton, qualityChooser, refreshQualities, resetQualities } =
-    usePlayerQuality(playerRef, frameState === "ready")
+    usePlayerQuality(
+      playerRef,
+      frameState === "ready",
+      source.kind === "live"
+        ? { busy: latencyBusy, enabled: latencyMode, onToggle: toggleLowLatency }
+        : undefined,
+    )
 
   const { captionsButton, captionsChooser, dismissCaptionsChooser, resetCaptions } =
     usePlayerCaptions(playerRef, frameState === "ready")
@@ -230,6 +267,8 @@ export const PlayerView = ({
     let offline = false
     let timelineTimer: ReturnType<typeof setInterval> | undefined
     setFrameState("loading")
+    latencyRequested.current = false
+    setLatencyMode(undefined)
     setPosition(undefined)
     setDuration(undefined)
     resetQualities()
@@ -313,6 +352,10 @@ export const PlayerView = ({
           setPaused(false)
           refreshQualities(player)
           refreshTimeline("playing")
+          if (source.kind === "live" && !latencyRequested.current) {
+            latencyRequested.current = true
+            syncLowLatency(lowLatencyPreference.current ?? null)
+          }
         })
         if (source.kind === "video") {
           player.addEventListener(api.Player.SEEK, () => refreshTimeline("seek"))
@@ -375,6 +418,7 @@ export const PlayerView = ({
     refreshQualities,
     resetCaptions,
     resetQualities,
+    syncLowLatency,
   ])
 
   const retryStartup = (): void => {

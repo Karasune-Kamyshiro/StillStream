@@ -225,8 +225,14 @@ const installPlayerHarness = (
       },
       playbackProgress: progress,
       settings: { snapshot: async () => ({ clientId: "client", secureStorage: false }) },
-      preferences: { snapshot: async () => ({ startScreen: "home" as const }) },
-      system: { activateEmbeddedPlayer, restoreShellFullscreen },
+      preferences: {
+        snapshot: async () => ({ chatTheme: "dark" as const, startScreen: "home" as const }),
+      },
+      system: {
+        activateEmbeddedPlayer,
+        restoreShellFullscreen,
+        setPlayerLowLatency: async () => true,
+      },
     },
   })
   Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", {
@@ -858,6 +864,78 @@ describe("Twitch player surface", () => {
     expect(activateEmbeddedPlayer).toHaveBeenCalledWith(false)
     expect(document.activeElement).not.toBe(container.querySelector("iframe"))
 
+    await act(async () => root.unmount())
+  })
+})
+
+describe("live low latency", () => {
+  it("applies the saved choice once playback starts and toggles it from the Quality menu", async () => {
+    const harness = installPlayerHarness([true])
+    const setPlayerLowLatency = vi.fn(async (enabled: boolean | null) => enabled ?? false)
+    const bridge = (globalThis as { vacuumStream?: { system: { setPlayerLowLatency?: unknown } } })
+      .vacuumStream
+    if (bridge === undefined) throw new Error("Missing bridge")
+    bridge.system.setPlayerLowLatency = setPlayerLowLatency
+    const onLowLatencyChange = vi.fn()
+    const container = document.createElement("div")
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () =>
+      root.render(
+        <PlayerView
+          lowLatency
+          onBack={() => undefined}
+          onLowLatencyChange={onLowLatencyChange}
+          onPastBroadcasts={() => undefined}
+          onSetFullscreen={async () => false}
+          source={source}
+        />,
+      ),
+    )
+    await act(async () => harness.emit("ready"))
+    await act(async () => harness.emit("playing"))
+    await act(async () => harness.emit("playing"))
+    expect(setPlayerLowLatency).toHaveBeenCalledExactlyOnceWith(true)
+    await act(async () => buttonById(container, "player-quality").click())
+    const latency = buttonById(container, "player-quality-low-latency")
+    expect(latency.getAttribute("aria-checked")).toBe("true")
+    expect(latency.textContent).toBe("Low latency: On")
+    // Opening the chooser never lands on the latency switch.
+    expect(document.activeElement).not.toBe(latency)
+    await act(async () => latency.click())
+    expect(onLowLatencyChange).toHaveBeenCalledExactlyOnceWith(false)
+    expect(setPlayerLowLatency).toHaveBeenLastCalledWith(false)
+    expect(latency.textContent).toBe("Low latency: Off")
+    await act(async () => root.unmount())
+  })
+
+  it("only reads Twitch's mode without a saved choice, and shows when it is unavailable", async () => {
+    const harness = installPlayerHarness([true])
+    const setPlayerLowLatency = vi.fn(async () => null)
+    const bridge = (globalThis as { vacuumStream?: { system: { setPlayerLowLatency?: unknown } } })
+      .vacuumStream
+    if (bridge === undefined) throw new Error("Missing bridge")
+    bridge.system.setPlayerLowLatency = setPlayerLowLatency
+    const { container, root } = await mountPlayer(source)
+    await act(async () => harness.emit("ready"))
+    await act(async () => harness.emit("playing"))
+    expect(setPlayerLowLatency).toHaveBeenCalledExactlyOnceWith(null)
+    await act(async () => buttonById(container, "player-quality").click())
+    const latency = buttonById(container, "player-quality-low-latency")
+    expect(latency.textContent).toBe("Low latency: unavailable")
+    expect(latency.getAttribute("aria-disabled")).toBe("true")
+    await act(async () => latency.click())
+    expect(setPlayerLowLatency).toHaveBeenCalledTimes(1)
+    await act(async () => root.unmount())
+  })
+
+  it("has no latency control for past broadcasts", async () => {
+    const harness = installPlayerHarness([true])
+    const { container, root } = await mountPlayer(videoSource)
+    await act(async () => harness.emit("ready"))
+    await act(async () => harness.emit("playing"))
+    await act(async () => buttonById(container, "player-quality").click())
+    expect(container.querySelector('[data-focus-id="player-quality-low-latency"]')).toBeNull()
     await act(async () => root.unmount())
   })
 })
@@ -2240,8 +2318,13 @@ describe("live chat sidebar", () => {
       expect(frames).toHaveLength(1)
       const frame = frames[0]
       if (frame === undefined) throw new Error("Missing chat iframe")
-      expect(frame.src).toBe(`https://www.twitch.tv/embed/${encoded}/chat?parent=localhost`)
-      expect([...new URL(frame.src).searchParams]).toEqual([["parent", "localhost"]])
+      expect(frame.src).toBe(
+        `https://www.twitch.tv/embed/${encoded}/chat?parent=localhost&darkpopout`,
+      )
+      expect([...new URL(frame.src).searchParams]).toEqual([
+        ["parent", "localhost"],
+        ["darkpopout", ""],
+      ])
       expect(frame.tabIndex).toBe(-1)
       expect(frame.hasAttribute("data-focusable")).toBe(false)
       expect(frame.title).toBe(`Live chat for ${channel}`)
@@ -2438,7 +2521,9 @@ describe("live chat sidebar", () => {
     await act(async () => buttonById(container, "player-chat").click())
     const nextFrame = container.querySelector<HTMLIFrameElement>(".player-chat iframe")
     if (nextFrame === null) throw new Error("Missing replacement chat iframe")
-    expect(nextFrame.src).toBe("https://www.twitch.tv/embed/other_channel/chat?parent=localhost")
+    expect(nextFrame.src).toBe(
+      "https://www.twitch.tv/embed/other_channel/chat?parent=localhost&darkpopout",
+    )
     await act(async () => oldFrame.dispatchEvent(new Event("load")))
     expect(container.querySelectorAll(".player-chat iframe")).toHaveLength(1)
     expect(container.querySelector(".player-chat iframe")).toBe(nextFrame)

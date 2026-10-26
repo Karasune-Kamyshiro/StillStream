@@ -104,7 +104,12 @@ export const App = () => {
             ? controller.screen.source.channel
             : controller.screen.source.videoId
         }
+        chatTheme={controller.preferences.chatTheme}
+        {...(controller.preferences.lowLatency === undefined
+          ? {}
+          : { lowLatency: controller.preferences.lowLatency })}
         onBack={controller.navigateHome}
+        onLowLatencyChange={(lowLatency) => void controller.updatePreferences({ lowLatency })}
         onPastBroadcasts={(userId) => void controller.showPastBroadcasts(userId)}
         onSetFullscreen={(fullscreen) => window.vacuumStream.system.setFullscreen(fullscreen)}
         source={controller.screen.source}
@@ -402,6 +407,8 @@ export const App = () => {
             }}
             onAuthChange={controller.setAuth}
             onSettingsChange={controller.updateSettings}
+            chatTheme={controller.preferences.chatTheme}
+            onChatThemeChange={(chatTheme) => controller.updatePreferences({ chatTheme })}
             onStartScreenChange={controller.updateStartScreen}
             settings={controller.settings}
             startScreen={controller.startScreen}

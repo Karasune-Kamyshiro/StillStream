@@ -78,9 +78,10 @@ const makeBridge = (items: readonly PlaybackBookmark[], auth: AuthSnapshot) => {
     },
     preferences: {
       setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
+      update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
       snapshot: vi
         .fn<VacuumStreamApi["preferences"]["snapshot"]>()
-        .mockResolvedValue({ startScreen: "home" }),
+        .mockResolvedValue({ chatTheme: "dark", startScreen: "home" }),
     },
     playerSession: {
       signIn: vi
@@ -107,6 +108,9 @@ const makeBridge = (items: readonly PlaybackBookmark[], auth: AuthSnapshot) => {
       restoreShellFullscreen: vi
         .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
+      setPlayerLowLatency: vi
+        .fn<VacuumStreamApi["system"]["setPlayerLowLatency"]>()
+        .mockResolvedValue(null),
       setFullscreen: vi.fn<VacuumStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
       toggleFullscreen: vi.fn<VacuumStreamApi["system"]["toggleFullscreen"]>(),
     },

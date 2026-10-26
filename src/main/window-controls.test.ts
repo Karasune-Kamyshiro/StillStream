@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { activateEmbeddedPlayer, restoreShellFullscreen } from "./window-controls"
+import {
+  activateEmbeddedPlayer,
+  restoreShellFullscreen,
+  setEmbeddedPlayerLowLatency,
+} from "./window-controls"
 
 const webContentsFor = (result: unknown, executions: boolean[]) => ({
   mainFrame: {
@@ -117,5 +121,47 @@ describe("window controller actions", () => {
     // Then the shell returns to its intended fullscreen baseline
     expect(fullscreen).toBe(true)
     expect(fullscreenStates).toEqual([true])
+  })
+})
+
+describe("embedded player low latency", () => {
+  const contentsWith = (frames: { url: string; result: unknown }[]) => {
+    const scripts: string[] = []
+    return {
+      contents: {
+        mainFrame: {
+          frames: frames.map((frame) => ({
+            executeJavaScript: async (code: string) => {
+              scripts.push(code)
+              if (frame.result instanceof Error) throw frame.result
+              return frame.result
+            },
+            url: frame.url,
+          })),
+        },
+      },
+      scripts,
+    }
+  }
+
+  it("runs a fixed script in the official player frame and reports Twitch's mode", async () => {
+    const { contents, scripts } = contentsWith([
+      { result: true, url: "https://www.twitch.tv/embed/a/chat?parent=localhost" },
+      { result: true, url: "https://player.twitch.tv/?channel=a&parent=localhost" },
+    ])
+    expect(await setEmbeddedPlayerLowLatency(contents, true)).toBe(true)
+    expect(await setEmbeddedPlayerLowLatency(contents, null)).toBe(true)
+    expect(scripts).toHaveLength(2)
+    expect(scripts[0]).toContain("const request = true;")
+    expect(scripts[1]).toContain("const request = null;")
+    expect(scripts[0]).toContain("setLiveLowLatencyEnabled")
+  })
+
+  it("reports null when the player is missing, lacks the control, or answers unexpectedly", async () => {
+    expect(await setEmbeddedPlayerLowLatency(contentsWith([]).contents, false)).toBeNull()
+    for (const result of [null, "yes", new Error("frame gone")]) {
+      const { contents } = contentsWith([{ result, url: "https://player.twitch.tv/?video=1" }])
+      expect(await setEmbeddedPlayerLowLatency(contents, false)).toBeNull()
+    }
   })
 })

@@ -3,11 +3,12 @@ import { join } from "node:path"
 import {
   type PreferencesSnapshot,
   PreferencesSnapshotSchema,
+  type PreferencesUpdate,
+  PreferencesUpdateSchema,
   type StartScreen,
-  StartScreenSchema,
 } from "../shared/contracts"
 
-const DEFAULT_PREFERENCES: PreferencesSnapshot = { startScreen: "home" }
+const defaults = (): PreferencesSnapshot => PreferencesSnapshotSchema.parse({})
 
 const isMissingFile = (error: unknown): boolean =>
   error instanceof Error && "code" in error && error.code === "ENOENT"
@@ -31,22 +32,26 @@ export class PreferencesStore {
     try {
       contents = await readFile(this.#path, "utf8")
     } catch (error) {
-      if (isMissingFile(error)) return DEFAULT_PREFERENCES
+      if (isMissingFile(error)) return defaults()
       throw error
     }
     // A damaged or outdated file must never block startup; fall back to defaults.
     try {
       const parsed = PreferencesSnapshotSchema.safeParse(JSON.parse(contents))
-      return parsed.success ? parsed.data : DEFAULT_PREFERENCES
+      return parsed.success ? parsed.data : defaults()
     } catch {
-      return DEFAULT_PREFERENCES
+      return defaults()
     }
   }
 
-  public setStartScreen(input: StartScreen): Promise<PreferencesSnapshot> {
-    const startScreen = StartScreenSchema.parse(input)
+  public setStartScreen(startScreen: StartScreen): Promise<PreferencesSnapshot> {
+    return this.update({ startScreen })
+  }
+
+  public update(input: PreferencesUpdate): Promise<PreferencesSnapshot> {
+    const update = PreferencesUpdateSchema.parse(input)
     const write = this.#writes.then(async () => {
-      const next = { ...(await this.load()), startScreen }
+      const next = PreferencesSnapshotSchema.parse({ ...(await this.load()), ...update })
       await mkdir(this.#directory, { recursive: true })
       const temporaryPath = `${this.#path}.tmp`
       await writeFile(temporaryPath, JSON.stringify(next, undefined, 2), { mode: 0o600 })

@@ -15,7 +15,9 @@ type ChatSession = {
 }
 
 const isChatUrl = (url: string): boolean =>
-  /^https:\/\/www\.twitch\.tv\/embed\/[a-zA-Z0-9_]{1,25}\/chat\?parent=localhost$/.test(url)
+  /^https:\/\/www\.twitch\.tv\/embed\/[a-zA-Z0-9_]{1,25}\/chat\?parent=localhost(?:&darkpopout)?$/.test(
+    url,
+  )
 
 export const createChatInput = (window: BrowserWindow) => {
   const contents = window.webContents

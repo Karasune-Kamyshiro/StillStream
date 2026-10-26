@@ -11,6 +11,7 @@ import {
   PlaybackProgressGetInputSchema,
   PlaybackProgressRemoveInputSchema,
   PlaybackProgressSaveInputSchema,
+  PreferencesUpdateSchema,
   SearchInputSchema,
   StartScreenSchema,
   VideosInputSchema,
@@ -24,6 +25,7 @@ import type { TwitchWebSession } from "./twitch-web-session"
 import {
   activateEmbeddedPlayer,
   restoreShellFullscreen,
+  setEmbeddedPlayerLowLatency,
   setWindowFullscreen,
 } from "./window-controls"
 
@@ -32,7 +34,7 @@ type IpcOptions = {
   readonly favourites: Pick<FavouritesStore, "add" | "list" | "remove">
   readonly mainWindow: BrowserWindow
   readonly playbackProgress: Pick<PlaybackProgressStore, "get" | "list" | "remove" | "save">
-  readonly preferences: Pick<PreferencesStore, "load" | "setStartScreen">
+  readonly preferences: Pick<PreferencesStore, "load" | "setStartScreen" | "update">
   readonly playerSession: Pick<TwitchWebSession, "setup" | "signIn" | "signOut" | "snapshot">
   readonly rendererOrigin: string
   readonly runningInSteamGameMode: boolean
@@ -191,6 +193,11 @@ export const registerIpc = (options: IpcOptions): void => {
     const [startScreen] = z.tuple([StartScreenSchema]).parse(input)
     return options.preferences.setStartScreen(startScreen)
   })
+  ipcMain.handle(CHANNELS.preferencesUpdate, async (event, ...input: unknown[]) => {
+    authorize(event)
+    const [update] = z.tuple([PreferencesUpdateSchema]).parse(input)
+    return options.preferences.update(update)
+  })
   ipcMain.handle(CHANNELS.playerSessionSnapshot, async (event, ...input: unknown[]) => {
     authorize(event)
     z.tuple([]).parse(input)
@@ -217,6 +224,11 @@ export const registerIpc = (options: IpcOptions): void => {
   ipcMain.handle(CHANNELS.systemRestoreShellFullscreen, (event) => {
     authorize(event)
     return restoreShellFullscreen(options.mainWindow, options.runningInSteamGameMode)
+  })
+  ipcMain.handle(CHANNELS.systemSetPlayerLowLatency, async (event, ...input: unknown[]) => {
+    authorize(event)
+    const [enabled] = z.tuple([z.boolean().nullable()]).parse(input)
+    return setEmbeddedPlayerLowLatency(options.mainWindow.webContents, enabled)
   })
   ipcMain.handle(CHANNELS.systemSetFullscreen, (event, input: unknown) => {
     authorize(event)

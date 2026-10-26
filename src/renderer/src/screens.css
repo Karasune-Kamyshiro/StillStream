@@ -464,6 +464,15 @@
   background: var(--color-rail);
 }
 
+/* Options, Close, then the Low latency switch on one row. */
+.player-quality:has(.player-quality__latency) {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.player-quality__latency[aria-checked="true"] {
+  box-shadow: inset 0 -0.2rem var(--color-accent-strong);
+}
+
 .player-quality__status {
   grid-column: 1 / -1;
   overflow: hidden;

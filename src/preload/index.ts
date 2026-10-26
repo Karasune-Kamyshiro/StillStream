@@ -22,6 +22,7 @@ import {
   PlaybackProgressSaveInputSchema,
   PlayerSessionSnapshotSchema,
   PreferencesSnapshotSchema,
+  PreferencesUpdateSchema,
   SettingsSnapshotSchema,
   StartScreenSchema,
   StreamCardSchema,
@@ -137,6 +138,10 @@ const api = {
       ipcRenderer
         .invoke(CHANNELS.preferencesSnapshot)
         .then((value) => PreferencesSnapshotSchema.parse(value)),
+    update: (update) =>
+      ipcRenderer
+        .invoke(CHANNELS.preferencesUpdate, PreferencesUpdateSchema.parse(update))
+        .then((value) => PreferencesSnapshotSchema.parse(value)),
   },
   playerSession: {
     signIn: () =>
@@ -171,6 +176,10 @@ const api = {
       ipcRenderer.invoke(CHANNELS.systemIsSteamGameMode).then((value) => Boolean(value)),
     restoreShellFullscreen: () =>
       ipcRenderer.invoke(CHANNELS.systemRestoreShellFullscreen).then((value) => Boolean(value)),
+    setPlayerLowLatency: (enabled) =>
+      ipcRenderer
+        .invoke(CHANNELS.systemSetPlayerLowLatency, z.boolean().nullable().parse(enabled))
+        .then((value) => z.boolean().nullable().parse(value)),
     setFullscreen: (fullscreen) =>
       ipcRenderer
         .invoke(CHANNELS.systemSetFullscreen, z.boolean().parse(fullscreen))
