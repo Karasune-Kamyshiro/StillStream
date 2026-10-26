@@ -94,7 +94,7 @@ If a request fails, its error is announced and the action remains available to r
 code returns you to **Sign in with Twitch**. You can leave Settings while sign-in completes; it
 does not pull you back or interrupt Client ID editing.
 
-To open **Following** instead of **Home** at startup, after leaving a stream and on Back, tick
+To open **Following** instead of **Home** at startup, after leaving a stream and on Back, turn on
 **Open Following instead of Home** in the **Start screen** card at the bottom of Settings. It
 applies while signed in; guests always start on Home.
 

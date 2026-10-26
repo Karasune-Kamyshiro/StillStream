@@ -1,5 +1,6 @@
 import {
   CheckCircleIcon,
+  CheckIcon,
   CopyIcon,
   DeviceMobileIcon,
   MonitorPlayIcon,
@@ -353,26 +354,35 @@ export const SettingsPanel = ({
               Following needs a signed-in account; without one the app opens on Home.
             </p>
           </div>
-          <label className="settings-toggle">
-            <input
-              checked={startScreen === "following"}
-              data-focus-id="settings-start-following"
-              data-focus-left="nav-settings"
-              data-focus-up="settings-save"
-              data-focusable="true"
-              disabled={startScreenBusy}
-              onChange={(event) => {
-                const next = event.currentTarget.checked ? "following" : "home"
-                setStartScreenBusy(true)
-                setError("")
-                void onStartScreenChange(next)
-                  .catch(() => setError("The start screen could not be saved"))
-                  .finally(() => setStartScreenBusy(false))
-              }}
-              type="checkbox"
-            />
-            <span>Open Following instead of Home</span>
-          </label>
+          {/* A button, not a checkbox: TV remotes send Enter for OK, which never toggles a
+              checkbox (only Space does). Buttons activate on Enter, Space and a controller A. */}
+          <button
+            aria-busy={startScreenBusy}
+            aria-checked={startScreen === "following"}
+            aria-disabled={startScreenBusy}
+            className="settings-toggle"
+            data-focus-id="settings-start-following"
+            data-focus-left="nav-settings"
+            data-focus-up="settings-save"
+            data-focusable="true"
+            onClick={() => {
+              // aria-disabled keeps controller focus while saving; ignore presses meanwhile.
+              if (startScreenBusy) return
+              const next = startScreen === "following" ? "home" : "following"
+              setStartScreenBusy(true)
+              setError("")
+              void onStartScreenChange(next)
+                .catch(() => setError("The start screen could not be saved"))
+                .finally(() => setStartScreenBusy(false))
+            }}
+            role="switch"
+            type="button"
+          >
+            <span aria-hidden="true" className="settings-toggle__box">
+              {startScreen === "following" ? <CheckIcon weight="bold" /> : null}
+            </span>
+            Open Following instead of Home
+          </button>
         </section>
       )}
       {error !== "" ? (

@@ -66,6 +66,15 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/VacuumStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/VacuumStream</url>
   <releases>
+    <release version="0.2.1-fork.6" date="2026-10-26">
+      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.6</url>
+      <description>
+        <p>TV remote fix.</p>
+        <ul>
+          <li>The start screen option now toggles with a TV remote's OK button, not only with a controller or Space.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.1-fork.5" date="2026-10-25">
       <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.5</url>
       <description>

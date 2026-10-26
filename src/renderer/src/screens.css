@@ -184,18 +184,25 @@
 }
 
 .settings-toggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--space-3);
-  align-self: start;
-  cursor: pointer;
+  justify-self: start;
 }
 
-.settings-toggle input {
+.settings-toggle__box {
+  display: inline-grid;
+  place-items: center;
   inline-size: 1.5rem;
   block-size: 1.5rem;
-  margin: 0;
-  accent-color: var(--color-accent);
+  border: 2px solid var(--color-text-muted);
+  border-radius: var(--radius-badge);
+  color: var(--color-on-accent);
+}
+
+.settings-toggle[aria-checked="true"] .settings-toggle__box {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
 }
 
 .account-status__player {
