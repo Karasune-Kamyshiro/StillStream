@@ -176,6 +176,33 @@ Choose **Quality** for live streams or past broadcasts. Left/Right chooses among
 Twitch supplies; Enter requests a change without changing play/pause or mute. Options may
 appear only after playback starts. **Close** returns focus to Quality; Escape still returns
 Home. A requested quality is not confirmation of a change; Auto can use different resolutions.
+The quality you pick is remembered and requested again for every new stream: the same quality
+when offered, otherwise the best one not above it (1080p60 becomes 720p60 on a 720p stream).
+For live streams, **Low latency: On/Off** sits after Close in the same row and is remembered
+too. Twitch's embed has no official switch for it, so it shows **unavailable** if Twitch changes
+its player.
+
+### Stream fullscreen
+
+The corners button at the end of the toolbar fills the screen with the stream:
+
+| Input | Action |
+| --- | --- |
+| OK / Enter, Space, controller A, click | Play or pause (a large pause symbol shows while paused) |
+| Down | Open the live panel |
+| Back / Escape, controller B, double click | Show the controls again |
+
+The **live panel** runs along the bottom edge and lists the channels you follow that are live.
+Left/Right chooses, OK/A switches to that stream (staying in fullscreen), Up or Back closes.
+The **Live** button before fullscreen in the toolbar opens it outside fullscreen too. A visible
+chat stays visible in fullscreen, beside or over the video.
+
+### Chat layout and appearance
+
+Chat can sit **beside** the video or **over** it. **Over video** in the toolbar (after Reload
+chat) switches live and remembers the choice. The **Chat** card in Settings sets dark chat (on by
+default), the default layout, overlay position (right, left or a top/bottom corner), overlay
+size and opacity, and chat text size. Each option changes with OK, Space or A.
 
 Choose **Captions**, between Quality and Past broadcasts, for live streams or recordings.
 Left/Right selects **Show**, **Hide**, or **Close**; Enter activates the choice. Show and Hide
