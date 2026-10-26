@@ -2,6 +2,7 @@ import { type RefObject, useCallback, useLayoutEffect, useRef, useState } from "
 import { markControllerFocus } from "../focus-navigation"
 import {
   normalizeTwitchQualities,
+  preferredQualityId,
   type TwitchPlayerInstance,
   type TwitchQuality,
 } from "../twitch-player"
@@ -22,11 +23,21 @@ export type LowLatencyControl = {
 
 const LOW_LATENCY_ID = "player-quality-low-latency"
 
+export type QualityPreference = {
+  /** Saved quality id, requested once per stream as soon as Twitch reports it. */
+  readonly preferred: string | undefined
+  readonly onChoose: (id: string) => void
+}
+
 export const usePlayerQuality = (
   playerRef: RefObject<TwitchPlayerInstance | undefined>,
   ready: boolean,
   lowLatency?: LowLatencyControl,
+  preference?: QualityPreference,
 ) => {
+  const preferenceRef = useRef(preference)
+  preferenceRef.current = preference
+  const preferenceApplied = useRef(false)
   const [open, setOpen] = useState(false)
   const [qualities, setQualities] = useState<readonly TwitchQuality[]>([])
   const [requested, setRequested] = useState<TwitchQuality | undefined>(undefined)
@@ -40,6 +51,15 @@ export const usePlayerQuality = (
     try {
       const next = normalizeTwitchQualities(player.getQualities())
       const current = player.getQuality()
+      const preferred = preferenceRef.current?.preferred
+      if (!preferenceApplied.current && preferred !== undefined && next.length > 0) {
+        preferenceApplied.current = true
+        const target = preferred === "auto" ? undefined : preferredQualityId(preferred, next)
+        if (target !== undefined && target !== current) {
+          player.setQuality(target)
+          setRequested(next.find((quality) => quality.id === target))
+        }
+      }
       setQualities(next)
       setReported(current)
       setError("")
@@ -53,6 +73,7 @@ export const usePlayerQuality = (
   }, [])
 
   const resetQualities = useCallback((close = true): void => {
+    if (close) preferenceApplied.current = false
     setQualities([])
     setRequested(undefined)
     setReported(undefined)
@@ -108,6 +129,7 @@ export const usePlayerQuality = (
       player.setQuality(quality.id)
       // A request is not confirmation; Auto's reported quality is its effective resolution.
       setRequested(quality)
+      preferenceRef.current?.onChoose(quality.id)
     } catch {
       setError("Twitch could not accept the quality request. Try again.")
     }

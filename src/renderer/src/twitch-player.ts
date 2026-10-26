@@ -82,6 +82,32 @@ declare global {
 // Documented event name (Twitch.Player.ENDED).
 export const TWITCH_PLAYER_ENDED = "ended"
 
+const qualityHeight = (id: string): number | undefined => {
+  const match = /^(\d{3,4})p/.exec(id)
+  return match?.[1] === undefined ? undefined : Number(match[1])
+}
+
+/**
+ * Picks the stream quality to request for a saved preference: the same id when the stream offers
+ * it (e.g. "1080p60"), otherwise the best quality not above the preferred resolution, so a 1080p60
+ * choice still gets 1080p30 or 720p60 on smaller streams. Source ("chunked") stays Source.
+ */
+export const preferredQualityId = (
+  preferred: string,
+  available: readonly TwitchQuality[],
+): string | undefined => {
+  if (available.some((quality) => quality.id === preferred)) return preferred
+  const limit = qualityHeight(preferred)
+  if (limit === undefined) return undefined
+  return available
+    .map((quality) => ({ height: qualityHeight(quality.id), id: quality.id }))
+    .filter(
+      (quality): quality is { height: number; id: string } =>
+        quality.height !== undefined && quality.height <= limit,
+    )
+    .sort((a, b) => b.height - a.height || b.id.localeCompare(a.id))[0]?.id
+}
+
 let playerApiPromise: Promise<TwitchPlayerApi> | undefined
 
 export const createTwitchPlayerOptions = (

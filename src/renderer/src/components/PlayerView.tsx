@@ -43,6 +43,9 @@ type PlayerViewProps = {
   readonly onBack: () => void
   readonly onLowLatencyChange?: (enabled: boolean) => void
   readonly onPastBroadcasts: (userId: string) => void
+  /** Remembers the quality the viewer picked, for new streams. */
+  readonly onQualityChange?: (quality: string) => void
+  readonly preferredQuality?: string
   /** Sets window fullscreen and resolves with the previous state. */
   readonly onSetFullscreen: (fullscreen: boolean) => Promise<boolean>
   readonly source: PlayerSource
@@ -77,7 +80,9 @@ export const PlayerView = ({
   onBack,
   onLowLatencyChange,
   onPastBroadcasts,
+  onQualityChange,
   onSetFullscreen,
+  preferredQuality,
   source,
 }: PlayerViewProps) => {
   const [frameState, setFrameState] = useState<"loading" | "offline" | "ready" | "startup-error">(
@@ -139,6 +144,7 @@ export const PlayerView = ({
       source.kind === "live"
         ? { busy: latencyBusy, enabled: latencyMode, onToggle: toggleLowLatency }
         : undefined,
+      { onChoose: (id) => onQualityChange?.(id), preferred: preferredQuality },
     )
 
   const { captionsButton, captionsChooser, dismissCaptionsChooser, resetCaptions } =

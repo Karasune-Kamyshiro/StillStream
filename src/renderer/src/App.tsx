@@ -111,6 +111,10 @@ export const App = () => {
         onBack={controller.navigateHome}
         onLowLatencyChange={(lowLatency) => void controller.updatePreferences({ lowLatency })}
         onPastBroadcasts={(userId) => void controller.showPastBroadcasts(userId)}
+        onQualityChange={(quality) => void controller.updatePreferences({ quality })}
+        {...(controller.preferences.quality === undefined
+          ? {}
+          : { preferredQuality: controller.preferences.quality })}
         onSetFullscreen={(fullscreen) => window.vacuumStream.system.setFullscreen(fullscreen)}
         source={controller.screen.source}
       />

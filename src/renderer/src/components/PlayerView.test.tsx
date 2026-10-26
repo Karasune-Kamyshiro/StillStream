@@ -868,6 +868,38 @@ describe("Twitch player surface", () => {
   })
 })
 
+describe("default quality", () => {
+  it("requests the saved quality once per stream and remembers a new choice", async () => {
+    const quality = { available: ["auto", "1080p60", "720p60"] as unknown, current: "auto" }
+    const harness = installPlayerHarness([true], undefined, quality)
+    const onQualityChange = vi.fn()
+    const container = document.createElement("div")
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () =>
+      root.render(
+        <PlayerView
+          onBack={() => undefined}
+          onPastBroadcasts={() => undefined}
+          onQualityChange={onQualityChange}
+          onSetFullscreen={async () => false}
+          preferredQuality="1080p60"
+          source={source}
+        />,
+      ),
+    )
+    await act(async () => harness.emit("ready"))
+    await act(async () => harness.emit("playing"))
+    expect(harness.setQuality.mock.calls).toEqual([["1080p60"]])
+    expect(onQualityChange).not.toHaveBeenCalled()
+    await act(async () => buttonById(container, "player-quality").click())
+    await act(async () => buttonById(container, "player-quality-option-720p60").click())
+    expect(harness.setQuality).toHaveBeenLastCalledWith("720p60")
+    expect(onQualityChange).toHaveBeenCalledExactlyOnceWith("720p60")
+    await act(async () => root.unmount())
+  })
+})
+
 describe("live low latency", () => {
   it("applies the saved choice once playback starts and toggles it from the Quality menu", async () => {
     const harness = installPlayerHarness([true])

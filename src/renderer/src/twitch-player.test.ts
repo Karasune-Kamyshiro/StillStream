@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { createTwitchPlayerOptions, normalizeTwitchQualities } from "./twitch-player"
+import {
+  createTwitchPlayerOptions,
+  normalizeTwitchQualities,
+  preferredQualityId,
+} from "./twitch-player"
 
 describe("Twitch quality normalization", () => {
   it("preserves exact string quality ids without inventing a resolution ladder", () => {
@@ -98,5 +102,23 @@ describe("interactive Twitch player options", () => {
     // Then only the documented video selector is included
     expect(options.video).toBe("42")
     expect("channel" in options).toBe(false)
+  })
+})
+
+describe("preferred quality", () => {
+  const offered = (...ids: string[]) => ids.map((id) => ({ id, label: id }))
+
+  it("requests the saved quality itself when the stream offers it", () => {
+    expect(preferredQualityId("1080p60", offered("chunked", "1080p60", "720p60"))).toBe("1080p60")
+    expect(preferredQualityId("chunked", offered("chunked", "720p60"))).toBe("chunked")
+  })
+
+  it("falls back to the best quality not above the saved resolution", () => {
+    expect(preferredQualityId("1080p60", offered("chunked", "720p60", "720p30", "480p30"))).toBe(
+      "720p60",
+    )
+    expect(preferredQualityId("720p30", offered("1080p60", "720p60", "480p30"))).toBe("720p60")
+    expect(preferredQualityId("480p30", offered("1080p60", "720p60"))).toBeUndefined()
+    expect(preferredQualityId("chunked", offered("1080p60"))).toBeUndefined()
   })
 })

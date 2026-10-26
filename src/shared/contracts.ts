@@ -86,11 +86,14 @@ export const PreferencesSnapshotSchema = z.strictObject({
   chatTheme: ChatThemeSchema.default("dark"),
   /** Undefined until the viewer chooses; Twitch's own player default then applies. */
   lowLatency: z.boolean().optional(),
+  /** Twitch quality id (e.g. "1080p60", "chunked" for Source) requested for new streams. */
+  quality: z.string().min(1).max(64).optional(),
   startScreen: StartScreenSchema.default("home"),
 })
 export const PreferencesUpdateSchema = z.strictObject({
   chatTheme: ChatThemeSchema.optional(),
   lowLatency: z.boolean().optional(),
+  quality: z.string().min(1).max(64).optional(),
   startScreen: StartScreenSchema.optional(),
 })
 export type PreferencesUpdate = z.infer<typeof PreferencesUpdateSchema>
