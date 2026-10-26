@@ -555,6 +555,14 @@
   --player-back-columns: auto auto;
 }
 
+.player-toolbar:has(.player-following) {
+  --player-back-columns: auto auto;
+}
+
+.player-toolbar:has(.player-following):has(.player-retry) {
+  --player-back-columns: auto auto auto;
+}
+
 .player-toolbar > div {
   display: grid;
   min-inline-size: 0;
@@ -809,6 +817,8 @@
 /* The exit control covers the whole stage: a click lands here instead of focusing the Twitch
    iframe, which would otherwise swallow every later key press and controller input. */
 .player-immersive-exit,
+.player-immersive-exit:hover,
+.player-immersive-exit:active,
 .player-immersive-exit[data-controller-focused="true"]:focus,
 .player-immersive-exit:focus-visible {
   position: absolute;

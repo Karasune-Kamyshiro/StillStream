@@ -1027,14 +1027,24 @@ describe("stream fullscreen controls and the live panel", () => {
     )
     expect(container.querySelector(".player-view--immersive")).not.toBeNull()
     await pressKey(container, "Escape")
-    await act(async () => buttonById(container, "player-live").click())
+    // Beside Back, away from the playback controls, so it never reads as a "live" badge.
+    const toolbarButtons = [...container.querySelectorAll(".player-toolbar > button")]
+    expect(toolbarButtons[1]).toBe(buttonById(container, "player-following"))
+    expect(buttonById(container, "player-following").textContent).toBe("Following")
+    expect(buttonById(container, "player-back").getAttribute("data-focus-right")).toBe(
+      "player-following",
+    )
+    expect(buttonById(container, "player-fullscreen").getAttribute("data-focus-left")).not.toBe(
+      "player-following",
+    )
+    await act(async () => buttonById(container, "player-following").click())
     expect(container.querySelector(".live-panel")?.textContent).toContain(
       "None of the channels you follow are live.",
     )
     expect(document.activeElement).toBe(buttonById(container, "live-panel-close"))
     await pressKey(container, "Escape")
     expect(container.querySelector(".live-panel")).toBeNull()
-    expect(document.activeElement).toBe(buttonById(container, "player-live"))
+    expect(document.activeElement).toBe(buttonById(container, "player-following"))
     await act(async () => root.unmount())
   })
 })
@@ -1909,18 +1919,16 @@ describe("controller captions", () => {
     await act(async () => harness.emit("ready"))
     expect(buttonById(container, "player-vods").disabled).toBe(true)
     for (const id of [
+      "player-following",
       "player-playback",
       "player-muted",
       "player-quality",
       "player-captions",
-      "player-live",
       "player-fullscreen",
     ]) {
       await pressKey(container, "ArrowRight")
       expect(document.activeElement).toBe(buttonById(container, id))
     }
-    await pressKey(container, "ArrowLeft")
-    expect(document.activeElement).toBe(buttonById(container, "player-live"))
     await pressKey(container, "ArrowLeft")
     expect(document.activeElement).toBe(buttonById(container, "player-captions"))
     await pressKey(container, "ArrowLeft")
@@ -1951,7 +1959,8 @@ describe("controller captions", () => {
       await act(async () => buttonById(container, "stream-preview-twitch").click())
       if (state !== "loading") await act(async () => harness.emit("ready"))
       if (state === "offline") await act(async () => harness.emit("offline"))
-      const route = state === "ready" ? 4 : 2
+      // Back, then Following (beside Back), then the playback controls.
+      const route = state === "ready" ? 5 : 3
       for (let index = 0; index < route; index += 1) await pressKey(container, "ArrowRight")
       expect(document.activeElement).toBe(buttonById(container, "player-captions"))
       await pressKey(container, "Enter")
@@ -2777,7 +2786,8 @@ describe("live chat sidebar", () => {
       await act(async () => buttonById(container, "stream-preview-twitch").click())
       if (state !== "loading") await act(async () => harness.emit("ready"))
       if (state === "offline") await act(async () => harness.emit("offline"))
-      const route = state === "ready" ? 6 : 4
+      // Back, then Following (beside Back), then the playback controls.
+      const route = state === "ready" ? 7 : 5
       for (let index = 0; index < route; index += 1) await pressKey(container, "ArrowRight")
       expect(document.activeElement).toBe(buttonById(container, "player-chat"))
       await pressKey(container, "Enter")

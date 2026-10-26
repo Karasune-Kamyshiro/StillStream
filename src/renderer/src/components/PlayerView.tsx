@@ -144,13 +144,7 @@ export const PlayerView = ({
     chatPane,
     chatReloadButton,
     fullscreenLeft,
-  } = usePlayerChat(
-    source,
-    backButtonRef,
-    chatAppearance,
-    onChatLayoutChange,
-    onSwitchStream === undefined ? "player-fullscreen" : "player-live",
-  )
+  } = usePlayerChat(source, backButtonRef, chatAppearance, onChatLayoutChange)
 
   // Low latency exists only for live streams. Twitch reports the mode; the saved choice is
   // re-applied once per stream, after playback starts and the player's controls exist.
@@ -182,6 +176,7 @@ export const PlayerView = ({
         ? { busy: latencyBusy, enabled: latencyMode, onToggle: toggleLowLatency }
         : undefined,
       { onChoose: (id) => onQualityChange?.(id), preferred: preferredQuality },
+      onSwitchStream === undefined ? "player-back" : "player-following",
     )
 
   const { captionsButton, captionsChooser, dismissCaptionsChooser, resetCaptions } =
@@ -570,8 +565,16 @@ export const PlayerView = ({
     player.seek(destination)
   }
 
+  // Following sits beside Back, apart from the playback controls; it then leads into them.
+  const toolbarStartId = onSwitchStream === undefined ? "player-back" : "player-following"
+  const firstControlId =
+    frameState === "startup-error"
+      ? "player-retry"
+      : frameState === "ready"
+        ? "player-playback"
+        : "player-quality"
   // The control after the chat/VOD group: the Live button when present, else fullscreen.
-  const afterToolbarId = onSwitchStream === undefined ? "player-fullscreen" : "player-live"
+  const afterToolbarId = "player-fullscreen"
   const showHours = duration !== undefined && duration >= 3600
   const unknownBroadcaster = source.kind === "video" && source.userId === "0"
   const seekTransportUsable =
@@ -641,13 +644,7 @@ export const PlayerView = ({
           }
           data-focus-id="player-back"
           data-focus-left="player-fullscreen"
-          data-focus-right={
-            frameState === "startup-error"
-              ? "player-retry"
-              : frameState === "ready"
-                ? "player-playback"
-                : "player-quality"
-          }
+          data-focus-right={onSwitchStream === undefined ? firstControlId : "player-following"}
           data-focusable="true"
           onClick={onBack}
           ref={backButtonRef}
@@ -656,12 +653,30 @@ export const PlayerView = ({
           <ArrowLeftIcon aria-hidden="true" />
           Back
         </button>
+        {onSwitchStream === undefined ? null : (
+          <button
+            aria-controls={livePanelOpen ? "live-panel" : undefined}
+            aria-expanded={livePanelOpen}
+            className="player-following"
+            data-focus-id="player-following"
+            data-focus-left="player-back"
+            data-focus-right={firstControlId}
+            data-focus-up="player-back"
+            data-focusable="true"
+            onClick={() => (livePanelOpen ? closeLivePanel() : openLivePanel())}
+            ref={liveButtonRef}
+            type="button"
+          >
+            <BroadcastIcon aria-hidden="true" />
+            Following
+          </button>
+        )}
         {frameState === "startup-error" ? (
           <button
             className="player-retry"
             data-focus-down="player-back"
             data-focus-id="player-retry"
-            data-focus-left="player-back"
+            data-focus-left={toolbarStartId}
             data-focus-right="player-quality"
             data-focus-up="player-back"
             data-focusable="true"
@@ -678,7 +693,7 @@ export const PlayerView = ({
         <button
           aria-label={paused ? "Play" : "Pause"}
           data-focus-id="player-playback"
-          data-focus-left="player-back"
+          data-focus-left={toolbarStartId}
           data-focus-right="player-muted"
           data-focusable="true"
           disabled={frameState !== "ready"}
@@ -743,26 +758,10 @@ export const PlayerView = ({
         {chatEnterButton}
         {chatReloadButton}
         {chatLayoutButton}
-        {onSwitchStream === undefined ? null : (
-          <button
-            aria-controls={livePanelOpen ? "live-panel" : undefined}
-            aria-expanded={livePanelOpen}
-            data-focus-id="player-live"
-            data-focus-left={toolbarFullscreenLeft}
-            data-focus-right="player-fullscreen"
-            data-focusable="true"
-            onClick={() => (livePanelOpen ? closeLivePanel() : openLivePanel())}
-            ref={liveButtonRef}
-            type="button"
-          >
-            <BroadcastIcon aria-hidden="true" />
-            Live
-          </button>
-        )}
         <button
           aria-label="Fullscreen stream"
           data-focus-id="player-fullscreen"
-          data-focus-left={onSwitchStream === undefined ? toolbarFullscreenLeft : "player-live"}
+          data-focus-left={toolbarFullscreenLeft}
           data-focus-right="player-back"
           data-focusable="true"
           onClick={enterImmersive}

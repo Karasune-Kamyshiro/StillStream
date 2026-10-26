@@ -194,7 +194,7 @@ The corners button at the end of the toolbar fills the screen with the stream:
 
 The **live panel** runs along the bottom edge and lists the channels you follow that are live.
 Left/Right chooses, OK/A switches to that stream (staying in fullscreen), Up or Back closes.
-The **Live** button before fullscreen in the toolbar opens it outside fullscreen too. A visible
+The **Following** button beside Back in the toolbar opens it outside fullscreen too. A visible
 chat stays visible in fullscreen, beside or over the video.
 
 ### Chat layout and appearance

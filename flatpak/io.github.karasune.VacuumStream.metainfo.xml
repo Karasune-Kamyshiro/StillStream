@@ -66,13 +66,23 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/VacuumStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/VacuumStream</url>
   <releases>
+    <release version="0.2.1-fork.8" date="2026-10-26">
+      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.8</url>
+      <description>
+        <p>Player polish.</p>
+        <ul>
+          <li>No grey haze over the stream when the mouse rests on it in stream fullscreen.</li>
+          <li>The live panel button is now "Following", beside Back, away from the playback controls.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.1-fork.7" date="2026-10-26">
       <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.7</url>
       <description>
         <p>TV controls, live panel and chat overlay.</p>
         <ul>
           <li>In stream fullscreen, OK, Space and A play or pause instead of leaving; Back leaves.</li>
-          <li>A live panel along the bottom lists followed channels that are live; open it with Down in fullscreen or the Live button, and switch streams without leaving fullscreen.</li>
+          <li>A live panel along the bottom lists followed channels that are live; open it with Down in fullscreen or the Following button, and switch streams without leaving fullscreen.</li>
           <li>Chat can be shown over the video, also in fullscreen, with position, size, opacity and text size settings. Chat is dark by default.</li>
           <li>A low latency switch for live streams in the Quality menu.</li>
           <li>The chosen quality is remembered for new streams.</li>

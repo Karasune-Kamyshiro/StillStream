@@ -34,6 +34,8 @@ export const usePlayerQuality = (
   ready: boolean,
   lowLatency?: LowLatencyControl,
   preference?: QualityPreference,
+  /** The toolbar control before Quality while playback controls are unavailable. */
+  toolbarStartId = "player-back",
 ) => {
   const preferenceRef = useRef(preference)
   preferenceRef.current = preference
@@ -149,7 +151,7 @@ export const usePlayerQuality = (
         aria-expanded={open}
         data-focus-down={open ? firstId : "player-quality"}
         data-focus-id="player-quality"
-        data-focus-left={ready ? "player-muted" : "player-back"}
+        data-focus-left={ready ? "player-muted" : toolbarStartId}
         data-focus-right="player-captions"
         data-focus-up="player-back"
         data-focusable="true"
