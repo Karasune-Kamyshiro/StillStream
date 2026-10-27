@@ -684,3 +684,21 @@ describe("Settings return path", () => {
     expect(toggle.getAttribute("aria-checked")).toBe("true")
   })
 })
+
+describe("Sidebar navigation", () => {
+  it("moves Up/Down between tabs only, never into the page beside them", async () => {
+    compactNavigation = false
+    const bridge = makeBridge(authenticated)
+    vi.stubGlobal("vacuumStream", bridge)
+    root = createRoot(container)
+    await act(async () => root?.render(<App />))
+    await activate("nav-search")
+    target("nav-search").focus()
+    await key("ArrowDown")
+    expectFocus("nav-settings")
+    await key("ArrowUp")
+    expectFocus("nav-search")
+    await key("ArrowUp")
+    expectFocus("nav-following")
+  })
+})

@@ -481,8 +481,25 @@ export const PlayerView = ({
   useEffect(() => {
     if (!immersive) return
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== "ArrowUp" || livePanelOpenRef.current) return
+      if ((event.key !== "ArrowUp" && event.key !== "ArrowDown") || livePanelOpenRef.current) return
       const active = document.activeElement
+      // Down from the video is the Following panel's key; only Up toggles the bar there.
+      if (event.key === "ArrowDown") {
+        // Like the Following panel, the bar also closes with Down from its top row, unless one of
+        // its rows below (seek jumps, Quality or Captions) is open for Down to move into.
+        if (!(active instanceof HTMLElement) || active.closest(".player-toolbar") === null) return
+        if (
+          !controlsVisibleRef.current ||
+          controlsRef.current?.querySelector(
+            ".player-transport, .player-quality, .player-captions",
+          ) !== null
+        )
+          return
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        hideControls(true)
+        return
+      }
       if (active === immersiveExitRef.current) {
         event.preventDefault()
         event.stopImmediatePropagation()

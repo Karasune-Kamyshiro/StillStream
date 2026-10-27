@@ -20,6 +20,16 @@ const items = [
   { icon: MagnifyingGlassIcon, label: "Search", route: "search" },
 ] as const
 
+// Tab order along the navigation axis (top to bottom, or left to right in the compact bar).
+const order = ["nav-home", "nav-following", "nav-search", "nav-settings"] as const
+const neighbours = (id: (typeof order)[number]) => {
+  const index = order.indexOf(id)
+  return {
+    ...(index > 0 ? { "data-nav-previous": order[index - 1] } : {}),
+    ...(index < order.length - 1 ? { "data-nav-next": order[index + 1] } : {}),
+  }
+}
+
 const routeEntryTarget: Readonly<Record<RouteName, string>> = {
   following: "following-connect",
   home: "home-sign-in",
@@ -40,6 +50,7 @@ export const Navigation = ({ active, entryFocusId, onNavigate }: NavigationProps
           className="navigation__item"
           data-focus-down={active === route ? (entryFocusId ?? routeEntryTarget[route]) : undefined}
           data-focus-id={`nav-${route}`}
+          {...neighbours(`nav-${route}`)}
           data-focus-right={
             active === route ? (entryFocusId ?? routeEntryTarget[route]) : undefined
           }
@@ -60,6 +71,7 @@ export const Navigation = ({ active, entryFocusId, onNavigate }: NavigationProps
         active === "settings" ? (entryFocusId ?? routeEntryTarget.settings) : undefined
       }
       data-focus-id="nav-settings"
+      {...neighbours("nav-settings")}
       data-focus-right={
         active === "settings" ? (entryFocusId ?? routeEntryTarget.settings) : undefined
       }

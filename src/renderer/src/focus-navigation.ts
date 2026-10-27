@@ -69,11 +69,19 @@ export const focusDirectionalOverride = (
   const insideNavigation = current.closest(".navigation") !== null
   if (insideNavigation) {
     const horizontalNavigation = matchMedia("(width < 45rem)").matches
-    if (
-      (horizontalNavigation && (direction === "left" || direction === "right")) ||
-      (!horizontalNavigation && (direction === "up" || direction === "down"))
-    ) {
-      return undefined
+    const along = horizontalNavigation
+      ? direction === "left" || direction === "right"
+      : direction === "up" || direction === "down"
+    if (along) {
+      // Along the navigation's own axis, move between its tabs in their fixed order.
+      const forward = direction === "down" || direction === "right"
+      const { navNext, navPrevious } = current.dataset
+      const neighbourId = forward ? navNext : navPrevious
+      if (neighbourId === undefined) return current
+      return (
+        document.querySelector<HTMLElement>(`.navigation [data-focus-id="${neighbourId}"]`) ??
+        undefined
+      )
     }
   }
   const { focusDown, focusLeft, focusRight, focusUp } = current.dataset
@@ -311,9 +319,24 @@ export const useControllerNavigation = (): void => {
         }
       }
 
+      // Along the navigation's own axis (Up/Down in the sidebar, Left/Right in the compact bar)
+      // only its tabs are candidates, so Down from Search reaches Settings rather than whatever
+      // page control happens to be geometrically nearer.
+      const navigation =
+        activeElement instanceof HTMLElement ? activeElement.closest(".navigation") : null
+      const alongNavigation =
+        navigation !== null &&
+        (matchMedia("(width < 45rem)").matches
+          ? direction === "left" || direction === "right"
+          : direction === "up" || direction === "down")
       const elements = [
         ...document.querySelectorAll<HTMLElement>('[data-focusable="true"]'),
-      ].filter((element) => !element.hasAttribute("disabled") && element.offsetParent !== null)
+      ].filter(
+        (element) =>
+          !element.hasAttribute("disabled") &&
+          element.offsetParent !== null &&
+          (!alongNavigation || navigation?.contains(element) === true),
+      )
       const candidates = elements.map((element, index) => {
         const bounds = element.getBoundingClientRect()
         const { focusId } = element.dataset

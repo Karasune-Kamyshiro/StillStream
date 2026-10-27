@@ -196,7 +196,7 @@ between the two.
 | Input | Action |
 | --- | --- |
 | OK / Enter, Space, controller A, click | Play or pause (a large pause symbol shows while paused) |
-| Up | Show the control bar with focus on play/pause; Up from the bar hides it again |
+| Up | Show the control bar with focus on play/pause; Up or Down from the bar hides it again |
 | Down | Open the live panel; Down again closes it |
 | Back / Escape, controller B | Hide the bar if you are in it, otherwise leave fullscreen |
 | Double click | Leave fullscreen |

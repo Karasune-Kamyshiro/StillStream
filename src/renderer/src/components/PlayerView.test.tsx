@@ -1215,6 +1215,24 @@ describe("fullscreen-first player with an overlay control bar", () => {
     await act(async () => root.unmount())
   })
 
+  it("closes the bar with Down as well as Up and Back, like the Following panel", async () => {
+    const harness = installPlayerHarness([true])
+    const { container, hidden, root } = await mountFullscreenFirst()
+    await act(async () => harness.emit("ready"))
+    expect(document.activeElement).toBe(buttonById(container, "player-playback"))
+    await pressKey(container, "ArrowDown")
+    expect(hidden()).toBe(true)
+    expect(document.activeElement).toBe(buttonById(container, "player-immersive-exit"))
+    // Up brings it back; Down from any top-row control closes it again.
+    await pressKey(container, "ArrowUp")
+    await pressKey(container, "ArrowRight")
+    await pressKey(container, "ArrowRight")
+    expect(document.activeElement).toBe(buttonById(container, "player-quality"))
+    await pressKey(container, "ArrowDown")
+    expect(hidden()).toBe(true)
+    await act(async () => root.unmount())
+  })
+
   it("keeps the bar up while one of its menus is open, and Back closes the menu first", async () => {
     const harness = installPlayerHarness([true], undefined, {
       available: ["auto", "720p60"],
