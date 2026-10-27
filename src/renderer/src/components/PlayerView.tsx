@@ -49,6 +49,8 @@ type PlayerViewProps = {
   readonly onSwitchStream?: (stream: StreamCard) => void
   /** Whether a Twitch account is connected, for the live panel's followed channels. */
   readonly signedIn?: boolean
+  /** Opens the stream in stream fullscreen, with the controls as a timed overlay. */
+  readonly startInFullscreen?: boolean
   /** Saved low-latency choice; undefined keeps Twitch's own default. */
   readonly lowLatency?: boolean
   readonly onBack: () => void
@@ -91,6 +93,7 @@ export const PlayerView = ({
   fullscreenCarry,
   onSwitchStream,
   signedIn = false,
+  startInFullscreen = false,
   lowLatency,
   onBack,
   onChatLayoutChange,
@@ -121,6 +124,12 @@ export const PlayerView = ({
     fullscreenCarry.immersive = immersiveRef.current
     fullscreenCarry.restoreWindowed = restoreWindowedRef.current
   }
+  // In stream fullscreen the toolbar is an overlay: shown for a few seconds on entry, then hidden;
+  // Up toggles it. Outside fullscreen it is the ordinary, always visible bar.
+  const [controlsVisible, setControlsVisible] = useState(true)
+  const controlsVisibleRef = useRef(true)
+  const controlsRef = useRef<HTMLDivElement>(null)
+  const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [livePanelOpen, setLivePanelOpen] = useState(false)
   const livePanelOpenRef = useRef(false)
   const liveButtonRef = useRef<HTMLButtonElement>(null)
@@ -283,6 +292,64 @@ export const PlayerView = ({
     return () => document.removeEventListener("keydown", onKeyDown, true)
   }, [immersive, livePanelOpen, onSwitchStream])
 
+  const clearControlsTimer = useCallback((): void => {
+    if (controlsTimerRef.current !== undefined) clearTimeout(controlsTimerRef.current)
+    controlsTimerRef.current = undefined
+  }, [])
+  const focusElement = (element: HTMLElement | null | undefined): void => {
+    if (element === null || element === undefined) return
+    markControllerFocus(element)
+    element.focus()
+  }
+  const hideControls = (focusSurface: boolean): void => {
+    clearControlsTimer()
+    controlsVisibleRef.current = false
+    setControlsVisible(false)
+    if (focusSurface) focusElement(immersiveExitRef.current)
+  }
+  // Shown with focus left on the video (OK stays play/pause) auto-hides after five seconds;
+  // shown by Up with focus moved into the bar stays until Up or Back.
+  const showControls = (focusInto: boolean): void => {
+    clearControlsTimer()
+    controlsVisibleRef.current = true
+    setControlsVisible(true)
+    if (focusInto) {
+      const playback = controlsRef.current?.querySelector<HTMLButtonElement>(
+        '[data-focus-id="player-playback"]',
+      )
+      focusElement(
+        playback !== null && playback !== undefined && !playback.disabled
+          ? playback
+          : backButtonRef.current,
+      )
+      return
+    }
+    controlsTimerRef.current = setTimeout(() => {
+      controlsTimerRef.current = undefined
+      if (!immersiveRef.current) return
+      if (controlsRef.current?.contains(document.activeElement)) return
+      controlsVisibleRef.current = false
+      setControlsVisible(false)
+    }, 5_000)
+  }
+  useEffect(() => clearControlsTimer, [clearControlsTimer])
+
+  // Focus or pointer activity in the overlay bar keeps it visible.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: showControls only touches refs/state.
+  useEffect(() => {
+    const controls = controlsRef.current
+    if (controls === null || !immersive) return
+    const onPointer = (): void => {
+      if (controlsTimerRef.current !== undefined) showControls(false)
+    }
+    controls.addEventListener("focusin", clearControlsTimer)
+    controls.addEventListener("mousemove", onPointer)
+    return () => {
+      controls.removeEventListener("focusin", clearControlsTimer)
+      controls.removeEventListener("mousemove", onPointer)
+    }
+  }, [canPlay, clearControlsTimer, immersive])
+
   // Main reports Escape pressed while the Twitch iframe holds keyboard focus (after a click on
   // the video). Take focus back: leave stream fullscreen, or return to the toolbar.
   useEffect(() => {
@@ -297,21 +364,72 @@ export const PlayerView = ({
     return () => document.removeEventListener(PLAYER_ESCAPE_EVENT, onPlayerEscape)
   }, [exitImmersive])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on entering fullscreen only.
+  useEffect(() => {
+    if (!immersive) {
+      clearControlsTimer()
+      controlsVisibleRef.current = true
+      setControlsVisible(true)
+      return
+    }
+    // Keep keyboard and controller input in the shell, not inside the Twitch iframe.
+    focusElement(immersiveExitRef.current)
+    showControls(false)
+  }, [immersive])
+
+  // Up toggles the overlay bar: from the video it shows the bar and moves focus into it; from the
+  // bar's top row (where Up has nowhere else to go) it hides the bar and returns to the video.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: helpers only touch refs and setters.
   useEffect(() => {
     if (!immersive) return
-    // Keep keyboard and controller input in the shell, not inside the Twitch iframe.
-    const exitButton = immersiveExitRef.current
-    if (exitButton !== null) {
-      markControllerFocus(exitButton)
-      exitButton.focus()
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== "ArrowUp" || livePanelOpenRef.current) return
+      const active = document.activeElement
+      if (active === immersiveExitRef.current) {
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        if (controlsVisibleRef.current) hideControls(false)
+        else showControls(true)
+        return
+      }
+      if (!(active instanceof HTMLElement) || active.closest(".player-toolbar") === null) return
+      const up = active.getAttribute("data-focus-up")
+      if (up !== null && up !== "player-back" && up !== active.getAttribute("data-focus-id")) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      hideControls(true)
     }
+    document.addEventListener("keydown", onKeyDown, true)
+    return () => document.removeEventListener("keydown", onKeyDown, true)
   }, [immersive])
 
   // Back closes the submenu the viewer is in, or the first one still open, before leaving.
   const dismissSubmenu = useCallback((): boolean => {
     if (closeLivePanel()) return true
-    if (exitImmersive()) return true
     const focused = document.activeElement
+    const inSubmenu = [
+      "player-quality-chooser",
+      "player-captions-chooser",
+      "player-seek-transport",
+    ].some((id) => focused instanceof Element && focused.closest(`#${id}`) !== null)
+    // In stream fullscreen, Back from the overlay bar hides the bar; Back from the video leaves.
+    if (
+      !inSubmenu &&
+      immersiveRef.current &&
+      controlsVisibleRef.current &&
+      controlsRef.current?.contains(focused)
+    ) {
+      clearControlsTimer()
+      controlsVisibleRef.current = false
+      setControlsVisible(false)
+      const surface = immersiveExitRef.current
+      if (surface !== null) {
+        markControllerFocus(surface)
+        surface.focus()
+      }
+      return true
+    }
+    if (!inSubmenu && exitImmersive()) return true
     const submenus = [
       { dismiss: dismissQualityChooser, id: "player-quality-chooser" },
       { dismiss: dismissCaptionsChooser, id: "player-captions-chooser" },
@@ -324,6 +442,7 @@ export const PlayerView = ({
       ? submenus.some(({ dismiss }) => dismiss())
       : focusedSubmenu.dismiss()
   }, [
+    clearControlsTimer,
     closeLivePanel,
     dismissCaptionsChooser,
     dismissQualityChooser,
@@ -342,8 +461,20 @@ export const PlayerView = ({
   }, [])
 
   useEffect(() => {
-    if (canPlay) backButtonRef.current?.focus()
+    if (!canPlay) return
+    // In stream fullscreen OK must stay play/pause, so focus the video rather than Back.
+    if (immersiveRef.current) immersiveExitRef.current?.focus()
+    else backButtonRef.current?.focus()
   }, [canPlay])
+
+  // Streams open in stream fullscreen when the viewer prefers it (and keep it across switches).
+  const startedFullscreen = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once per mounted source.
+  useEffect(() => {
+    if (startedFullscreen.current || !startInFullscreen || immersiveRef.current) return
+    startedFullscreen.current = true
+    enterImmersive()
+  }, [])
   useEffect(() => {
     if (frameState !== "ready") return undefined
     // Ads and Twitch's own controls change playback without always emitting PLAY or PAUSE, so the
@@ -600,6 +731,7 @@ export const PlayerView = ({
         "player-view",
         source.kind === "video" && seekTransportOpen ? "player-view--video" : undefined,
         immersive ? "player-view--immersive" : undefined,
+        immersive && !controlsVisible ? "player-view--controls-hidden" : undefined,
       ]
         .filter((name) => name !== undefined)
         .join(" ")}
@@ -618,13 +750,18 @@ export const PlayerView = ({
           // OK, A, Space and a click toggle playback; a double click leaves like Back does.
           onClick={togglePlayback}
           onDoubleClick={exitImmersive}
+          onMouseMove={() => {
+            if (!controlsVisibleRef.current || controlsTimerRef.current !== undefined) {
+              showControls(false)
+            }
+          }}
           ref={immersiveExitRef}
           type="button"
         >
           <span className="player-immersive-exit__hint" id="player-immersive-hint">
             <CornersInIcon aria-hidden="true" />
-            OK / A / Space: play or pause ·{" "}
-            {onSwitchStream === undefined ? "" : "Down: live channels · "}Back: controls
+            OK / A: play or pause · Up: controls ·{" "}
+            {onSwitchStream === undefined ? "" : "Down: following · "}Back: exit fullscreen
           </span>
           {paused && frameState === "ready" ? (
             <span aria-hidden="true" className="player-immersive-exit__paused">
@@ -633,182 +770,193 @@ export const PlayerView = ({
           ) : null}
         </button>
       ) : null}
-      <header className="player-toolbar">
-        <button
-          data-focus-down={
-            source.kind === "video"
-              ? seekTransportOpen
-                ? "player-seek-back-5m"
-                : "player-back"
-              : undefined
-          }
-          data-focus-id="player-back"
-          data-focus-left="player-fullscreen"
-          data-focus-right={onSwitchStream === undefined ? firstControlId : "player-following"}
-          data-focusable="true"
-          onClick={onBack}
-          ref={backButtonRef}
-          type="button"
-        >
-          <ArrowLeftIcon aria-hidden="true" />
-          Back
-        </button>
-        {onSwitchStream === undefined ? null : (
+      {/* Ordinary rows outside fullscreen (display: contents); a top overlay inside it. */}
+      <div className="player-controls" ref={controlsRef}>
+        <header className="player-toolbar">
           <button
-            aria-controls={livePanelOpen ? "live-panel" : undefined}
-            aria-expanded={livePanelOpen}
-            className="player-following"
-            data-focus-id="player-following"
-            data-focus-left="player-back"
-            data-focus-right={firstControlId}
-            data-focus-up="player-back"
+            data-focus-down={
+              source.kind === "video"
+                ? seekTransportOpen
+                  ? "player-seek-back-5m"
+                  : "player-back"
+                : undefined
+            }
+            data-focus-id="player-back"
+            data-focus-left="player-fullscreen"
+            data-focus-right={onSwitchStream === undefined ? firstControlId : "player-following"}
             data-focusable="true"
-            onClick={() => (livePanelOpen ? closeLivePanel() : openLivePanel())}
-            ref={liveButtonRef}
+            onClick={onBack}
+            ref={backButtonRef}
             type="button"
           >
-            <BroadcastIcon aria-hidden="true" />
-            Following
+            <ArrowLeftIcon aria-hidden="true" />
+            Back
           </button>
-        )}
-        {frameState === "startup-error" ? (
-          <button
-            className="player-retry"
-            data-focus-down="player-back"
-            data-focus-id="player-retry"
-            data-focus-left={toolbarStartId}
-            data-focus-right="player-quality"
-            data-focus-up="player-back"
-            data-focusable="true"
-            onClick={retryStartup}
-            type="button"
-          >
-            Retry loading player
-          </button>
-        ) : null}
-        <div>
-          <strong>{source.title}</strong>
-          <span>{source.kind === "live" ? "Live on Twitch" : "Past broadcast"}</span>
-        </div>
-        <button
-          aria-label={paused ? "Play" : "Pause"}
-          data-focus-id="player-playback"
-          data-focus-left={toolbarStartId}
-          data-focus-right="player-muted"
-          data-focusable="true"
-          disabled={frameState !== "ready"}
-          onClick={togglePlayback}
-          type="button"
-        >
-          {paused ? <PlayIcon aria-hidden="true" /> : <PauseIcon aria-hidden="true" />}
-        </button>
-        <button
-          aria-label={muted ? "Unmute" : "Mute"}
-          data-focus-id="player-muted"
-          data-focus-left="player-playback"
-          data-focus-right="player-quality"
-          data-focusable="true"
-          disabled={frameState !== "ready"}
-          onClick={toggleMuted}
-          type="button"
-        >
-          {muted ? (
-            <SpeakerSimpleXIcon aria-hidden="true" data-icon-state="muted" />
-          ) : (
-            <SpeakerHighIcon aria-hidden="true" data-icon-state="audible" />
-          )}
-        </button>
-        {frameState === "startup-error"
-          ? cloneElement(qualityButton, { "data-focus-left": "player-retry" })
-          : qualityButton}
-        {unknownBroadcaster
-          ? cloneElement(captionsButton, { "data-focus-right": captionsRight })
-          : captionsButton}
-        <button
-          data-focus-id="player-vods"
-          data-focus-left="player-captions"
-          data-focus-right={vodsRight}
-          data-focusable="true"
-          disabled={unknownBroadcaster}
-          onClick={() => onPastBroadcasts(source.userId)}
-          type="button"
-        >
-          <FilmStripIcon aria-hidden="true" />
-          Past broadcasts
-        </button>
-        {source.kind === "video" ? (
-          <button
-            aria-controls={seekTransportOpen ? "player-seek-transport" : undefined}
-            aria-expanded={seekTransportOpen}
-            data-focus-down={seekTransportOpen ? "player-seek-back-5m" : "player-seek"}
-            data-focus-id="player-seek"
-            data-focus-left={seekLeft}
-            data-focus-right={afterToolbarId}
-            data-focus-up="player-back"
-            data-focusable="true"
-            disabled={!seekTransportUsable}
-            onClick={() => setSeekTransportOpen((open) => !open)}
-            ref={seekButtonRef}
-            type="button"
-          >
-            Seek
-          </button>
-        ) : null}
-        {chatButton}
-        {chatEnterButton}
-        {chatReloadButton}
-        {chatLayoutButton}
-        <button
-          aria-label="Fullscreen stream"
-          data-focus-id="player-fullscreen"
-          data-focus-left={toolbarFullscreenLeft}
-          data-focus-right="player-back"
-          data-focusable="true"
-          onClick={enterImmersive}
-          ref={fullscreenButtonRef}
-          type="button"
-        >
-          <CornersOutIcon aria-hidden="true" />
-        </button>
-      </header>
-      {source.kind === "video" && seekTransportOpen ? (
-        <section
-          aria-label="Past broadcast seeking"
-          className="player-transport"
-          id="player-seek-transport"
-        >
-          {SEEK_ACTIONS.map((action, index) => (
+          {onSwitchStream === undefined ? null : (
             <button
+              aria-controls={livePanelOpen ? "live-panel" : undefined}
+              aria-expanded={livePanelOpen}
+              className="player-following"
+              data-focus-id="player-following"
+              data-focus-left="player-back"
+              data-focus-right={firstControlId}
+              data-focus-up="player-back"
+              data-focusable="true"
+              onClick={() => (livePanelOpen ? closeLivePanel() : openLivePanel())}
+              ref={liveButtonRef}
+              type="button"
+            >
+              <BroadcastIcon aria-hidden="true" />
+              Following
+            </button>
+          )}
+          {frameState === "startup-error" ? (
+            <button
+              className="player-retry"
               data-focus-down="player-back"
-              data-focus-id={action.id}
-              data-focus-left={SEEK_ACTIONS[index - 1]?.id ?? LAST_SEEK_ACTION.id}
-              data-focus-right={SEEK_ACTIONS[index + 1]?.id ?? FIRST_SEEK_ACTION.id}
+              data-focus-id="player-retry"
+              data-focus-left={toolbarStartId}
+              data-focus-right="player-quality"
+              data-focus-up="player-back"
+              data-focusable="true"
+              onClick={retryStartup}
+              type="button"
+            >
+              Retry loading player
+            </button>
+          ) : null}
+          <div>
+            <strong>{source.title}</strong>
+            <span>{source.kind === "live" ? "Live on Twitch" : "Past broadcast"}</span>
+          </div>
+          <button
+            aria-label={paused ? "Play" : "Pause"}
+            data-focus-id="player-playback"
+            data-focus-left={toolbarStartId}
+            data-focus-right="player-muted"
+            data-focusable="true"
+            disabled={frameState !== "ready"}
+            onClick={togglePlayback}
+            type="button"
+          >
+            {paused ? <PlayIcon aria-hidden="true" /> : <PauseIcon aria-hidden="true" />}
+          </button>
+          <button
+            aria-label={muted ? "Unmute" : "Mute"}
+            data-focus-id="player-muted"
+            data-focus-left="player-playback"
+            data-focus-right="player-quality"
+            data-focusable="true"
+            disabled={frameState !== "ready"}
+            onClick={toggleMuted}
+            type="button"
+          >
+            {muted ? (
+              <SpeakerSimpleXIcon aria-hidden="true" data-icon-state="muted" />
+            ) : (
+              <SpeakerHighIcon aria-hidden="true" data-icon-state="audible" />
+            )}
+          </button>
+          {frameState === "startup-error"
+            ? cloneElement(qualityButton, { "data-focus-left": "player-retry" })
+            : qualityButton}
+          {unknownBroadcaster
+            ? cloneElement(captionsButton, { "data-focus-right": captionsRight })
+            : captionsButton}
+          <button
+            data-focus-id="player-vods"
+            data-focus-left="player-captions"
+            data-focus-right={vodsRight}
+            data-focusable="true"
+            disabled={unknownBroadcaster}
+            onClick={() => onPastBroadcasts(source.userId)}
+            type="button"
+          >
+            <FilmStripIcon aria-hidden="true" />
+            Past broadcasts
+          </button>
+          {source.kind === "video" ? (
+            <button
+              aria-controls={seekTransportOpen ? "player-seek-transport" : undefined}
+              aria-expanded={seekTransportOpen}
+              data-focus-down={seekTransportOpen ? "player-seek-back-5m" : "player-seek"}
+              data-focus-id="player-seek"
+              data-focus-left={seekLeft}
+              data-focus-right={afterToolbarId}
               data-focus-up="player-back"
               data-focusable="true"
               disabled={!seekTransportUsable}
-              key={action.id}
-              onClick={() => seekRelative(action.seconds)}
+              onClick={() => setSeekTransportOpen((open) => !open)}
+              ref={seekButtonRef}
               type="button"
             >
-              {action.label}
+              Seek
             </button>
-          ))}
-          <output aria-label="Playback position" aria-live="off" className="player-transport__time">
-            {formatTime(position, showHours)} / {formatTime(duration, showHours)}
-          </output>
-        </section>
-      ) : null}
-      {progressStatus}
-      {qualityChooser}
-      {captionsChooser}
-      {chatHint}
-      {frameState === "startup-error" || frameState === "offline" ? (
-        <p className="player-load-status" role="alert">
-          {frameState === "startup-error"
-            ? "Twitch player could not be loaded. Check your connection, then retry loading player."
-            : "This Twitch source is offline. You can wait or go Back to choose another broadcast."}
-        </p>
-      ) : null}
+          ) : null}
+          {chatButton}
+          {chatEnterButton}
+          {chatReloadButton}
+          {chatLayoutButton}
+          <button
+            aria-label={immersive ? "Exit fullscreen" : "Fullscreen stream"}
+            data-focus-id="player-fullscreen"
+            data-focus-left={toolbarFullscreenLeft}
+            data-focus-right="player-back"
+            data-focusable="true"
+            onClick={() => (immersiveRef.current ? exitImmersive() : enterImmersive())}
+            ref={fullscreenButtonRef}
+            type="button"
+          >
+            {immersive ? (
+              <CornersInIcon aria-hidden="true" />
+            ) : (
+              <CornersOutIcon aria-hidden="true" />
+            )}
+          </button>
+        </header>
+        {source.kind === "video" && seekTransportOpen ? (
+          <section
+            aria-label="Past broadcast seeking"
+            className="player-transport"
+            id="player-seek-transport"
+          >
+            {SEEK_ACTIONS.map((action, index) => (
+              <button
+                data-focus-down="player-back"
+                data-focus-id={action.id}
+                data-focus-left={SEEK_ACTIONS[index - 1]?.id ?? LAST_SEEK_ACTION.id}
+                data-focus-right={SEEK_ACTIONS[index + 1]?.id ?? FIRST_SEEK_ACTION.id}
+                data-focus-up="player-back"
+                data-focusable="true"
+                disabled={!seekTransportUsable}
+                key={action.id}
+                onClick={() => seekRelative(action.seconds)}
+                type="button"
+              >
+                {action.label}
+              </button>
+            ))}
+            <output
+              aria-label="Playback position"
+              aria-live="off"
+              className="player-transport__time"
+            >
+              {formatTime(position, showHours)} / {formatTime(duration, showHours)}
+            </output>
+          </section>
+        ) : null}
+        {progressStatus}
+        {qualityChooser}
+        {captionsChooser}
+        {chatHint}
+        {frameState === "startup-error" || frameState === "offline" ? (
+          <p className="player-load-status" role="alert">
+            {frameState === "startup-error"
+              ? "Twitch player could not be loaded. Check your connection, then retry loading player."
+              : "This Twitch source is offline. You can wait or go Back to choose another broadcast."}
+          </p>
+        ) : null}
+      </div>
       <div className="player-stage">
         <div aria-busy={frameState === "loading"} className="player-frame">
           <div className="twitch-player-root" id="twitch-player-root" />

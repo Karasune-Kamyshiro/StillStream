@@ -789,8 +789,45 @@
   background: #000;
 }
 
-.player-view--immersive > :not(.player-stage, .player-immersive-exit) {
+.player-view--immersive > :not(.player-stage, .player-immersive-exit, .player-controls) {
   display: none;
+}
+
+/* Outside fullscreen the controls are ordinary rows of the player grid. */
+.player-controls {
+  display: contents;
+}
+
+/* In stream fullscreen they float over the top edge, styled like the live panel. */
+.player-view--immersive .player-controls {
+  position: absolute;
+  z-index: 4;
+  inset-inline: 0;
+  inset-block-start: 0;
+  display: grid;
+  gap: var(--space-2);
+  padding-block-end: var(--space-8);
+  background: linear-gradient(to bottom, rgb(14 14 16 / 96%), rgb(14 14 16 / 88%) 70%, transparent);
+  transition:
+    opacity var(--dur-panel) var(--ease-out),
+    translate var(--dur-panel) var(--ease-out);
+}
+
+.player-view--immersive .player-controls > * {
+  border: 0;
+  background: transparent;
+}
+
+/* Hidden controls cannot be focused or clicked; visibility flips after the fade. */
+.player-view--controls-hidden .player-controls {
+  visibility: hidden;
+  opacity: 0;
+  translate: 0 -1rem;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-panel) var(--ease-in),
+    translate var(--dur-panel) var(--ease-in),
+    visibility 0s linear var(--dur-panel);
 }
 
 .player-view--immersive .player-stage {
@@ -825,8 +862,8 @@
   z-index: 1;
   inset: 0;
   display: grid;
-  place-items: start center;
-  padding: var(--space-4);
+  place-items: end center;
+  padding: var(--space-6);
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -940,5 +977,11 @@
 @media (prefers-reduced-motion: reduce) {
   .player-immersive-exit__hint {
     animation-timing-function: steps(1, end);
+  }
+
+  .player-view--immersive .player-controls,
+  .player-view--controls-hidden .player-controls {
+    translate: none;
+    transition-duration: 0s;
   }
 }

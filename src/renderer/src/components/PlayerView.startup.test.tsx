@@ -78,7 +78,7 @@ const installHarness = (saved?: PlaybackBookmark) => {
       playbackProgress: progress,
       settings: { snapshot: async () => ({ clientId: "client", secureStorage: false }) },
       preferences: {
-        snapshot: async () => defaultPreferences(),
+        snapshot: async () => ({ ...defaultPreferences(), startFullscreen: false }),
       },
       system: {
         activateEmbeddedPlayer,

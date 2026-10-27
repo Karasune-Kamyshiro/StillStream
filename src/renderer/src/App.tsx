@@ -109,6 +109,7 @@ export const App = () => {
         fullscreenCarry={fullscreenCarry.current}
         onSwitchStream={controller.openStream}
         signedIn={controller.auth.kind === "authenticated"}
+        startInFullscreen={controller.preferences.startFullscreen}
         key={
           controller.screen.source.kind === "live"
             ? controller.screen.source.channel
@@ -425,6 +426,10 @@ export const App = () => {
             chatAppearance={chatAppearance(controller.preferences)}
             onChatPreferencesChange={controller.updatePreferences}
             onStartScreenChange={controller.updateStartScreen}
+            onStartFullscreenChange={(startFullscreen) =>
+              controller.updatePreferences({ startFullscreen })
+            }
+            startFullscreen={controller.preferences.startFullscreen}
             settings={controller.settings}
             startScreen={controller.startScreen}
           />

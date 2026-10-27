@@ -184,13 +184,21 @@ its player.
 
 ### Stream fullscreen
 
-The corners button at the end of the toolbar fills the screen with the stream:
+Streams open in stream fullscreen. The control bar appears on top of the video for about five
+seconds, then hides; turn **Start streams in fullscreen** off in Settings to keep the windowed
+player, where the bar is always visible. The corners button at the end of the bar switches
+between the two.
 
 | Input | Action |
 | --- | --- |
 | OK / Enter, Space, controller A, click | Play or pause (a large pause symbol shows while paused) |
+| Up | Show the control bar and move into it; Up from the bar hides it again |
 | Down | Open the live panel |
-| Back / Escape, controller B, double click | Show the controls again |
+| Back / Escape, controller B | Hide the bar if you are in it, otherwise leave fullscreen |
+| Double click | Leave fullscreen |
+
+Inside the bar, Left/Right and OK work as in the windowed player, including Quality, Captions and
+chat; Back closes an open menu first. The bar stays while you are in it.
 
 The **live panel** runs along the bottom edge and lists the channels you follow that are live.
 Left/Right chooses, OK/A switches to that stream (staying in fullscreen), Up or Back closes.

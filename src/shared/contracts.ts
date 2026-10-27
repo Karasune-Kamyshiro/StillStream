@@ -111,6 +111,8 @@ export const PreferencesSnapshotSchema = z.strictObject({
   lowLatency: z.boolean().optional(),
   /** Twitch quality id (e.g. "1080p60", "chunked" for Source) requested for new streams. */
   quality: z.string().min(1).max(64).optional(),
+  /** Open every stream in stream fullscreen, with the controls as a timed overlay. */
+  startFullscreen: z.boolean().default(true),
   startScreen: StartScreenSchema.default("home"),
 })
 /** Every preference at its default, as for a first launch. */
@@ -124,6 +126,7 @@ export const PreferencesUpdateSchema = z.strictObject({
   chatTheme: ChatThemeSchema.optional(),
   lowLatency: z.boolean().optional(),
   quality: z.string().min(1).max(64).optional(),
+  startFullscreen: z.boolean().optional(),
   startScreen: StartScreenSchema.optional(),
 })
 export type PreferencesUpdate = z.infer<typeof PreferencesUpdateSchema>

@@ -102,7 +102,7 @@ const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<VacuumStreamApi["auth"][
       update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
       snapshot: vi
         .fn<VacuumStreamApi["preferences"]["snapshot"]>()
-        .mockResolvedValue(defaultPreferences()),
+        .mockResolvedValue({ ...defaultPreferences(), startFullscreen: false }),
     },
     playerSession: {
       signIn: vi
@@ -611,5 +611,32 @@ describe("Chat preferences", () => {
     expect(target("settings-chat-position").textContent).toBe("Overlay positionTop right")
     expect(target("settings-chat-overlay").getAttribute("aria-checked")).toBe("true")
     expect(target("settings-chat-text").getAttribute("data-focus-up")).toBe("settings-chat-opacity")
+  })
+})
+
+describe("Stream fullscreen preference", () => {
+  it("is on by default and saves from the Start screen card", async () => {
+    const bridge = makeBridge(authenticated)
+    let saved = PreferencesSnapshotSchema.parse({})
+    bridge.preferences.snapshot.mockResolvedValue(saved)
+    bridge.preferences.update.mockImplementation(async (update) => {
+      saved = PreferencesSnapshotSchema.parse({ ...saved, ...update })
+      return saved
+    })
+    vi.stubGlobal("vacuumStream", bridge)
+    root = createRoot(container)
+    await act(async () => root?.render(<App />))
+    await activate("nav-settings")
+    const toggle = target("settings-start-fullscreen")
+    expect(toggle.getAttribute("aria-checked")).toBe("true")
+    expect(target("settings-start-following").getAttribute("data-focus-down")).toBe(
+      "settings-start-fullscreen",
+    )
+    expect(target("settings-chat-dark").getAttribute("data-focus-up")).toBe(
+      "settings-start-fullscreen",
+    )
+    await activate("settings-start-fullscreen")
+    expect(bridge.preferences.update).toHaveBeenCalledExactlyOnceWith({ startFullscreen: false })
+    expect(toggle.getAttribute("aria-checked")).toBe("false")
   })
 })

@@ -105,7 +105,7 @@ const makeBridge = (items: readonly Favourite[], auth: AuthSnapshot, withContinu
       update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
       snapshot: vi
         .fn<VacuumStreamApi["preferences"]["snapshot"]>()
-        .mockResolvedValue(defaultPreferences()),
+        .mockResolvedValue({ ...defaultPreferences(), startFullscreen: false }),
     },
     playerSession: {
       signIn: vi

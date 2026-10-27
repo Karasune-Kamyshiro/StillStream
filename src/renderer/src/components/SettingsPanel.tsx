@@ -40,6 +40,9 @@ type SettingsPanelProps = {
   readonly onStartScreenChange?: (startScreen: StartScreen) => Promise<void>
   readonly settings: SettingsSnapshot
   readonly startScreen?: StartScreen
+  readonly startFullscreen?: boolean
+  /** Saves the stream fullscreen preference; the switch is hidden when absent. */
+  readonly onStartFullscreenChange?: (startFullscreen: boolean) => Promise<void>
 }
 
 type SubmitHandler = NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -166,7 +169,12 @@ export const SettingsPanel = ({
   onStartScreenChange,
   settings,
   startScreen = "home",
+  startFullscreen = true,
+  onStartFullscreenChange,
 }: SettingsPanelProps) => {
+  // The last option of the Start screen card, which the Chat card continues below.
+  const startCardLastId =
+    onStartFullscreenChange === undefined ? "settings-start-following" : "settings-start-fullscreen"
   const [clientId, setClientId] = useState(settings.clientId)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
@@ -454,12 +462,19 @@ export const SettingsPanel = ({
             <h2 id="start-screen-heading">Start screen</h2>
             <p>
               Choose where VacuumStream opens, and where Back and leaving a stream return to.
-              Following needs a signed-in account; without one the app opens on Home.
+              Following needs a signed-in account; without one the app opens on Home. Streams can
+              open in fullscreen, with the controls on top for a few seconds; Up shows them again.
             </p>
           </div>
           <SettingsSwitch
             checked={startScreen === "following"}
-            focusDown={onChatPreferencesChange === undefined ? undefined : "settings-chat-dark"}
+            focusDown={
+              onStartFullscreenChange !== undefined
+                ? "settings-start-fullscreen"
+                : onChatPreferencesChange === undefined
+                  ? undefined
+                  : "settings-chat-dark"
+            }
             focusId="settings-start-following"
             focusUp="settings-save"
             label="Open Following instead of Home"
@@ -470,6 +485,21 @@ export const SettingsPanel = ({
               )
             }}
           />
+          {onStartFullscreenChange === undefined ? null : (
+            <SettingsSwitch
+              checked={startFullscreen}
+              focusDown={onChatPreferencesChange === undefined ? undefined : "settings-chat-dark"}
+              focusId="settings-start-fullscreen"
+              focusUp="settings-start-following"
+              label="Start streams in fullscreen"
+              onChange={(checked) => {
+                setError("")
+                return onStartFullscreenChange(checked).catch(() =>
+                  setError("The fullscreen preference could not be saved"),
+                )
+              }}
+            />
+          )}
         </section>
       )}
 
@@ -501,7 +531,7 @@ export const SettingsPanel = ({
                 return index === 0
                   ? onStartScreenChange === undefined
                     ? "settings-save"
-                    : "settings-start-following"
+                    : startCardLastId
                   : (chain[index - 1] ?? "settings-save")
               }
               const below = (id: (typeof chain)[number]): string | undefined =>
