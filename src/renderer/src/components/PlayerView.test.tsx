@@ -1017,6 +1017,12 @@ describe("stream fullscreen controls and the live panel", () => {
     await pressKey(container, "ArrowUp")
     expect(container.querySelector(".live-panel")).toBeNull()
     expect(document.activeElement).toBe(buttonById(container, "player-immersive-exit"))
+    // Down closes the panel too, like Up does for the top bar.
+    await pressKey(container, "ArrowDown")
+    expect(container.querySelector(".live-panel")).not.toBeNull()
+    await pressKey(container, "ArrowDown")
+    expect(container.querySelector(".live-panel")).toBeNull()
+    expect(document.activeElement).toBe(buttonById(container, "player-immersive-exit"))
     await pressKey(container, "ArrowDown")
     await pressKey(container, "ArrowRight")
     expect(document.activeElement).toBe(buttonById(container, "live-panel-other"))
@@ -1144,6 +1150,68 @@ describe("fullscreen-first player with an overlay control bar", () => {
     expect(container.querySelector(".player-view--immersive")).toBeNull()
     expect(hidden()).toBe(false)
     expect(document.activeElement).toBe(buttonById(container, "player-fullscreen"))
+    await act(async () => root.unmount())
+  })
+
+  it("reveals the bar and the Following panel at the screen edges and lets them go 1.5s after", async () => {
+    const harness = installPlayerHarness([true])
+    harness.catalog.followed.mockResolvedValue({ cursor: undefined, items: [] })
+    installNavigationSurface()
+    const container = document.createElement("div")
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () =>
+      root.render(
+        <PlayerView
+          onBack={() => undefined}
+          onPastBroadcasts={() => undefined}
+          onSetFullscreen={async () => false}
+          onSwitchStream={vi.fn()}
+          signedIn
+          startInFullscreen
+          source={source}
+        />,
+      ),
+    )
+    await act(async () => harness.emit("ready"))
+    const hidden = (): boolean => container.querySelector(".player-view--controls-hidden") !== null
+    const surface = buttonById(container, "player-immersive-exit")
+    const move = async (target: Element, type: string, clientY = 0): Promise<void> => {
+      await act(async () => {
+        target.dispatchEvent(new MouseEvent(type, { bubbles: type === "mousemove", clientY }))
+      })
+    }
+    await act(async () => vi.advanceTimersByTimeAsync(5_000))
+    expect(hidden()).toBe(true)
+    // The middle of the picture leaves both overlays alone.
+    await move(surface, "mousemove", window.innerHeight / 2)
+    expect(hidden()).toBe(true)
+    expect(container.querySelector(".live-panel")).toBeNull()
+    // Top edge: the bar appears, stays while hovered, and goes 1.5s after the pointer leaves.
+    await move(surface, "mousemove", 10)
+    expect(hidden()).toBe(false)
+    const controls = container.querySelector(".player-controls")
+    if (controls === null) throw new Error("Missing controls")
+    await move(controls, "mouseenter")
+    await act(async () => vi.advanceTimersByTimeAsync(10_000))
+    expect(hidden()).toBe(false)
+    await move(controls, "mouseleave")
+    await act(async () => vi.advanceTimersByTimeAsync(1_400))
+    expect(hidden()).toBe(false)
+    await act(async () => vi.advanceTimersByTimeAsync(100))
+    expect(hidden()).toBe(true)
+    // Bottom edge: the Following panel, with the same hover and linger rules.
+    await move(surface, "mousemove", window.innerHeight - 5)
+    const panel = container.querySelector(".live-panel")
+    expect(panel).not.toBeNull()
+    if (panel === null) throw new Error("Missing panel")
+    await move(panel, "mouseenter")
+    await act(async () => vi.advanceTimersByTimeAsync(10_000))
+    expect(container.querySelector(".live-panel")).not.toBeNull()
+    await move(panel, "mouseleave")
+    await act(async () => vi.advanceTimersByTimeAsync(1_500))
+    expect(container.querySelector(".live-panel")).toBeNull()
+    expect(document.activeElement).toBe(surface)
     await act(async () => root.unmount())
   })
 

@@ -6,6 +6,8 @@ type LivePanelProps = {
   /** The channel already playing; it is marked and focused first. */
   readonly currentChannel: string | undefined
   readonly onClose: () => void
+  /** Pointer entered (true) or left (false) the panel, for pointer-driven auto-close. */
+  readonly onPointerInside?: (inside: boolean) => void
   readonly onSelect: (stream: StreamCard) => void
   /** False for guests: Following needs a signed-in account. */
   readonly signedIn: boolean
@@ -22,9 +24,16 @@ const viewers = (count: number): string =>
 
 /**
  * Followed channels that are live, along the bottom edge of the player: switch streams without
- * leaving the player or stream fullscreen. Left/Right moves, OK/A switches, Up or Back closes.
+ * leaving the player or stream fullscreen. Left/Right moves, OK/A switches; Down (which opened it),
+ * Up or Back closes it, mirroring the top bar that Up opens and closes.
  */
-export const LivePanel = ({ currentChannel, onClose, onSelect, signedIn }: LivePanelProps) => {
+export const LivePanel = ({
+  currentChannel,
+  onClose,
+  onPointerInside,
+  onSelect,
+  signedIn,
+}: LivePanelProps) => {
   const [state, setState] = useState<LiveState>({ kind: "loading" })
   const panelRef = useRef<HTMLElement>(null)
 
@@ -58,8 +67,22 @@ export const LivePanel = ({ currentChannel, onClose, onSelect, signedIn }: LiveP
   })
 
   useEffect(() => {
+    const panel = panelRef.current
+    if (panel === null || onPointerInside === undefined) return
+    const enter = (): void => onPointerInside(true)
+    const leave = (): void => onPointerInside(false)
+    panel.addEventListener("mouseenter", enter)
+    panel.addEventListener("mouseleave", leave)
+    return () => {
+      panel.removeEventListener("mouseenter", enter)
+      panel.removeEventListener("mouseleave", leave)
+    }
+  }, [onPointerInside])
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== "ArrowUp" || !panelRef.current?.contains(document.activeElement)) return
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return
+      if (!panelRef.current?.contains(document.activeElement)) return
       event.preventDefault()
       event.stopImmediatePropagation()
       onClose()
@@ -79,7 +102,7 @@ export const LivePanel = ({ currentChannel, onClose, onSelect, signedIn }: LiveP
     >
       <header className="live-panel__heading">
         <strong>Live now</strong>
-        <span className="live-panel__hint">Following · Up or Back to close</span>
+        <span className="live-panel__hint">Following · Down, Up or Back to close</span>
       </header>
       {!signedIn ? (
         <p className="live-panel__message">Sign in with Twitch to see the channels you follow.</p>

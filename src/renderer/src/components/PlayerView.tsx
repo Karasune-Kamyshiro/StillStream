@@ -65,6 +65,12 @@ type PlayerViewProps = {
   readonly source: PlayerSource
 }
 
+// Stream fullscreen pointer edges: how close to the top/bottom reveals an overlay, and how long it
+// lingers after the pointer leaves it.
+const EDGE_MIN_PX = 48
+const EDGE_SHARE = 0.06
+const POINTER_HIDE_DELAY = 1_500
+
 // Dispatched into this document by main's player focus guard; see src/main/player-focus-guard.ts.
 const PLAYER_ESCAPE_EVENT = "vacuumstream:player-escape"
 
@@ -262,6 +268,8 @@ export const PlayerView = ({
     setLivePanelOpen(true)
   }
   const closeLivePanel = useCallback((): boolean => {
+    if (livePanelTimerRef.current !== undefined) clearTimeout(livePanelTimerRef.current)
+    livePanelTimerRef.current = undefined
     if (!livePanelOpenRef.current) return false
     livePanelOpenRef.current = false
     setLivePanelOpen(false)
@@ -329,7 +337,7 @@ export const PlayerView = ({
   }
   // The bar hides after five seconds without input, wherever focus is, unless a menu or the live
   // panel is open. Focus inside it returns to the video, so OK stays play/pause.
-  const scheduleHide = (): void => {
+  const scheduleHide = (delay = 5_000): void => {
     clearControlsTimer()
     controlsTimerRef.current = setTimeout(() => {
       controlsTimerRef.current = undefined
@@ -343,7 +351,7 @@ export const PlayerView = ({
         return
       }
       hideControls(controls?.contains(document.activeElement) === true)
-    }, 5_000)
+    }, delay)
   }
   // Hidden controls are invisible and cannot take focus, so moving focus into them waits until
   // the bar has been rendered visible.
@@ -365,21 +373,63 @@ export const PlayerView = ({
   }, [controlsVisible])
   useEffect(() => clearControlsTimer, [clearControlsTimer])
 
-  // Any key or pointer activity while the bar is up restarts its five seconds.
+  // Any key while the bar is up restarts its five seconds. The pointer keeps it up while over it
+  // and lets it go 1.5 seconds after leaving.
   // biome-ignore lint/correctness/useExhaustiveDependencies: scheduleHide only touches refs/state.
   useEffect(() => {
     if (!immersive) return
     const onActivity = (): void => {
       if (controlsVisibleRef.current) scheduleHide()
     }
+    const onPointerEnter = (): void => {
+      if (controlsVisibleRef.current) clearControlsTimer()
+    }
+    const onPointerLeave = (): void => {
+      if (controlsVisibleRef.current) scheduleHide(POINTER_HIDE_DELAY)
+    }
     const controls = controlsRef.current
     document.addEventListener("keydown", onActivity, true)
-    controls?.addEventListener("mousemove", onActivity)
+    controls?.addEventListener("mouseenter", onPointerEnter)
+    controls?.addEventListener("mouseleave", onPointerLeave)
     return () => {
       document.removeEventListener("keydown", onActivity, true)
-      controls?.removeEventListener("mousemove", onActivity)
+      controls?.removeEventListener("mouseenter", onPointerEnter)
+      controls?.removeEventListener("mouseleave", onPointerLeave)
     }
-  }, [canPlay, immersive])
+  }, [canPlay, clearControlsTimer, immersive])
+
+  // Desktop: in stream fullscreen the screen edges reveal the overlays, the top edge the control
+  // bar and the bottom edge the Following panel, without moving keyboard focus into the bar.
+  const livePanelTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const clearLivePanelTimer = useCallback((): void => {
+    if (livePanelTimerRef.current !== undefined) clearTimeout(livePanelTimerRef.current)
+    livePanelTimerRef.current = undefined
+  }, [])
+  useEffect(() => clearLivePanelTimer, [clearLivePanelTimer])
+  const onSurfacePointer = (clientY: number): void => {
+    const height = window.innerHeight
+    const edge = Math.max(EDGE_MIN_PX, height * EDGE_SHARE)
+    if (clientY <= edge) {
+      if (!controlsVisibleRef.current) {
+        controlsVisibleRef.current = true
+        setControlsVisible(true)
+      }
+      scheduleHide(POINTER_HIDE_DELAY)
+      return
+    }
+    if (clientY >= height - edge && onSwitchStream !== undefined && !livePanelOpenRef.current) {
+      livePanelOpenRef.current = true
+      setLivePanelOpen(true)
+      // Closes on its own unless the pointer moves onto it (see onPointerInside below).
+      livePanelTimerRef.current = setTimeout(() => closeLivePanel(), POINTER_HIDE_DELAY)
+    }
+  }
+  const onLivePanelPointer = (inside: boolean): void => {
+    clearLivePanelTimer()
+    if (!inside && livePanelOpenRef.current) {
+      livePanelTimerRef.current = setTimeout(() => closeLivePanel(), POINTER_HIDE_DELAY)
+    }
+  }
 
   // Main reports Escape pressed while the Twitch iframe holds keyboard focus (after a click on
   // the video). Take focus back: leave stream fullscreen, or return to the toolbar.
@@ -796,11 +846,7 @@ export const PlayerView = ({
           // OK, A, Space and a click toggle playback; a double click leaves like Back does.
           onClick={togglePlayback}
           onDoubleClick={exitImmersive}
-          onMouseMove={() => {
-            if (!controlsVisibleRef.current || controlsTimerRef.current !== undefined) {
-              showControls(false)
-            }
-          }}
+          onMouseMove={(event) => onSurfacePointer(event.clientY)}
           ref={immersiveExitRef}
           type="button"
         >
@@ -1012,6 +1058,7 @@ export const PlayerView = ({
           <LivePanel
             currentChannel={source.kind === "live" ? source.channel : undefined}
             onClose={closeLivePanel}
+            onPointerInside={onLivePanelPointer}
             onSelect={switchStream}
             signedIn={signedIn}
           />

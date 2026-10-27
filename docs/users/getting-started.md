@@ -193,16 +193,18 @@ between the two.
 | --- | --- |
 | OK / Enter, Space, controller A, click | Play or pause (a large pause symbol shows while paused) |
 | Up | Show the control bar with focus on play/pause; Up from the bar hides it again |
-| Down | Open the live panel |
+| Down | Open the live panel; Down again closes it |
 | Back / Escape, controller B | Hide the bar if you are in it, otherwise leave fullscreen |
 | Double click | Leave fullscreen |
+| Mouse at the top or bottom edge | Show the control bar or the live panel; each hides 1.5 seconds after the pointer leaves it |
 
 Inside the bar, Left/Right and OK work as in the windowed player, including Quality, Captions and
 chat; Back closes an open menu first. Each press restarts the five seconds, and the bar stays up
 while one of its menus is open.
 
 The **live panel** runs along the bottom edge and lists the channels you follow that are live.
-Left/Right chooses, OK/A switches to that stream (staying in fullscreen), Up or Back closes.
+Left/Right chooses, OK/A switches to that stream (staying in fullscreen); Down again, Up or
+Back closes it, the same way Up opens and closes the control bar.
 The **Following** button beside Back in the toolbar opens it outside fullscreen too. A visible
 chat stays visible in fullscreen, beside or over the video.
 
