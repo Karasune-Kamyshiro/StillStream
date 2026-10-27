@@ -466,40 +466,42 @@ export const SettingsPanel = ({
               open in fullscreen, with the controls on top for a few seconds; Up shows them again.
             </p>
           </div>
-          <SettingsSwitch
-            checked={startScreen === "following"}
-            focusDown={
-              onStartFullscreenChange !== undefined
-                ? "settings-start-fullscreen"
-                : onChatPreferencesChange === undefined
-                  ? undefined
-                  : "settings-chat-dark"
-            }
-            focusId="settings-start-following"
-            focusUp="settings-save"
-            label="Open Following instead of Home"
-            onChange={(checked) => {
-              setError("")
-              return onStartScreenChange(checked ? "following" : "home").catch(() =>
-                setError("The start screen could not be saved"),
-              )
-            }}
-          />
-          {onStartFullscreenChange === undefined ? null : (
+          <div className="settings-options">
             <SettingsSwitch
-              checked={startFullscreen}
-              focusDown={onChatPreferencesChange === undefined ? undefined : "settings-chat-dark"}
-              focusId="settings-start-fullscreen"
-              focusUp="settings-start-following"
-              label="Start streams in fullscreen"
+              checked={startScreen === "following"}
+              focusDown={
+                onStartFullscreenChange !== undefined
+                  ? "settings-start-fullscreen"
+                  : onChatPreferencesChange === undefined
+                    ? undefined
+                    : "settings-chat-dark"
+              }
+              focusId="settings-start-following"
+              focusUp="settings-save"
+              label="Open Following instead of Home"
               onChange={(checked) => {
                 setError("")
-                return onStartFullscreenChange(checked).catch(() =>
-                  setError("The fullscreen preference could not be saved"),
+                return onStartScreenChange(checked ? "following" : "home").catch(() =>
+                  setError("The start screen could not be saved"),
                 )
               }}
             />
-          )}
+            {onStartFullscreenChange === undefined ? null : (
+              <SettingsSwitch
+                checked={startFullscreen}
+                focusDown={onChatPreferencesChange === undefined ? undefined : "settings-chat-dark"}
+                focusId="settings-start-fullscreen"
+                focusUp="settings-start-following"
+                label="Start streams in fullscreen"
+                onChange={(checked) => {
+                  setError("")
+                  return onStartFullscreenChange(checked).catch(() =>
+                    setError("The fullscreen preference could not be saved"),
+                  )
+                }}
+              />
+            )}
+          </div>
         </section>
       )}
 

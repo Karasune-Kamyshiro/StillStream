@@ -976,12 +976,19 @@ describe("stream fullscreen controls and the live panel", () => {
     harness.activateEmbeddedPlayer.mockClear()
     await act(async () => buttonById(container, "player-fullscreen").click())
     expect(onSetFullscreen).toHaveBeenCalledWith(true)
-    const surface = buttonById(container, "player-immersive-exit")
-    expect(document.activeElement).toBe(surface)
+    // The overlay bar takes focus on play/pause, so OK still plays or pauses.
+    expect(document.activeElement).toBe(buttonById(container, "player-playback"))
     expect(carry.immersive).toBe(true)
     await pressKey(container, "Enter")
     expect(harness.activateEmbeddedPlayer).toHaveBeenCalledExactlyOnceWith(false)
     expect(container.querySelector(".player-view--immersive")).not.toBeNull()
+    // Back first hides the bar, then OK on the video still toggles playback.
+    await pressKey(container, "Escape")
+    const surface = buttonById(container, "player-immersive-exit")
+    expect(document.activeElement).toBe(surface)
+    expect(container.querySelector(".player-view--immersive")).not.toBeNull()
+    await pressKey(container, "Enter")
+    expect(harness.activateEmbeddedPlayer).toHaveBeenCalledTimes(2)
     await pressKey(container, "Escape")
     expect(container.querySelector(".player-view--immersive")).toBeNull()
     expect(document.activeElement).toBe(buttonById(container, "player-fullscreen"))
@@ -1000,6 +1007,8 @@ describe("stream fullscreen controls and the live panel", () => {
     const { container, root } = await mountFullscreenPlayer(carry, onSwitchStream)
     await act(async () => harness.emit("ready"))
     await act(async () => buttonById(container, "player-fullscreen").click())
+    // Up from the bar returns to the video, where Down opens the panel.
+    await pressKey(container, "ArrowUp")
     await pressKey(container, "ArrowDown")
     expect(harness.catalog.followed).toHaveBeenCalledExactlyOnceWith({ first: 30 })
     // The playing channel is marked and focused first.
@@ -1026,6 +1035,8 @@ describe("stream fullscreen controls and the live panel", () => {
       vi.fn(),
     )
     expect(container.querySelector(".player-view--immersive")).not.toBeNull()
+    // Back hides the overlay bar first, then leaves stream fullscreen.
+    await pressKey(container, "Escape")
     await pressKey(container, "Escape")
     // Beside Back, away from the playback controls, so it never reads as a "live" badge.
     const toolbarButtons = [...container.querySelectorAll(".player-toolbar > button")]
@@ -1080,48 +1091,54 @@ describe("fullscreen-first player with an overlay control bar", () => {
     return { container, hidden, onSetFullscreen, root }
   }
 
-  it("opens in stream fullscreen with the bar shown briefly, then hides it on its own", async () => {
+  it("opens in stream fullscreen with focus on play/pause, then hides the bar after five seconds", async () => {
     const harness = installPlayerHarness([true])
     const { container, hidden, onSetFullscreen, root } = await mountFullscreenFirst()
-    await act(async () => harness.emit("ready"))
     expect(onSetFullscreen).toHaveBeenCalledExactlyOnceWith(true)
     expect(container.querySelector(".player-view--immersive")).not.toBeNull()
     expect(hidden()).toBe(false)
-    // OK stays play/pause: focus is on the video, not on Back.
-    expect(document.activeElement).toBe(buttonById(container, "player-immersive-exit"))
+    // Before Twitch is ready, Quality stands in (never Back); then play/pause takes over.
+    expect(document.activeElement).toBe(buttonById(container, "player-quality"))
+    await act(async () => harness.emit("ready"))
+    expect(document.activeElement).toBe(buttonById(container, "player-playback"))
     expect(buttonById(container, "player-fullscreen").getAttribute("aria-label")).toBe(
       "Exit fullscreen",
     )
     await act(async () => vi.advanceTimersByTimeAsync(5_000))
     expect(hidden()).toBe(true)
+    expect(document.activeElement).toBe(buttonById(container, "player-immersive-exit"))
     await act(async () => root.unmount())
   })
 
-  it("toggles the bar with Up, moves focus into it, and lets Back hide it before leaving", async () => {
+  it("toggles the bar with Up, keeps it while in use, and lets Back hide it before leaving", async () => {
     const harness = installPlayerHarness([true])
     const { container, hidden, root } = await mountFullscreenFirst()
     await act(async () => harness.emit("ready"))
     const surface = buttonById(container, "player-immersive-exit")
-    // Up dismisses the initial bar right away.
+    const playback = buttonById(container, "player-playback")
+    // Up from the bar's top row dismisses it right away.
     await pressKey(container, "ArrowUp")
     expect(hidden()).toBe(true)
     expect(document.activeElement).toBe(surface)
-    // Up again shows it with focus on play/pause; it stays while focus is inside.
+    // Up from the video shows it again, with focus moved in once it is visible.
     await pressKey(container, "ArrowUp")
     expect(hidden()).toBe(false)
-    expect(document.activeElement).toBe(buttonById(container, "player-playback"))
-    await act(async () => vi.advanceTimersByTimeAsync(10_000))
-    expect(hidden()).toBe(false)
+    expect(document.activeElement).toBe(playback)
+    // Activity restarts the five seconds.
+    await act(async () => vi.advanceTimersByTimeAsync(4_000))
     await pressKey(container, "ArrowRight")
     expect(document.activeElement).toBe(buttonById(container, "player-muted"))
-    // Up from the top row hides the bar and returns to the video.
-    await pressKey(container, "ArrowUp")
+    await act(async () => vi.advanceTimersByTimeAsync(4_000))
+    expect(hidden()).toBe(false)
+    await act(async () => vi.advanceTimersByTimeAsync(1_000))
     expect(hidden()).toBe(true)
     expect(document.activeElement).toBe(surface)
     // Back from the bar hides it; Back from the video leaves stream fullscreen.
     await pressKey(container, "ArrowUp")
+    expect(document.activeElement).toBe(playback)
     await pressKey(container, "Escape")
     expect(hidden()).toBe(true)
+    expect(document.activeElement).toBe(surface)
     expect(container.querySelector(".player-view--immersive")).not.toBeNull()
     await pressKey(container, "Escape")
     expect(container.querySelector(".player-view--immersive")).toBeNull()
@@ -1130,18 +1147,20 @@ describe("fullscreen-first player with an overlay control bar", () => {
     await act(async () => root.unmount())
   })
 
-  it("keeps the overlay's menus usable: Quality opens inside it and Back closes the menu first", async () => {
+  it("keeps the bar up while one of its menus is open, and Back closes the menu first", async () => {
     const harness = installPlayerHarness([true], undefined, {
       available: ["auto", "720p60"],
       current: "auto",
     })
     const { container, hidden, root } = await mountFullscreenFirst()
     await act(async () => harness.emit("ready"))
-    await pressKey(container, "ArrowUp")
-    await pressKey(container, "ArrowUp")
-    buttonById(container, "player-quality").focus()
+    await pressKey(container, "ArrowRight")
+    await pressKey(container, "ArrowRight")
+    expect(document.activeElement).toBe(buttonById(container, "player-quality"))
     await pressKey(container, "Enter")
     expect(container.querySelector(".player-controls .player-quality")).not.toBeNull()
+    await act(async () => vi.advanceTimersByTimeAsync(12_000))
+    expect(hidden()).toBe(false)
     await pressKey(container, "Escape")
     expect(container.querySelector(".player-quality")).toBeNull()
     expect(hidden()).toBe(false)

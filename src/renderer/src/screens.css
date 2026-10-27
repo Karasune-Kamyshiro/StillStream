@@ -205,8 +205,10 @@
   background: var(--color-accent);
 }
 
+/* Options keep their natural height instead of stretching to the card's description column. */
 .settings-options {
   display: grid;
+  align-content: start;
   justify-items: start;
   gap: var(--space-3);
 }

@@ -9,7 +9,7 @@ import {
   SpeakerHighIcon,
   SpeakerSimpleXIcon,
 } from "@phosphor-icons/react"
-import { cloneElement, useCallback, useEffect, useRef, useState } from "react"
+import { cloneElement, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { ChatLayout, StreamCard } from "../../../shared/contracts"
 import type { ChatAppearance } from "../chat-appearance"
 import { markControllerFocus, registerBackDismissal } from "../focus-navigation"
@@ -239,13 +239,19 @@ export const PlayerView = ({
       fullscreenCarry.immersive = false
       fullscreenCarry.restoreWindowed = false
     }
-    const fullscreenButton = fullscreenButtonRef.current
-    if (fullscreenButton !== null) {
-      markControllerFocus(fullscreenButton)
-      fullscreenButton.focus()
-    }
+    // The bar may still be invisible right now; focus the corners button once it is rendered.
+    focusFullscreenOnExit.current = true
     return true
   }, [fullscreenCarry, onSetFullscreen])
+  const focusFullscreenOnExit = useRef(false)
+  useLayoutEffect(() => {
+    if (immersive || !focusFullscreenOnExit.current) return
+    focusFullscreenOnExit.current = false
+    const fullscreenButton = fullscreenButtonRef.current
+    if (fullscreenButton === null) return
+    markControllerFocus(fullscreenButton)
+    fullscreenButton.focus()
+  }, [immersive])
 
   const openLivePanel = (): void => {
     if (onSwitchStream === undefined) return
@@ -307,48 +313,73 @@ export const PlayerView = ({
     setControlsVisible(false)
     if (focusSurface) focusElement(immersiveExitRef.current)
   }
-  // Shown with focus left on the video (OK stays play/pause) auto-hides after five seconds;
-  // shown by Up with focus moved into the bar stays until Up or Back.
-  const showControls = (focusInto: boolean): void => {
+  // Focus lands on play/pause, so OK keeps meaning play/pause. Before Twitch is ready that button
+  // is disabled; Quality is the harmless stand-in until then.
+  const focusFallbackRef = useRef(false)
+  const focusIntoControls = (): void => {
+    const controls = controlsRef.current
+    const playback = controls?.querySelector<HTMLButtonElement>('[data-focus-id="player-playback"]')
+    const usable = playback !== null && playback !== undefined && !playback.disabled
+    focusFallbackRef.current = !usable
+    focusElement(
+      usable
+        ? playback
+        : controls?.querySelector<HTMLButtonElement>('[data-focus-id="player-quality"]'),
+    )
+  }
+  // The bar hides after five seconds without input, wherever focus is, unless a menu or the live
+  // panel is open. Focus inside it returns to the video, so OK stays play/pause.
+  const scheduleHide = (): void => {
     clearControlsTimer()
-    controlsVisibleRef.current = true
-    setControlsVisible(true)
-    if (focusInto) {
-      const playback = controlsRef.current?.querySelector<HTMLButtonElement>(
-        '[data-focus-id="player-playback"]',
-      )
-      focusElement(
-        playback !== null && playback !== undefined && !playback.disabled
-          ? playback
-          : backButtonRef.current,
-      )
-      return
-    }
     controlsTimerRef.current = setTimeout(() => {
       controlsTimerRef.current = undefined
-      if (!immersiveRef.current) return
-      if (controlsRef.current?.contains(document.activeElement)) return
-      controlsVisibleRef.current = false
-      setControlsVisible(false)
+      if (!immersiveRef.current || !controlsVisibleRef.current) return
+      const controls = controlsRef.current
+      const menuOpen =
+        livePanelOpenRef.current ||
+        controls?.querySelector(".player-quality, .player-captions, .player-transport") !== null
+      if (menuOpen) {
+        scheduleHide()
+        return
+      }
+      hideControls(controls?.contains(document.activeElement) === true)
     }, 5_000)
   }
+  // Hidden controls are invisible and cannot take focus, so moving focus into them waits until
+  // the bar has been rendered visible.
+  const pendingControlsFocus = useRef(false)
+  const showControls = (focusInto: boolean): void => {
+    const wasVisible = controlsVisibleRef.current
+    controlsVisibleRef.current = true
+    setControlsVisible(true)
+    scheduleHide()
+    if (!focusInto) return
+    if (wasVisible) focusIntoControls()
+    else pendingControlsFocus.current = true
+  }
+  // biome-ignore lint/correctness/useExhaustiveDependencies: focusIntoControls reads refs only.
+  useLayoutEffect(() => {
+    if (!controlsVisible || !pendingControlsFocus.current) return
+    pendingControlsFocus.current = false
+    focusIntoControls()
+  }, [controlsVisible])
   useEffect(() => clearControlsTimer, [clearControlsTimer])
 
-  // Focus or pointer activity in the overlay bar keeps it visible.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: showControls only touches refs/state.
+  // Any key or pointer activity while the bar is up restarts its five seconds.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scheduleHide only touches refs/state.
   useEffect(() => {
+    if (!immersive) return
+    const onActivity = (): void => {
+      if (controlsVisibleRef.current) scheduleHide()
+    }
     const controls = controlsRef.current
-    if (controls === null || !immersive) return
-    const onPointer = (): void => {
-      if (controlsTimerRef.current !== undefined) showControls(false)
-    }
-    controls.addEventListener("focusin", clearControlsTimer)
-    controls.addEventListener("mousemove", onPointer)
+    document.addEventListener("keydown", onActivity, true)
+    controls?.addEventListener("mousemove", onActivity)
     return () => {
-      controls.removeEventListener("focusin", clearControlsTimer)
-      controls.removeEventListener("mousemove", onPointer)
+      document.removeEventListener("keydown", onActivity, true)
+      controls?.removeEventListener("mousemove", onActivity)
     }
-  }, [canPlay, clearControlsTimer, immersive])
+  }, [canPlay, immersive])
 
   // Main reports Escape pressed while the Twitch iframe holds keyboard focus (after a click on
   // the video). Take focus back: leave stream fullscreen, or return to the toolbar.
@@ -372,10 +403,24 @@ export const PlayerView = ({
       setControlsVisible(true)
       return
     }
-    // Keep keyboard and controller input in the shell, not inside the Twitch iframe.
-    focusElement(immersiveExitRef.current)
-    showControls(false)
+    // Keep keyboard and controller input in the shell, not inside the Twitch iframe: focus starts
+    // on the bar's play/pause button while the bar is shown on entry.
+    showControls(true)
   }, [immersive])
+
+  // Once Twitch is ready, move from the Quality stand-in to play/pause.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: focusIntoControls reads refs only.
+  useEffect(() => {
+    if (frameState !== "ready" || !immersiveRef.current || !focusFallbackRef.current) return
+    const active = document.activeElement
+    if (
+      !(active instanceof HTMLElement) ||
+      active.getAttribute("data-focus-id") !== "player-quality"
+    )
+      return
+    if (controlsRef.current?.querySelector(".player-quality") !== null) return
+    focusIntoControls()
+  }, [frameState])
 
   // Up toggles the overlay bar: from the video it shows the bar and moves focus into it; from the
   // bar's top row (where Up has nowhere else to go) it hides the bar and returns to the video.
@@ -460,10 +505,11 @@ export const PlayerView = ({
     }
   }, [])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: showControls only touches refs/state.
   useEffect(() => {
     if (!canPlay) return
-    // In stream fullscreen OK must stay play/pause, so focus the video rather than Back.
-    if (immersiveRef.current) immersiveExitRef.current?.focus()
+    // In stream fullscreen the bar takes focus on play/pause (OK stays play/pause), never Back.
+    if (immersiveRef.current) showControls(true)
     else backButtonRef.current?.focus()
   }, [canPlay])
 
