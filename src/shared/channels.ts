@@ -32,6 +32,7 @@ export const CHANNELS = {
   systemActivateEmbeddedPlayer: "system:activate-embedded-player",
   systemIsSteamGameMode: "system:is-steam-game-mode",
   systemRestoreShellFullscreen: "system:restore-shell-fullscreen",
+  systemWindowActive: "system:window-active",
   systemSetPlayerLowLatency: "system:set-player-low-latency",
   systemSetFullscreen: "system:set-fullscreen",
   systemToggleFullscreen: "system:toggle-fullscreen",

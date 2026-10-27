@@ -95,7 +95,11 @@ code returns you to **Sign in with Twitch**. You can leave Settings while sign-i
 does not pull you back or interrupt Client ID editing.
 
 To open **Following** instead of **Home** at startup, after leaving a stream and on Back, turn on
-**Open Following instead of Home** in the **Start screen** card at the bottom of Settings. It
+**Open Following instead of Home** in the **Player behaviour** card of Settings. The same card
+has **Start streams in fullscreen** and **Pause when switching to another app**: with it on, a
+playing stream pauses when another app (such as Steam's interface) takes focus and resumes when
+you return; a stream you paused yourself stays paused. In Settings, Left returns to the tab you
+came from. It
 applies while signed in; guests always start on Home.
 
 A public Client ID is built in; ordinary sign-in needs no developer registration or Save step.

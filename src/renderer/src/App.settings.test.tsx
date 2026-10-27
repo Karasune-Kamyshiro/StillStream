@@ -127,6 +127,9 @@ const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<VacuumStreamApi["auth"][
       restoreShellFullscreen: vi
         .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
+      onWindowActive: vi
+        .fn<VacuumStreamApi["system"]["onWindowActive"]>()
+        .mockReturnValue(() => undefined),
       setPlayerLowLatency: vi
         .fn<VacuumStreamApi["system"]["setPlayerLowLatency"]>()
         .mockResolvedValue(null),
@@ -246,8 +249,9 @@ describe("Settings in the mounted App", () => {
           await key("ArrowUp")
         }
         expectFocus(id)
+        // Left returns to the tab the viewer came from (Home here), not to Settings.
         await key("ArrowLeft")
-        expectFocus("nav-settings")
+        expectFocus("nav-home")
       },
     )
   })
@@ -270,7 +274,7 @@ describe("Settings in the mounted App", () => {
         expect(target(below).getAttribute("data-focus-up")).toBe(id)
         expect(target(below).getAttribute("data-focus-down")).toBe("settings-client-id")
       }
-      expect(target(id).getAttribute("data-focus-left")).toBe("nav-settings")
+      expect(target(id).getAttribute("data-focus-left")).toBe("nav-home")
       expect(target(id).getAttribute("data-focus-up")).toBe("nav-settings")
       expect(target("settings-client-id").getAttribute("data-focus-up")).toBe(below ?? id)
       expect(target("settings-client-id").getAttribute("data-focus-down")).toBe("settings-save")
@@ -282,7 +286,7 @@ describe("Settings in the mounted App", () => {
       ).toEqual([
         "account-heading",
         "developer-app-heading",
-        "start-screen-heading",
+        "player-behaviour-heading",
         "chat-heading",
       ])
       expect(
@@ -615,7 +619,7 @@ describe("Chat preferences", () => {
 })
 
 describe("Stream fullscreen preference", () => {
-  it("is on by default and saves from the Start screen card", async () => {
+  it("is on by default and saves from the Player behaviour card", async () => {
     const bridge = makeBridge(authenticated)
     let saved = PreferencesSnapshotSchema.parse({})
     bridge.preferences.snapshot.mockResolvedValue(saved)
@@ -632,11 +636,51 @@ describe("Stream fullscreen preference", () => {
     expect(target("settings-start-following").getAttribute("data-focus-down")).toBe(
       "settings-start-fullscreen",
     )
+    expect(target("settings-start-fullscreen").getAttribute("data-focus-down")).toBe(
+      "settings-pause-inactive",
+    )
     expect(target("settings-chat-dark").getAttribute("data-focus-up")).toBe(
-      "settings-start-fullscreen",
+      "settings-pause-inactive",
     )
     await activate("settings-start-fullscreen")
     expect(bridge.preferences.update).toHaveBeenCalledExactlyOnceWith({ startFullscreen: false })
     expect(toggle.getAttribute("aria-checked")).toBe("false")
+  })
+})
+
+describe("Settings return path", () => {
+  it("sends Left from Settings back to the tab the viewer came from", async () => {
+    const bridge = makeBridge(authenticated)
+    vi.stubGlobal("vacuumStream", bridge)
+    root = createRoot(container)
+    await act(async () => root?.render(<App />))
+    await activate("nav-following")
+    await activate("nav-settings")
+    // The Client ID field keeps Left/Right for its text cursor.
+    for (const id of ["settings-logout", "settings-save", "settings-chat-dark"]) {
+      expect(target(id).getAttribute("data-focus-left")).toBe("nav-following")
+    }
+    target("settings-chat-dark").focus()
+    await key("ArrowLeft")
+    expectFocus("nav-following")
+  })
+
+  it("saves the background pause switch, off by default", async () => {
+    const bridge = makeBridge(authenticated)
+    let saved = PreferencesSnapshotSchema.parse({})
+    bridge.preferences.snapshot.mockResolvedValue(saved)
+    bridge.preferences.update.mockImplementation(async (update) => {
+      saved = PreferencesSnapshotSchema.parse({ ...saved, ...update })
+      return saved
+    })
+    vi.stubGlobal("vacuumStream", bridge)
+    root = createRoot(container)
+    await act(async () => root?.render(<App />))
+    await activate("nav-settings")
+    const toggle = target("settings-pause-inactive")
+    expect(toggle.getAttribute("aria-checked")).toBe("false")
+    await activate("settings-pause-inactive")
+    expect(bridge.preferences.update).toHaveBeenCalledExactlyOnceWith({ pauseWhenInactive: true })
+    expect(toggle.getAttribute("aria-checked")).toBe("true")
   })
 })

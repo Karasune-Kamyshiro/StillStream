@@ -114,6 +114,8 @@ export const PreferencesSnapshotSchema = z.strictObject({
   /** Open every stream in stream fullscreen, with the controls as a timed overlay. */
   startFullscreen: z.boolean().default(true),
   startScreen: StartScreenSchema.default("home"),
+  /** Pause while the app is in the background (another app focused, hidden or minimised). */
+  pauseWhenInactive: z.boolean().default(false),
 })
 /** Every preference at its default, as for a first launch. */
 export const defaultPreferences = (): PreferencesSnapshot => PreferencesSnapshotSchema.parse({})
@@ -128,6 +130,7 @@ export const PreferencesUpdateSchema = z.strictObject({
   quality: z.string().min(1).max(64).optional(),
   startFullscreen: z.boolean().optional(),
   startScreen: StartScreenSchema.optional(),
+  pauseWhenInactive: z.boolean().optional(),
 })
 export type PreferencesUpdate = z.infer<typeof PreferencesUpdateSchema>
 export type PreferencesSnapshot = z.infer<typeof PreferencesSnapshotSchema>
@@ -329,6 +332,8 @@ export interface VacuumStreamApi {
     readonly setPlayerLowLatency: (enabled: boolean | null) => Promise<boolean | null>
     /** Sets window fullscreen and resolves with the previous state. */
     readonly setFullscreen: (fullscreen: boolean) => Promise<boolean>
+    /** Window focus from the operating system: false when another app takes over. */
+    readonly onWindowActive: (listener: (active: boolean) => void) => () => void
     readonly toggleFullscreen: () => Promise<boolean>
   }
 }

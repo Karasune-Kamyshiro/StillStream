@@ -51,6 +51,8 @@ type PlayerViewProps = {
   readonly signedIn?: boolean
   /** Opens the stream in stream fullscreen, with the controls as a timed overlay. */
   readonly startInFullscreen?: boolean
+  /** Pauses while another app has focus and resumes on return, if the app did the pausing. */
+  readonly pauseWhenInactive?: boolean
   /** Saved low-latency choice; undefined keeps Twitch's own default. */
   readonly lowLatency?: boolean
   readonly onBack: () => void
@@ -100,6 +102,7 @@ export const PlayerView = ({
   onSwitchStream,
   signedIn = false,
   startInFullscreen = false,
+  pauseWhenInactive = false,
   lowLatency,
   onBack,
   onChatLayoutChange,
@@ -743,6 +746,38 @@ export const PlayerView = ({
     resetQualities,
     syncLowLatency,
   ])
+
+  // Background pause: only a stream that was playing is paused, and only a pause made here is
+  // undone on return, so a stream the viewer paused stays paused.
+  useEffect(() => {
+    if (!pauseWhenInactive) return
+    let pausedByApp = false
+    const deactivate = (): void => {
+      const player = playerRef.current
+      if (player === undefined || player.isPaused()) return
+      cancelAutoStart()
+      player.pause()
+      setPaused(true)
+      pausedByApp = true
+    }
+    const activate = (): void => {
+      if (!pausedByApp || document.hidden) return
+      pausedByApp = false
+      if (playerRef.current === undefined) return
+      void window.vacuumStream.system.activateEmbeddedPlayer(false).then((started) => {
+        if (started) setPaused(false)
+      })
+    }
+    const unsubscribe = window.vacuumStream.system.onWindowActive((active) =>
+      active ? activate() : deactivate(),
+    )
+    const onVisibility = (): void => (document.hidden ? deactivate() : activate())
+    document.addEventListener("visibilitychange", onVisibility)
+    return () => {
+      unsubscribe()
+      document.removeEventListener("visibilitychange", onVisibility)
+    }
+  }, [cancelAutoStart, pauseWhenInactive])
 
   const retryStartup = (): void => {
     if (frameState !== "startup-error" || startupAttemptRef.current !== startupAttempt) return

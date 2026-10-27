@@ -1237,6 +1237,84 @@ describe("fullscreen-first player with an overlay control bar", () => {
   })
 })
 
+describe("pause while another app has focus", () => {
+  const mountWithFocusEvents = async (pauseWhenInactive: boolean) => {
+    const harness = installPlayerHarness([true])
+    let notify: ((active: boolean) => void) | undefined
+    const bridge = (globalThis as { vacuumStream?: { system: Record<string, unknown> } })
+      .vacuumStream
+    if (bridge === undefined) throw new Error("Missing bridge")
+    Object.assign(bridge.system, {
+      onWindowActive: (listener: (active: boolean) => void) => {
+        notify = listener
+        return () => {
+          notify = undefined
+        }
+      },
+    })
+    let playing = true
+    const player = (): { isPaused: () => boolean; pause: () => void } | undefined =>
+      harness.instances.at(-1) as unknown as { isPaused: () => boolean; pause: () => void }
+    const container = document.createElement("div")
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () =>
+      root.render(
+        <PlayerView
+          onBack={() => undefined}
+          onPastBroadcasts={() => undefined}
+          onSetFullscreen={async () => false}
+          pauseWhenInactive={pauseWhenInactive}
+          source={source}
+        />,
+      ),
+    )
+    await act(async () => harness.emit("ready"))
+    const instance = player()
+    if (instance === undefined) throw new Error("Missing player")
+    instance.isPaused = () => !playing
+    const pause = vi.fn(() => {
+      playing = false
+    })
+    instance.pause = pause
+    harness.activateEmbeddedPlayer.mockClear()
+    return {
+      harness,
+      notify: async (active: boolean) => act(async () => notify?.(active)),
+      pause,
+      root,
+      setPlaying: (value: boolean) => {
+        playing = value
+      },
+      subscribed: () => notify !== undefined,
+    }
+  }
+
+  it("pauses on leaving the app and resumes on return, only for a pause it made", async () => {
+    const view = await mountWithFocusEvents(true)
+    await view.notify(false)
+    expect(view.pause).toHaveBeenCalledTimes(1)
+    await view.notify(true)
+    expect(view.harness.activateEmbeddedPlayer).toHaveBeenCalledExactlyOnceWith(false)
+    // A stream the viewer paused stays paused across a switch.
+    view.setPlaying(false)
+    await view.notify(false)
+    await view.notify(true)
+    expect(view.pause).toHaveBeenCalledTimes(1)
+    expect(view.harness.activateEmbeddedPlayer).toHaveBeenCalledTimes(1)
+    await act(async () => view.root.unmount())
+    expect(view.subscribed()).toBe(false)
+  })
+
+  it("does nothing when the setting is off", async () => {
+    const view = await mountWithFocusEvents(false)
+    await view.notify(false)
+    expect(view.pause).not.toHaveBeenCalled()
+    expect(view.subscribed()).toBe(false)
+    await act(async () => view.root.unmount())
+  })
+})
+
 describe("default quality", () => {
   it("requests the saved quality once per stream and remembers a new choice", async () => {
     const quality = { available: ["auto", "1080p60", "720p60"] as unknown, current: "auto" }

@@ -49,6 +49,21 @@ export const App = () => {
       refresh.setAttribute("data-focus-up", "nav-following")
     }
   })
+  // Remember the tab the viewer was on before Settings, so Left from Settings leads back to it.
+  const settingsReturnRoute = useRef<RouteName>("home")
+  const previousScreen = useRef(controller.screen)
+  if (previousScreen.current !== controller.screen) {
+    const previous = previousScreen.current
+    if (
+      controller.screen.kind === "browse" &&
+      controller.screen.route === "settings" &&
+      previous.kind === "browse" &&
+      previous.route !== "settings"
+    ) {
+      settingsReturnRoute.current = previous.route
+    }
+    previousScreen.current = controller.screen
+  }
   const screenTitle =
     controller.screen.kind === "browse"
       ? ROUTE_TITLES[controller.screen.route]
@@ -110,6 +125,7 @@ export const App = () => {
         onSwitchStream={controller.openStream}
         signedIn={controller.auth.kind === "authenticated"}
         startInFullscreen={controller.preferences.startFullscreen}
+        pauseWhenInactive={controller.preferences.pauseWhenInactive}
         key={
           controller.screen.source.kind === "live"
             ? controller.screen.source.channel
@@ -416,6 +432,7 @@ export const App = () => {
         ) : null}
         {route === "settings" ? (
           <SettingsPanel
+            navFocusId={`nav-${settingsReturnRoute.current}`}
             auth={controller.auth}
             onAccountRequest={() => {
               const generation = ++accountGeneration.current
@@ -430,6 +447,10 @@ export const App = () => {
               controller.updatePreferences({ startFullscreen })
             }
             startFullscreen={controller.preferences.startFullscreen}
+            onPauseWhenInactiveChange={(pauseWhenInactive) =>
+              controller.updatePreferences({ pauseWhenInactive })
+            }
+            pauseWhenInactive={controller.preferences.pauseWhenInactive}
             settings={controller.settings}
             startScreen={controller.startScreen}
           />

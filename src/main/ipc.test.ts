@@ -191,6 +191,7 @@ describe("chat input capability", () => {
     expect([...Object.keys(api.system)].sort()).toEqual([
       "activateEmbeddedPlayer",
       "isSteamGameMode",
+      "onWindowActive",
       "restoreShellFullscreen",
       "setFullscreen",
       "setPlayerLowLatency",

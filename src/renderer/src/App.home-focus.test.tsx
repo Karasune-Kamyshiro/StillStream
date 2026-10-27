@@ -176,6 +176,9 @@ const makeBridge = (auth: AuthSnapshot) =>
       activateEmbeddedPlayer: vi.fn<VacuumStreamApi["system"]["activateEmbeddedPlayer"]>(),
       isSteamGameMode: vi.fn<VacuumStreamApi["system"]["isSteamGameMode"]>(),
       restoreShellFullscreen: vi.fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>(),
+      onWindowActive: vi
+        .fn<VacuumStreamApi["system"]["onWindowActive"]>()
+        .mockReturnValue(() => undefined),
       setPlayerLowLatency: vi
         .fn<VacuumStreamApi["system"]["setPlayerLowLatency"]>()
         .mockResolvedValue(null),

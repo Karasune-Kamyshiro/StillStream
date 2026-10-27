@@ -1,6 +1,7 @@
 import { X509Certificate } from "node:crypto"
 import { join } from "node:path"
 import { app, BrowserWindow, dialog, powerSaveBlocker, safeStorage, session } from "electron"
+import { CHANNELS } from "../shared/channels"
 import { createChatInput } from "./chat-input"
 import { FavouritesStore } from "./favourites-store"
 import { type StaticHttpsServer, startStaticHttpsServer } from "./https-server"
@@ -106,6 +107,17 @@ const createWindow = async (): Promise<void> => {
   const releasePlayerFocusGuard = createPlayerFocusGuard(mainWindow)
   mainWindow.on("closed", releasePlayerFocusGuard)
   mainWindow.on("blur", chatInput.blur)
+  // The OS-level window focus (unlike the renderer's own blur, which also fires when an embedded
+  // Twitch frame takes focus) tells the player when another app, such as Steam, takes over.
+  const sendWindowActive = (active: boolean) => (): void => {
+    if (!mainWindow.isDestroyed()) mainWindow.webContents.send(CHANNELS.systemWindowActive, active)
+  }
+  mainWindow.on("blur", sendWindowActive(false))
+  mainWindow.on("hide", sendWindowActive(false))
+  mainWindow.on("minimize", sendWindowActive(false))
+  mainWindow.on("focus", sendWindowActive(true))
+  mainWindow.on("show", sendWindowActive(true))
+  mainWindow.on("restore", sendWindowActive(true))
   mainWindow.on("closed", chatInput.cancel)
   mainWindow.webContents.on("render-process-gone", chatInput.cancel)
   mainWindow.webContents.on("did-start-navigation", (_event, _url, _inPlace, isMainFrame) => {

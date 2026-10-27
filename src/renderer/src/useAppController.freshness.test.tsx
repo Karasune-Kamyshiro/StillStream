@@ -136,6 +136,9 @@ const makeBridge = () =>
       restoreShellFullscreen: vi
         .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
+      onWindowActive: vi
+        .fn<VacuumStreamApi["system"]["onWindowActive"]>()
+        .mockReturnValue(() => undefined),
       setPlayerLowLatency: vi
         .fn<VacuumStreamApi["system"]["setPlayerLowLatency"]>()
         .mockResolvedValue(null),

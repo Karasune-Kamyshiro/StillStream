@@ -176,6 +176,15 @@ const api = {
       ipcRenderer.invoke(CHANNELS.systemIsSteamGameMode).then((value) => Boolean(value)),
     restoreShellFullscreen: () =>
       ipcRenderer.invoke(CHANNELS.systemRestoreShellFullscreen).then((value) => Boolean(value)),
+    onWindowActive: (listener) => {
+      const onActive = (_event: Electron.IpcRendererEvent, active: unknown): void => {
+        listener(z.boolean().parse(active))
+      }
+      ipcRenderer.on(CHANNELS.systemWindowActive, onActive)
+      return () => {
+        ipcRenderer.removeListener(CHANNELS.systemWindowActive, onActive)
+      }
+    },
     setPlayerLowLatency: (enabled) =>
       ipcRenderer
         .invoke(CHANNELS.systemSetPlayerLowLatency, z.boolean().nullable().parse(enabled))

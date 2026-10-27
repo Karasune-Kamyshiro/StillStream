@@ -66,6 +66,17 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/VacuumStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/VacuumStream</url>
   <releases>
+    <release version="0.2.1-fork.12" date="2026-10-27">
+      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.12</url>
+      <description>
+        <p>Settings and background play.</p>
+        <ul>
+          <li>Left from Settings returns to the tab you came from instead of the Settings tab.</li>
+          <li>New option to pause a stream while another app has focus and resume it on return.</li>
+          <li>Start screen, fullscreen and pause options are grouped in a Player behaviour card.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.1-fork.11" date="2026-10-27">
       <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.11</url>
       <description>
