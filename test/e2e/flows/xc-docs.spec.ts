@@ -312,7 +312,7 @@ test.describe("xc-docs Search gamepad west/north face-button editing", () => {
           value: index === 2 ? 1 : 0,
         })),
         connected: true,
-        id: "vacuumstream-e2e-fake-pad",
+        id: "stillstream-e2e-fake-pad",
         index: 0,
         mapping: "standard",
         timestamp: performance.now(),

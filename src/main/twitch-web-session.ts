@@ -199,7 +199,7 @@ export const createTwitchWebSession = (options: {
       window.close()
       return
     }
-    window.setTitle("Allow VacuumStream on Twitch")
+    window.setTitle("Allow StillStream on Twitch")
     await window.loadURL(activation.url).catch(() => undefined)
     while (!window.isClosed()) {
       await new Promise((resolve) => setTimeout(resolve, activation.intervalSeconds * 1000))
@@ -248,4 +248,4 @@ export type DeviceActivation = {
 export type TwitchWebSession = ReturnType<typeof createTwitchWebSession>
 
 export const plainChromiumUserAgent = (userAgent: string): string =>
-  userAgent.replace(/\s(?:Electron|vacuumstream)\/\S+/gi, "")
+  userAgent.replace(/\s(?:Electron|stillstream)\/\S+/gi, "")

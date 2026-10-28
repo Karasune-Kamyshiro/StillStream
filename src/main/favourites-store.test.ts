@@ -36,7 +36,7 @@ describe("favourites store", () => {
     vi.mocked(filesystem.readFile).mockReset()
     vi.mocked(filesystem.rename).mockReset()
     vi.mocked(filesystem.writeFile).mockReset()
-    directory = await filesystem.mkdtemp(join(tmpdir(), "vacuumstream-favourites-"))
+    directory = await filesystem.mkdtemp(join(tmpdir(), "stillstream-favourites-"))
     path = join(directory, "favourites.json")
   })
 

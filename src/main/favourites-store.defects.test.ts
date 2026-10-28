@@ -18,7 +18,7 @@ describe("favourites store defect regressions", () => {
 
   beforeEach(async () => {
     vi.mocked(filesystem.chmod).mockReset()
-    directory = await filesystem.mkdtemp(join(tmpdir(), "vacuumstream-favourites-"))
+    directory = await filesystem.mkdtemp(join(tmpdir(), "stillstream-favourites-"))
     path = join(directory, "favourites.json")
   })
 

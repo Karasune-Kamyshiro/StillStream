@@ -79,7 +79,7 @@ const installHarness = () => {
     }
   }
   const activateEmbeddedPlayer = vi.fn(async () => true)
-  vi.stubGlobal("vacuumStream", {
+  vi.stubGlobal("stillStream", {
     playbackProgress: {
       get: vi.fn(async () => undefined),
       list: vi.fn(async () => []),

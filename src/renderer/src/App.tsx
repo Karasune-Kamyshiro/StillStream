@@ -74,7 +74,7 @@ export const App = () => {
           : "Past broadcasts"
 
   useEffect(() => {
-    document.title = `${screenTitle} · VacuumStream`
+    document.title = `${screenTitle} · StillStream`
   }, [screenTitle])
   useLayoutEffect(() => {
     const focusId = screenEntryFocusId(controller.screen)
@@ -143,7 +143,7 @@ export const App = () => {
         {...(controller.preferences.quality === undefined
           ? {}
           : { preferredQuality: controller.preferences.quality })}
-        onSetFullscreen={(fullscreen) => window.vacuumStream.system.setFullscreen(fullscreen)}
+        onSetFullscreen={(fullscreen) => window.stillStream.system.setFullscreen(fullscreen)}
         source={controller.screen.source}
       />
     )

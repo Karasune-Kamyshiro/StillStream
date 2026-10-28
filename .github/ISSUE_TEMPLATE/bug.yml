@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible problem with VacuumStream.
+description: Report a reproducible problem with StillStream.
 body:
   - type: markdown
     attributes:

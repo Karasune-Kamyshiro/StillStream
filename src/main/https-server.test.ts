@@ -37,8 +37,8 @@ describe("static HTTPS server", () => {
   let server: StaticHttpsServer | undefined
 
   beforeAll(async () => {
-    assetsPath = await mkdtemp(join(tmpdir(), "vacuumstream-https-"))
-    await writeFile(join(assetsPath, "index.html"), "<h1>VacuumStream</h1>")
+    assetsPath = await mkdtemp(join(tmpdir(), "stillstream-https-"))
+    await writeFile(join(assetsPath, "index.html"), "<h1>StillStream</h1>")
     server = await startStaticHttpsServer({
       assetsPath,
       certificatePath: join(import.meta.dirname, "../../resources/certs/localhost-cert.pem"),
@@ -59,7 +59,7 @@ describe("static HTTPS server", () => {
     const response = await request(url, url.host)
 
     // Then only the static asset is returned
-    expect(response).toEqual({ body: "<h1>VacuumStream</h1>", status: 200 })
+    expect(response).toEqual({ body: "<h1>StillStream</h1>", status: 200 })
   })
 
   it("rejects requests with a foreign Host header", async () => {

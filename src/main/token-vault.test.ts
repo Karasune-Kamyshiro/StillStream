@@ -27,7 +27,7 @@ describe("token vault", () => {
 
   it("round-trips tokens when a secure Linux backend is available", async () => {
     // Given an application data directory and an encrypted storage adapter
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-token-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-token-"))
     const adapter: SecureStorageAdapter = {
       backend: () => "gnome_libsecret",
       decrypt: (value) => value.toString("utf8"),
@@ -45,7 +45,7 @@ describe("token vault", () => {
 
   it("persists a mode-0600 JSON fallback when secure storage is unavailable", async () => {
     // Given a Linux backend that would only obfuscate plaintext
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-token-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-token-"))
     const adapter: SecureStorageAdapter = {
       backend: () => "basic_text",
       decrypt: (value) => value.toString("utf8"),
@@ -69,7 +69,7 @@ describe("token vault", () => {
 
   it("does not let an in-flight load restore a cleared token", async () => {
     // Given an encrypted token persisted by a previous vault instance
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-token-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-token-"))
     const adapter: SecureStorageAdapter = {
       backend: () => "gnome_libsecret",
       decrypt: (value) => value.toString("utf8"),
@@ -90,7 +90,7 @@ describe("token vault", () => {
 
   it("treats a fallback token as authoritative during secure-storage migration", async () => {
     // Given an older encrypted token and a newer fallback token left by an interrupted transition
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-token-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-token-"))
     const adapter: SecureStorageAdapter = {
       backend: () => "gnome_libsecret",
       decrypt: (value) => value.toString("utf8"),
@@ -111,7 +111,7 @@ describe("token vault", () => {
 
   it("removes temporary token files during logout", async () => {
     // Given failed writes left encrypted and fallback temporary files behind
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-token-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-token-"))
     const adapter: SecureStorageAdapter = {
       backend: () => "gnome_libsecret",
       decrypt: (value) => value.toString("utf8"),
@@ -137,7 +137,7 @@ describe("token vault", () => {
 
   it("does not cache a token when secure persistence fails", async () => {
     // Given a secure backend that rejects encryption
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-token-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-token-"))
     const adapter: SecureStorageAdapter = {
       backend: () => "gnome_libsecret",
       decrypt: (value) => value.toString("utf8"),

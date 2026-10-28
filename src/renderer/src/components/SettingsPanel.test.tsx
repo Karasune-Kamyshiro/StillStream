@@ -14,7 +14,7 @@ import type {
   AuthSnapshot,
   DeviceChallenge,
   SettingsSnapshot,
-  VacuumStreamApi,
+  StillStreamApi,
 } from "../../../shared/contracts"
 import { App } from "../App"
 import { SettingsPanel } from "./SettingsPanel"
@@ -119,7 +119,7 @@ describe("settings account focus continuity", () => {
     saveClientId.mockReset()
     onAccountRequest.mockReset().mockImplementation(() => () => true)
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true)
-    vi.stubGlobal("vacuumStream", {
+    vi.stubGlobal("stillStream", {
       auth: { begin, logout, openActivation, setup },
       playerSession: {
         signOut: vi.fn(async () => ({ signedIn: false })),
@@ -329,9 +329,9 @@ describe("settings account focus continuity", () => {
   })
 
   it("signs the player out together with the app account", async () => {
-    const vacuumStream = (globalThis as { vacuumStream?: VacuumStreamApi }).vacuumStream
-    const playerSignOut = vi.mocked(vacuumStream?.playerSession.signOut)
-    vi.mocked(vacuumStream?.playerSession.snapshot)?.mockResolvedValueOnce({ signedIn: true })
+    const stillStream = (globalThis as { stillStream?: StillStreamApi }).stillStream
+    const playerSignOut = vi.mocked(stillStream?.playerSession.signOut)
+    vi.mocked(stillStream?.playerSession.snapshot)?.mockResolvedValueOnce({ signedIn: true })
     logout.mockResolvedValueOnce(undefined)
     await render(authenticated)
     await act(async () => action("settings-logout").click())
@@ -406,102 +406,102 @@ const makeMountedBridge = (
   }
   const bridge = {
     auth: {
-      begin: vi.fn<VacuumStreamApi["auth"]["begin"]>(),
-      logout: vi.fn<VacuumStreamApi["auth"]["logout"]>().mockResolvedValue(undefined),
+      begin: vi.fn<StillStreamApi["auth"]["begin"]>(),
+      logout: vi.fn<StillStreamApi["auth"]["logout"]>().mockResolvedValue(undefined),
       openActivation: vi
-        .fn<VacuumStreamApi["auth"]["openActivation"]>()
+        .fn<StillStreamApi["auth"]["openActivation"]>()
         .mockResolvedValue(undefined),
-      setup: vi.fn<VacuumStreamApi["auth"]["setup"]>(),
+      setup: vi.fn<StillStreamApi["auth"]["setup"]>(),
       snapshot: vi
-        .fn<VacuumStreamApi["auth"]["snapshot"]>()
+        .fn<StillStreamApi["auth"]["snapshot"]>()
         .mockImplementation(async () => getAuth()),
     },
     catalog: {
       followed: vi
-        .fn<VacuumStreamApi["catalog"]["followed"]>()
+        .fn<StillStreamApi["catalog"]["followed"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       followedChannels: vi
-        .fn<VacuumStreamApi["catalog"]["followedChannels"]>()
+        .fn<StillStreamApi["catalog"]["followedChannels"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       live: vi
-        .fn<VacuumStreamApi["catalog"]["live"]>()
+        .fn<StillStreamApi["catalog"]["live"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       search: vi
-        .fn<VacuumStreamApi["catalog"]["search"]>()
+        .fn<StillStreamApi["catalog"]["search"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       topCategories: vi
-        .fn<VacuumStreamApi["catalog"]["topCategories"]>()
+        .fn<StillStreamApi["catalog"]["topCategories"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       videos: vi
-        .fn<VacuumStreamApi["catalog"]["videos"]>()
+        .fn<StillStreamApi["catalog"]["videos"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
     },
     chatInput: {
-      begin: vi.fn<VacuumStreamApi["chatInput"]["begin"]>().mockResolvedValue(undefined),
-      end: vi.fn<VacuumStreamApi["chatInput"]["end"]>().mockResolvedValue(undefined),
-      onEscape: vi.fn<VacuumStreamApi["chatInput"]["onEscape"]>().mockReturnValue(() => undefined),
-      press: vi.fn<VacuumStreamApi["chatInput"]["press"]>().mockResolvedValue(undefined),
+      begin: vi.fn<StillStreamApi["chatInput"]["begin"]>().mockResolvedValue(undefined),
+      end: vi.fn<StillStreamApi["chatInput"]["end"]>().mockResolvedValue(undefined),
+      onEscape: vi.fn<StillStreamApi["chatInput"]["onEscape"]>().mockReturnValue(() => undefined),
+      press: vi.fn<StillStreamApi["chatInput"]["press"]>().mockResolvedValue(undefined),
     },
     favourites: {
-      add: vi.fn<VacuumStreamApi["favourites"]["add"]>().mockResolvedValue([]),
-      list: vi.fn<VacuumStreamApi["favourites"]["list"]>().mockResolvedValue([]),
-      remove: vi.fn<VacuumStreamApi["favourites"]["remove"]>().mockResolvedValue([]),
+      add: vi.fn<StillStreamApi["favourites"]["add"]>().mockResolvedValue([]),
+      list: vi.fn<StillStreamApi["favourites"]["list"]>().mockResolvedValue([]),
+      remove: vi.fn<StillStreamApi["favourites"]["remove"]>().mockResolvedValue([]),
     },
     playbackProgress: {
-      get: vi.fn<VacuumStreamApi["playbackProgress"]["get"]>().mockResolvedValue(undefined),
-      list: vi.fn<VacuumStreamApi["playbackProgress"]["list"]>().mockResolvedValue([]),
-      remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>().mockResolvedValue(undefined),
-      save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>().mockResolvedValue(undefined),
+      get: vi.fn<StillStreamApi["playbackProgress"]["get"]>().mockResolvedValue(undefined),
+      list: vi.fn<StillStreamApi["playbackProgress"]["list"]>().mockResolvedValue([]),
+      remove: vi.fn<StillStreamApi["playbackProgress"]["remove"]>().mockResolvedValue(undefined),
+      save: vi.fn<StillStreamApi["playbackProgress"]["save"]>().mockResolvedValue(undefined),
     },
     preferences: {
-      setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
-      update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
+      setStartScreen: vi.fn<StillStreamApi["preferences"]["setStartScreen"]>(),
+      update: vi.fn<StillStreamApi["preferences"]["update"]>(),
       snapshot: vi
-        .fn<VacuumStreamApi["preferences"]["snapshot"]>()
+        .fn<StillStreamApi["preferences"]["snapshot"]>()
         .mockResolvedValue({ ...defaultPreferences(), startFullscreen: false }),
     },
     playerSession: {
       signIn: vi
-        .fn<VacuumStreamApi["playerSession"]["signIn"]>()
+        .fn<StillStreamApi["playerSession"]["signIn"]>()
         .mockResolvedValue({ signedIn: false }),
       signOut: vi
-        .fn<VacuumStreamApi["playerSession"]["signOut"]>()
+        .fn<StillStreamApi["playerSession"]["signOut"]>()
         .mockResolvedValue({ signedIn: false }),
       snapshot: vi
-        .fn<VacuumStreamApi["playerSession"]["snapshot"]>()
+        .fn<StillStreamApi["playerSession"]["snapshot"]>()
         .mockResolvedValue({ signedIn: false }),
     },
     settings: {
       saveClientId: vi
-        .fn<VacuumStreamApi["settings"]["saveClientId"]>()
+        .fn<StillStreamApi["settings"]["saveClientId"]>()
         .mockImplementation(persistClientId),
-      snapshot: vi.fn<VacuumStreamApi["settings"]["snapshot"]>().mockImplementation(async () => {
+      snapshot: vi.fn<StillStreamApi["settings"]["snapshot"]>().mockImplementation(async () => {
         const current = await store.load()
         return { clientId: current.clientId, secureStorage: false }
       }),
     },
     system: {
       activateEmbeddedPlayer: vi
-        .fn<VacuumStreamApi["system"]["activateEmbeddedPlayer"]>()
+        .fn<StillStreamApi["system"]["activateEmbeddedPlayer"]>()
         .mockResolvedValue(false),
       isSteamGameMode: vi
-        .fn<VacuumStreamApi["system"]["isSteamGameMode"]>()
+        .fn<StillStreamApi["system"]["isSteamGameMode"]>()
         .mockResolvedValue(false),
       restoreShellFullscreen: vi
-        .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
+        .fn<StillStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
       onWindowActive: vi
-        .fn<VacuumStreamApi["system"]["onWindowActive"]>()
+        .fn<StillStreamApi["system"]["onWindowActive"]>()
         .mockReturnValue(() => undefined),
       setPlayerLowLatency: vi
-        .fn<VacuumStreamApi["system"]["setPlayerLowLatency"]>()
+        .fn<StillStreamApi["system"]["setPlayerLowLatency"]>()
         .mockResolvedValue(null),
-      setFullscreen: vi.fn<VacuumStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
+      setFullscreen: vi.fn<StillStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
       toggleFullscreen: vi
-        .fn<VacuumStreamApi["system"]["toggleFullscreen"]>()
+        .fn<StillStreamApi["system"]["toggleFullscreen"]>()
         .mockResolvedValue(false),
     },
-  } satisfies VacuumStreamApi
+  } satisfies StillStreamApi
   return { bridge, persistClientId }
 }
 
@@ -528,7 +528,7 @@ describe("Settings persistence through the mounted App", () => {
       configurable: true,
       value: vi.fn(),
     })
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-settings-panel-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-settings-panel-"))
     store = new SettingsStore(directory)
     await store.saveClientId(settings.clientId)
     authState = authenticated
@@ -553,7 +553,7 @@ describe("Settings persistence through the mounted App", () => {
     return element
   }
   const mount = async (bridge: MountedBridge) => {
-    vi.stubGlobal("vacuumStream", bridge)
+    vi.stubGlobal("stillStream", bridge)
     root = createRoot(container)
     await act(async () => root?.render(<App />))
     await act(async () => {

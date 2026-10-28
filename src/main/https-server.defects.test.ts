@@ -37,8 +37,8 @@ describe("https-server defect regressions", () => {
   let server: StaticHttpsServer | undefined
 
   beforeAll(async () => {
-    assetsPath = await mkdtemp(join(tmpdir(), "vacuumstream-https-defects-"))
-    await writeFile(join(assetsPath, "index.html"), "<h1>VacuumStream</h1>")
+    assetsPath = await mkdtemp(join(tmpdir(), "stillstream-https-defects-"))
+    await writeFile(join(assetsPath, "index.html"), "<h1>StillStream</h1>")
     server = await startStaticHttpsServer({
       assetsPath,
       certificatePath: join(import.meta.dirname, "../../resources/certs/localhost-cert.pem"),
@@ -63,6 +63,6 @@ describe("https-server defect regressions", () => {
     // Then it is rejected with 400 and the server remains usable
     expect(malformedResponse.status).toBe(400)
     expect(healthyResponse.status).toBe(200)
-    expect(healthyResponse.body).toBe("<h1>VacuumStream</h1>")
+    expect(healthyResponse.body).toBe("<h1>StillStream</h1>")
   })
 })

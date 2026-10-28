@@ -29,8 +29,8 @@ fi
 bun run package:appimage
 bash scripts/build-flatpak.sh --skip-pack
 mkdir -p dist/release
-APPIMAGE="VacuumStream-${VERSION}-x86_64.AppImage"
-FLATPAK="VacuumStream-${VERSION}-x86_64.flatpak"
+APPIMAGE="StillStream-${VERSION}-x86_64.AppImage"
+FLATPAK="StillStream-${VERSION}-x86_64.flatpak"
 cp -- "dist/${APPIMAGE}" "dist/${FLATPAK}" dist/release/
 (
   cd dist/release

@@ -50,7 +50,7 @@ export const useVideoResume = (source: PlayerSource, onBack: () => void) => {
     let active = true
     let chosen = false
     const isActive = (): boolean => active
-    const api = window.vacuumStream.playbackProgress
+    const api = window.stillStream.playbackProgress
     setStartup(initialStartup(source))
     setStatus(undefined)
     const start = (startingPosition?: number, remove = false): void => {
@@ -104,7 +104,7 @@ export const useVideoResume = (source: PlayerSource, onBack: () => void) => {
       startingPosition: number | undefined,
       isActive: () => boolean,
     ): VideoProgress => {
-      const api = window.vacuumStream.playbackProgress
+      const api = window.stillStream.playbackProgress
       const videoId = owner.videoId
       let ended = false
       let playing = false

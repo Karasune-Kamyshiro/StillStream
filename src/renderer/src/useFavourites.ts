@@ -40,7 +40,7 @@ export const useFavourites = () => {
     pending.current = "list"
     setState((current) => ({ ...current, error: "", status: "loading" }))
     try {
-      const items = await window.vacuumStream.favourites.list()
+      const items = await window.stillStream.favourites.list()
       if (requestId !== generation.current) return
       setState((current) => ({ ...current, items, status: "ready" }))
     } catch (error) {
@@ -74,8 +74,8 @@ export const useFavourites = () => {
     }))
     try {
       const items = await (operation === "add"
-        ? window.vacuumStream.favourites.add(entry)
-        : window.vacuumStream.favourites.remove(entry.login))
+        ? window.stillStream.favourites.add(entry)
+        : window.stillStream.favourites.remove(entry.login))
       if (requestId !== generation.current) return
       // The store returns the committed list. A second read could race a subsequent mutation.
       setState({ ...initialState, items, status: "ready" })

@@ -126,9 +126,9 @@ const moveFocusTo = (element: HTMLElement): void => {
   })
 }
 
-export const CHAT_GAMEPAD_EVENT = "vacuumstream:chat-gamepad"
+export const CHAT_GAMEPAD_EVENT = "stillstream:chat-gamepad"
 export type ChatGamepadAction = "next" | "previous" | "activate" | "exit" | "consume"
-export const SEARCH_GAMEPAD_EVENT = "vacuumstream:search-gamepad"
+export const SEARCH_GAMEPAD_EVENT = "stillstream:search-gamepad"
 export type SearchGamepadAction = "delete" | "submit"
 type GamepadInput = string | 2 | 3
 

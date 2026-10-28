@@ -15,7 +15,7 @@ describe("settings store", () => {
 
   it("uses the embedded Twitch Client ID when no settings were saved", async () => {
     // Given an empty application data directory
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-settings-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-settings-"))
     const store = new SettingsStore(directory)
 
     // When settings are loaded for the first time
@@ -27,7 +27,7 @@ describe("settings store", () => {
 
   it("persists a valid public Twitch Client ID atomically", async () => {
     // Given an empty application data directory
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-settings-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-settings-"))
     const store = new SettingsStore(directory)
 
     // When a valid public Client ID is saved
@@ -42,7 +42,7 @@ describe("settings store", () => {
 
   it("rejects an invalid Client ID before writing", async () => {
     // Given an empty application data directory
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-settings-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-settings-"))
     const store = new SettingsStore(directory)
 
     // When an invalid setting crosses the persistence boundary

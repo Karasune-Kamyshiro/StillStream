@@ -6,6 +6,7 @@ import { createChatInput } from "./chat-input"
 import { FavouritesStore } from "./favourites-store"
 import { type StaticHttpsServer, startStaticHttpsServer } from "./https-server"
 import { registerIpc } from "./ipc"
+import { adoptLegacyData } from "./legacy-data"
 import { createPlaybackKeepAwake } from "./playback-keep-awake"
 import { PlaybackProgressStore } from "./playback-progress-store"
 import { createPlayerFocusGuard } from "./player-focus-guard"
@@ -94,6 +95,8 @@ const createWindow = async (): Promise<void> => {
     })
   }
 
+  // One-time carry-over of preferences from the VacuumStream data folder, before stores open.
+  await adoptLegacyData(app.getPath("userData")).catch(() => [])
   const tokenVault = new TokenVault(app.getPath("userData"), {
     backend: () => safeStorage.getSelectedStorageBackend(),
     decrypt: (value) => safeStorage.decryptString(value),
@@ -180,7 +183,7 @@ if (!app.requestSingleInstanceLock()) {
     .then(createWindow)
     .catch(async (error: unknown) => {
       const message = error instanceof Error ? error.message : "Unknown startup failure"
-      dialog.showErrorBox("VacuumStream could not start", message)
+      dialog.showErrorBox("StillStream could not start", message)
       await staticServer?.close()
       app.exit(1)
     })

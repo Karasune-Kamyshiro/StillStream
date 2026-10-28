@@ -8,7 +8,7 @@ import { createRoot } from "react-dom/client"
 import { renderToStaticMarkup } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { createChatInput } from "../../../main/chat-input"
-import type { PlaybackBookmark, StreamCard, VacuumStreamApi } from "../../../shared/contracts"
+import type { PlaybackBookmark, StillStreamApi, StreamCard } from "../../../shared/contracts"
 import { App } from "../App"
 import {
   CHAT_GAMEPAD_EVENT,
@@ -59,24 +59,24 @@ const installPlayerHarness = (
   const constructed = vi.fn<(elementId: string, options: TwitchPlayerOptions) => void>()
   const bookmarks = new Map<string, PlaybackBookmark>()
   const progress = {
-    get: vi.fn<VacuumStreamApi["playbackProgress"]["get"]>(async (videoId) =>
+    get: vi.fn<StillStreamApi["playbackProgress"]["get"]>(async (videoId) =>
       bookmarks.get(videoId),
     ),
-    list: vi.fn<VacuumStreamApi["playbackProgress"]["list"]>(async () => [...bookmarks.values()]),
-    remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>(async (videoId) => {
+    list: vi.fn<StillStreamApi["playbackProgress"]["list"]>(async () => [...bookmarks.values()]),
+    remove: vi.fn<StillStreamApi["playbackProgress"]["remove"]>(async (videoId) => {
       bookmarks.delete(videoId)
     }),
-    save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>(async (bookmark) => {
+    save: vi.fn<StillStreamApi["playbackProgress"]["save"]>(async (bookmark) => {
       bookmarks.set(bookmark.videoId, bookmark)
     }),
   }
   const catalog = {
-    followed: vi.fn<VacuumStreamApi["catalog"]["followed"]>(),
-    followedChannels: vi.fn<VacuumStreamApi["catalog"]["followedChannels"]>(),
-    live: vi.fn<VacuumStreamApi["catalog"]["live"]>(),
-    search: vi.fn<VacuumStreamApi["catalog"]["search"]>(),
-    topCategories: vi.fn<VacuumStreamApi["catalog"]["topCategories"]>(),
-    videos: vi.fn<VacuumStreamApi["catalog"]["videos"]>(),
+    followed: vi.fn<StillStreamApi["catalog"]["followed"]>(),
+    followedChannels: vi.fn<StillStreamApi["catalog"]["followedChannels"]>(),
+    live: vi.fn<StillStreamApi["catalog"]["live"]>(),
+    search: vi.fn<StillStreamApi["catalog"]["search"]>(),
+    topCategories: vi.fn<StillStreamApi["catalog"]["topCategories"]>(),
+    videos: vi.fn<StillStreamApi["catalog"]["videos"]>(),
   }
   const instances: TestPlayer[] = []
   const disableCaptions = vi.fn()
@@ -140,7 +140,7 @@ const installPlayerHarness = (
     value: { Player: TestPlayer },
   })
   const restoreShellFullscreen = vi.fn(async () => undefined)
-  type EscapeListener = Parameters<VacuumStreamApi["chatInput"]["onEscape"]>[0]
+  type EscapeListener = Parameters<StillStreamApi["chatInput"]["onEscape"]>[0]
   const chatNotifications = new Set<EscapeListener>()
   let attached = false
   const chatDebugger = Object.assign(new EventEmitter(), {
@@ -197,7 +197,7 @@ const installPlayerHarness = (
   } as unknown as BrowserWindow)
   const beginChatInput = vi.fn(async (session: string) => chatInput.begin(session))
   const endChatInput = vi.fn(async (session: string) => chatInput.end(session))
-  const pressChatInput = vi.fn<VacuumStreamApi["chatInput"]["press"]>(chatInput.press)
+  const pressChatInput = vi.fn<StillStreamApi["chatInput"]["press"]>(chatInput.press)
   const onChatEscape = vi.fn((listener: EscapeListener) => {
     chatNotifications.add(listener)
     return () => {
@@ -214,7 +214,7 @@ const installPlayerHarness = (
     chatContents.emit("before-input-event", event, { isAutoRepeat: repeat, key: "Escape", type })
     return event.defaultPrevented
   }
-  Object.defineProperty(window, "vacuumStream", {
+  Object.defineProperty(window, "stillStream", {
     configurable: true,
     value: {
       auth: { snapshot: async () => ({ kind: "guest" }) },
@@ -1259,8 +1259,7 @@ describe("pause while another app has focus", () => {
   const mountWithFocusEvents = async (pauseWhenInactive: boolean) => {
     const harness = installPlayerHarness([true])
     let notify: ((active: boolean) => void) | undefined
-    const bridge = (globalThis as { vacuumStream?: { system: Record<string, unknown> } })
-      .vacuumStream
+    const bridge = (globalThis as { stillStream?: { system: Record<string, unknown> } }).stillStream
     if (bridge === undefined) throw new Error("Missing bridge")
     Object.assign(bridge.system, {
       onWindowActive: (listener: (active: boolean) => void) => {
@@ -1369,8 +1368,8 @@ describe("live low latency", () => {
   it("applies the saved choice once playback starts and toggles it from the Quality menu", async () => {
     const harness = installPlayerHarness([true])
     const setPlayerLowLatency = vi.fn(async (enabled: boolean | null) => enabled ?? false)
-    const bridge = (globalThis as { vacuumStream?: { system: { setPlayerLowLatency?: unknown } } })
-      .vacuumStream
+    const bridge = (globalThis as { stillStream?: { system: { setPlayerLowLatency?: unknown } } })
+      .stillStream
     if (bridge === undefined) throw new Error("Missing bridge")
     bridge.system.setPlayerLowLatency = setPlayerLowLatency
     const onLowLatencyChange = vi.fn()
@@ -1409,8 +1408,8 @@ describe("live low latency", () => {
   it("only reads Twitch's mode without a saved choice, and shows when it is unavailable", async () => {
     const harness = installPlayerHarness([true])
     const setPlayerLowLatency = vi.fn(async () => null)
-    const bridge = (globalThis as { vacuumStream?: { system: { setPlayerLowLatency?: unknown } } })
-      .vacuumStream
+    const bridge = (globalThis as { stillStream?: { system: { setPlayerLowLatency?: unknown } } })
+      .stillStream
     if (bridge === undefined) throw new Error("Missing bridge")
     bridge.system.setPlayerLowLatency = setPlayerLowLatency
     const { container, root } = await mountPlayer(source)

@@ -16,7 +16,7 @@
   color: var(--color-accent-strong);
 }
 
-.navigation__brand svg {
+.navigation__brand img {
   inline-size: 2rem;
   block-size: 2rem;
 }

@@ -40,7 +40,7 @@ export const LivePanel = ({
   useEffect(() => {
     if (!signedIn) return
     let current = true
-    void window.vacuumStream.catalog.followed({ first: 30 }).then(
+    void window.stillStream.catalog.followed({ first: 30 }).then(
       (page) => {
         if (current) setState({ kind: "ready", streams: page.items })
       },

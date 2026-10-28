@@ -20,7 +20,7 @@ type GuardWindow = Pick<BrowserWindow, "on" | "removeListener"> & {
 
 // Fixed script, no renderer input: tells the shell that Escape was pressed inside the player.
 const PLAYER_ESCAPE_SCRIPT =
-  'document.dispatchEvent(new CustomEvent("vacuumstream:player-escape")); undefined'
+  'document.dispatchEvent(new CustomEvent("stillstream:player-escape")); undefined'
 
 const isTwitchPlayerUrl = (value: string): boolean =>
   URL.canParse(value) && new URL(value).origin === "https://player.twitch.tv"

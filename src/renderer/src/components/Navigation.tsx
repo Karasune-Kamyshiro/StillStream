@@ -1,10 +1,4 @@
-import {
-  GearIcon,
-  HouseIcon,
-  MagnifyingGlassIcon,
-  StarIcon,
-  TwitchLogoIcon,
-} from "@phosphor-icons/react"
+import { GearIcon, HouseIcon, MagnifyingGlassIcon, StarIcon } from "@phosphor-icons/react"
 
 export type RouteName = "following" | "home" | "search" | "settings"
 
@@ -39,9 +33,9 @@ const routeEntryTarget: Readonly<Record<RouteName, string>> = {
 
 export const Navigation = ({ active, entryFocusId, onNavigate }: NavigationProps) => (
   <nav className="navigation" aria-label="Primary">
-    <div className="navigation__brand" title="VacuumStream">
-      <TwitchLogoIcon aria-hidden="true" weight="fill" />
-      <strong>VS</strong>
+    <div className="navigation__brand" title="StillStream">
+      <img alt="" src="./brand.svg" />
+      <strong>Still</strong>
     </div>
     <div className="navigation__items">
       {items.map(({ icon: Icon, label, route }) => (

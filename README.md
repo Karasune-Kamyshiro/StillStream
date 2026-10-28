@@ -1,11 +1,11 @@
-# VacuumStream
+# StillStream
 
 [![CI](https://github.com/Karasune-Kamyshiro/VacuumStream/actions/workflows/ci.yml/badge.svg)](https://github.com/Karasune-Kamyshiro/VacuumStream/actions/workflows/ci.yml)
 
 A controller-first Twitch client for Linux TVs and handhelds. Browse from the sofa with
 four arrow keys, Enter, and Escape, or a gamepad. Playback uses Twitch's official player.
 
-![VacuumStream homepage in guest mode, with controller navigation, Quick watch channels, and game categories](docs/images/homepage.png)
+![StillStream homepage in guest mode, with controller navigation, Quick watch channels, and game categories](docs/images/homepage.png)
 
 Guest-mode homepage captured during 4K interface testing. Channel previews depend on availability.
 
@@ -25,7 +25,7 @@ If there is no published release yet, use the [source setup](docs/contributing/d
 - A public Twitch Client ID is built in. You do **not** need to register a developer application.
 - **Sign in with Twitch** in Settings connects discovery and signs the embedded player in, so
   subscriber and Turbo ad-free benefits apply. A code-on-another-device option remains.
-- Twitch controls ads, availability, and player errors. VacuumStream does not bypass them.
+- Twitch controls ads, availability, and player errors. StillStream does not bypass them.
 
 ## Documentation
 
@@ -43,15 +43,15 @@ If there is no published release yet, use the [source setup](docs/contributing/d
 
 ## Project
 
-This is a fork maintained by [@Karasune-Kamyshiro](https://github.com/Karasune-Kamyshiro). VacuumStream
-was created by [Eliott Bouhana (@eliottness)](https://github.com/eliottness); see the
+StillStream is maintained by [@Karasune-Kamyshiro](https://github.com/Karasune-Kamyshiro). It began
+as a fork of **VacuumStream** by [Eliott Bouhana (@eliottness)](https://github.com/eliottness); see the
 [original repository](https://github.com/eliottness/VacuumStream) and its
 [contributors](https://github.com/eliottness/VacuumStream/graphs/contributors).
-The application ID is `io.github.karasune.VacuumStream`.
+The application ID is `io.github.karasune.StillStream`.
 
 Inspired by VacuumTube's controller-first approach. Twitch has no equivalent supported
-Leanback interface, so VacuumStream provides its own interface using Helix, Device Code Flow,
+Leanback interface, so StillStream provides its own interface using Helix, Device Code Flow,
 and the official Twitch player rather than extracting stream URLs.
 
 [MIT licensed](LICENSE). Twitch is a trademark of Twitch Interactive, Inc.
-VacuumStream is not affiliated with or endorsed by Twitch.
+StillStream is not affiliated with or endorsed by Twitch.

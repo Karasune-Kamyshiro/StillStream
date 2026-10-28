@@ -1,11 +1,11 @@
-# VacuumStream Architecture
+# StillStream Architecture
 
 For contributors working on process boundaries, authentication, and packaging.
 See [development setup](development.md) and [release operations](../maintainers/releases.md).
 
 ## Decision
 
-VacuumStream is a custom React TV shell around supported Twitch services. It is not a
+StillStream is a custom React TV shell around supported Twitch services. It is not a
 wrapped `twitch.tv` page and does not extract media URLs.
 
 ```text
@@ -90,7 +90,7 @@ not add cookie pre-seeding, consent persistence, automatic acceptance or a separ
 
 ### Preload
 
-`src/preload/index.ts` exposes the `VacuumStreamApi` capability object. Each result is
+`src/preload/index.ts` exposes the `StillStreamApi` capability object. Each result is
 parsed again before reaching the renderer. The generated preload is CommonJS because
 Electron's sandboxed preload runtime cannot execute an ESM preload directly.
 
@@ -119,7 +119,7 @@ server, and absence of privileged HTTP endpoints.
 
 ## OAuth and storage
 
-VacuumStream embeds its registered public Client ID. Settings allows an optional override;
+StillStream embeds its registered public Client ID. Settings allows an optional override;
 an existing saved ID takes precedence. Device Code Flow requests only `user:read:follows`.
 The main process polls at Twitch's interval, validates sessions on startup and hourly, and
 serializes refresh through one in-flight promise so concurrent failures cannot reuse a
@@ -143,7 +143,7 @@ Flatpak's `--device=input` exposes the sandbox to all host input devices, not on
 and fallback X11 has weaker isolation than Wayland. These are accepted HTPC compatibility
 tradeoffs: Wayland remains preferred, no filesystem access is granted, and packages must be
 built from reviewed source. Release assets include SHA-256 checksums, not cryptographic signatures.
-The application ID is `io.github.karasune.VacuumStream` across Electron and Flatpak metadata.
+The application ID is `io.github.karasune.StillStream` across Electron and Flatpak metadata.
 
 ## External constraints
 

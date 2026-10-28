@@ -29,7 +29,7 @@ describe("playback progress store — D-xc-performance-6", () => {
     vi.mocked(filesystem.readFile).mockReset()
     vi.mocked(filesystem.rename).mockReset()
     vi.mocked(filesystem.writeFile).mockReset()
-    directory = await filesystem.mkdtemp(join(tmpdir(), "vacuumstream-progress-"))
+    directory = await filesystem.mkdtemp(join(tmpdir(), "stillstream-progress-"))
   })
 
   afterEach(async () => {

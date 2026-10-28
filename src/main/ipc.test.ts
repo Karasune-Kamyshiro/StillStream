@@ -3,7 +3,7 @@ import type { BrowserWindow, IpcMainInvokeEvent } from "electron"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { z } from "zod"
 import { CHANNELS } from "../shared/channels"
-import { FAVOURITES_LIMIT_ERROR, type VacuumStreamApi } from "../shared/contracts"
+import { FAVOURITES_LIMIT_ERROR, type StillStreamApi } from "../shared/contracts"
 import { FavouritesLimitError, type FavouritesStore } from "./favourites-store"
 import { InvalidIpcSenderError, registerIpc } from "./ipc"
 import type { PlaybackProgressStore } from "./playback-progress-store"
@@ -14,7 +14,7 @@ import { TwitchService } from "./twitch-service"
 type Handler = (event: IpcMainInvokeEvent, ...input: unknown[]) => unknown
 const handlers = vi.hoisted(() => new Map<string, Handler>())
 const preload = vi.hoisted(() => ({
-  exposeInMainWorld: vi.fn<(name: string, api: VacuumStreamApi) => void>(),
+  exposeInMainWorld: vi.fn<(name: string, api: StillStreamApi) => void>(),
   invoke: vi.fn<(channel: string, ...input: unknown[]) => Promise<unknown>>(),
   on: vi.fn<
     (channel: string, listener: (event: unknown, input: unknown, failure?: unknown) => void) => void
@@ -175,7 +175,7 @@ describe("chat input capability", () => {
     await import("../preload/index")
     const api = preload.exposeInMainWorld.mock.calls[0]?.[1]
     if (api === undefined) throw new Error("Preload did not expose its API")
-    expect(preload.exposeInMainWorld.mock.calls[0]?.[0]).toBe("vacuumStream")
+    expect(preload.exposeInMainWorld.mock.calls[0]?.[0]).toBe("stillStream")
     expect([...Object.keys(api)].sort()).toEqual([
       "auth",
       "catalog",

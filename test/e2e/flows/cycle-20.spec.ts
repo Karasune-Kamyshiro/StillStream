@@ -81,7 +81,7 @@ test.describe("cycle-20 startup launch race", () => {
 
     await Promise.all(competingLaunches.map(waitForExit))
     await controller.waitForFocus("nav-home")
-    await expect.poll(() => window.title()).toMatch(/^Home [·-] VacuumStream$/)
+    await expect.poll(() => window.title()).toMatch(/^Home [·-] StillStream$/)
     expect(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length)).toBe(1)
     expect(await window.locator('[data-focus-id="nav-home"]').count()).toBe(1)
   })

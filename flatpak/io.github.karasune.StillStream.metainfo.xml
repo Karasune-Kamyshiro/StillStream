@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2026 Eliott Bouhana -->
 <component type="desktop-application">
-  <id>io.github.karasune.VacuumStream</id>
-  <name>VacuumStream</name>
+  <id>io.github.karasune.StillStream</id>
+  <name>StillStream</name>
   <summary>Watch Twitch with a gamepad</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
@@ -10,7 +10,7 @@
     <name translate="no">Karasune-Kamyshiro</name>
   </developer>
   <description>
-    <p>VacuumStream is a ten-foot Twitch client for Linux living rooms and handhelds. It is built for a gamepad or a TV remote: every screen is reachable with a D-pad, four arrows and two buttons, so nothing needs a mouse or a keyboard.</p>
+    <p>StillStream is a ten-foot Twitch client for Linux living rooms and handhelds. It is built for a gamepad or a TV remote: every screen is reachable with a D-pad, four arrows and two buttons, so nothing needs a mouse or a keyboard.</p>
     <p>Live streams and past broadcasts play in Twitch's own player, so channels, quality options and captions behave the way they do on the web, inside a full-screen interface that scales from a handheld display to a 4K television.</p>
     <ul>
       <li>Browse Home, Following and categories, page through results and search for channels</li>
@@ -20,9 +20,9 @@
       <li>Choose playback quality and toggle closed captions from the player</li>
       <li>Sign in once with Twitch, or with a device code and a scannable QR code, or watch as a guest</li>
     </ul>
-    <p>Personalised screens such as Following need a Twitch account; guest browsing, search and playback work without signing in. VacuumStream is an independent project and is not affiliated with, endorsed by or sponsored by Twitch Interactive, Inc.</p>
+    <p>Personalised screens such as Following need a Twitch account; guest browsing, search and playback work without signing in. StillStream is an independent project and is not affiliated with, endorsed by or sponsored by Twitch Interactive, Inc.</p>
   </description>
-  <launchable type="desktop-id">io.github.karasune.VacuumStream.desktop</launchable>
+  <launchable type="desktop-id">io.github.karasune.StillStream.desktop</launchable>
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/eliottness/VacuumStream/v0.2.1/docs/images/screenshot-home.png</image>
@@ -66,16 +66,16 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/VacuumStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/VacuumStream</url>
   <releases>
-    <release version="0.2.2" date="2026-10-27">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.13</url>
+    <release version="0.2.2" date="2026-10-28">
+      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.2</url>
       <description>
-        <p>Navigation fixes.</p>
+        <p>VacuumStream is now StillStream, with a new icon.</p>
         <ul>
-          <li>Finished release build based on the v0.2.1-fork.13</li>
+          <li>The first release under the new name, built from the 0.2.1-fork.13 test builds: fullscreen-first player with an overlay control bar, a Following panel, chat over the video, one-step Twitch sign-in for ad-free subscriptions, low latency, remembered quality and TV remote support.</li>
+          <li>The application ID is now io.github.karasune.StillStream, so it installs as a new app. Preferences, favourites and watch progress carry over where the old data is reachable; sign in once again.</li>
         </ul>
       </description>
     </release>
-    <releases>
     <release version="0.2.1-fork.13" date="2026-10-27">
       <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.13</url>
       <description>

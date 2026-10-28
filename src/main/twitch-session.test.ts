@@ -35,7 +35,7 @@ describe("Twitch session revisions", () => {
 
   it("returns credentials from a successful automatic refresh", async () => {
     // Given an expired token whose refresh and replacement validation succeed
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-session-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-session-"))
     const settings = new SettingsStore(directory)
     await settings.saveClientId("abcdefghijklmnopqrstuvwxyz1234")
     const session = new TwitchSession(settings, new TokenVault(directory, adapter))
@@ -79,7 +79,7 @@ describe("Twitch session revisions", () => {
 
   it("does not commit stale validation after logout", async () => {
     // Given validation is waiting on a delayed Twitch response
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-session-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-session-"))
     const settings = new SettingsStore(directory)
     await settings.saveClientId("abcdefghijklmnopqrstuvwxyz1234")
     const vault = new TokenVault(directory, adapter)

@@ -11,7 +11,7 @@ an expired code. Never share device codes, access tokens, or Client Secrets in a
 ## Logs mention an OAuth token file fallback
 
 Unlock or configure your desktop's Secret Service/KWallet keyring to use encrypted storage.
-Without one, VacuumStream keeps sign-in across restarts in an unencrypted `oauth-token.json` file
+Without one, StillStream keeps sign-in across restarts in an unencrypted `oauth-token.json` file
 inside its per-user application-data directory. The file is restricted with mode `0600`, while
 Flatpak installations add sandbox isolation around that directory. Other processes running as the
 same user may still read it. Never copy or share it.
@@ -33,7 +33,7 @@ unmuted, or guaranteed to recover automatically. If video remains paused, use **
 available if the broadcast does not return.
 
 Try the channel on Twitch in a browser to distinguish channel availability from application
-problems. Sign-in in VacuumStream does not authenticate the embedded player. Subscription
+problems. Sign-in in StillStream does not authenticate the embedded player. Subscription
 status or browser login does not guarantee an ad-free embedded-player session.
 Include the visible player error and a public channel URL when reporting a bug, not account data.
 

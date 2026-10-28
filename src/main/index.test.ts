@@ -146,6 +146,7 @@ const setup = (ownsProfile = true) => {
     session: { defaultSession },
   }))
   vi.doMock("./chat-input", () => ({ createChatInput }))
+  vi.doMock("./legacy-data", () => ({ adoptLegacyData: async () => [] }))
   vi.doMock("./favourites-store", () => ({ FavouritesStore }))
   vi.doMock("./https-server", () => ({ startStaticHttpsServer }))
   vi.doMock("./ipc", () => ({ registerIpc }))
@@ -242,7 +243,7 @@ describe("profile ownership at the real main entry point", () => {
     expect(fixture.on).toHaveBeenCalledBefore(fixture.app.whenReady)
 
     for (let launch = 0; launch < 3; launch += 1) {
-      fixture.app.emit("second-instance", {}, ["vacuumstream", "https://untrusted.invalid"], "/")
+      fixture.app.emit("second-instance", {}, ["stillstream", "https://untrusted.invalid"], "/")
     }
     expect(fixture.calls).toEqual(["lock", "ready"])
     fixture.ready.resolve()
@@ -270,7 +271,7 @@ describe("profile ownership at the real main entry point", () => {
     ])
 
     for (let launch = 0; launch < 3; launch += 1) {
-      fixture.app.emit("second-instance", {}, ["vacuumstream", "file:///untrusted"], "/")
+      fixture.app.emit("second-instance", {}, ["stillstream", "file:///untrusted"], "/")
     }
     expect(fixture.app.whenReady).toHaveBeenCalledExactlyOnceWith()
     expect(fixture.BrowserWindow).toHaveBeenCalledTimes(1)
@@ -293,13 +294,13 @@ describe("profile ownership at the real main entry point", () => {
   }, 5000)
 
   it("D-cycle-20-1 keeps a real Electron profile owned by one process across a competing launch and relaunch", async () => {
-    const userData = await mkdtemp(join(tmpdir(), "vacuumstream-profile-lock-"))
+    const userData = await mkdtemp(join(tmpdir(), "stillstream-profile-lock-"))
     const lockProbe = join(userData, "profile-lock.cjs")
     await writeFile(
       lockProbe,
       [
         'const { app } = require("electron")',
-        'app.setPath("userData", process.env.VACUUMSTREAM_TEST_USER_DATA)',
+        'app.setPath("userData", process.env.STILLSTREAM_TEST_USER_DATA)',
         "const ownsProfile = app.requestSingleInstanceLock()",
         'process.stdout.write((ownsProfile ? "owner" : "contender") + "\\n")',
         "if (!ownsProfile) app.quit()",
@@ -314,7 +315,7 @@ describe("profile ownership at the real main entry point", () => {
           env: {
             ...process.env,
             ELECTRON_RUN_AS_NODE: undefined,
-            VACUUMSTREAM_TEST_USER_DATA: userData,
+            STILLSTREAM_TEST_USER_DATA: userData,
           },
           stdio: ["ignore", "pipe", "pipe"],
         },
@@ -445,7 +446,7 @@ describe("profile ownership at the real main entry point", () => {
     await fixture.loaded.promise
     const initialized = [...fixture.calls]
     fixture.window.emit("closed")
-    fixture.app.emit("second-instance", {}, ["vacuumstream"], "/")
+    fixture.app.emit("second-instance", {}, ["stillstream"], "/")
     expect(fixture.calls).toEqual(initialized)
     fixture.app.emit("window-all-closed")
     expect(fixture.app.quit).toHaveBeenCalledExactlyOnceWith()

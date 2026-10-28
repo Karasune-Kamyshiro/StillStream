@@ -3,7 +3,7 @@
 Maintainer notes, reviewed 2026-09-06. This is an implementation policy, not legal advice or
 a statement of Twitch approval. Recheck the current official terms before distribution.
 
-VacuumStream uses documented Helix APIs, public-client Device Code Flow, and Twitch's official
+StillStream uses documented Helix APIs, public-client Device Code Flow, and Twitch's official
 embedded player. It does not extract HLS URLs or use private GraphQL/Usher playback endpoints.
 Keep the player unobscured, preserve advertising and branding, observe rate limits, and validate
 OAuth tokens as required by Twitch.

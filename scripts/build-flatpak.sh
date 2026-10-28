@@ -4,7 +4,7 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 BUILD_DIR="${ROOT_DIR}/.flatpak-build"
 REPOSITORY_DIR="${ROOT_DIR}/.flatpak-repository"
-MANIFEST="${ROOT_DIR}/flatpak/io.github.karasune.VacuumStream.yml"
+MANIFEST="${ROOT_DIR}/flatpak/io.github.karasune.StillStream.yml"
 
 if [[ "${1:-}" == "--help" && "$#" == 1 ]]; then
   printf 'Usage: bash scripts/build-flatpak.sh [--skip-pack]\nBuild an x86_64 Flatpak; --skip-pack reuses dist/linux-unpacked.\n'
@@ -24,7 +24,7 @@ done
 
 cd -- "${ROOT_DIR}"
 VERSION="$(bun -p 'require("./package.json").version')"
-BUNDLE="${ROOT_DIR}/dist/VacuumStream-${VERSION}-x86_64.flatpak"
+BUNDLE="${ROOT_DIR}/dist/StillStream-${VERSION}-x86_64.flatpak"
 if [[ "${1:-}" != "--skip-pack" ]]; then
   bun run pack
 fi
@@ -43,5 +43,5 @@ flatpak-builder \
   "${MANIFEST}"
 flatpak build-bundle --arch=x86_64 \
   --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
-  "${REPOSITORY_DIR}" "${BUNDLE}" io.github.karasune.VacuumStream
+  "${REPOSITORY_DIR}" "${BUNDLE}" io.github.karasune.StillStream
 printf 'Built %s\n' "${BUNDLE}"

@@ -31,7 +31,7 @@ describe("renderer playback progress ordering", () => {
       calls.push("list")
       return []
     })
-    vi.stubGlobal("vacuumStream", { playbackProgress: { list } })
+    vi.stubGlobal("stillStream", { playbackProgress: { list } })
     const save = queueProgress("one", async () => {
       calls.push("save")
       saveEntered.resolve(undefined)
@@ -60,7 +60,7 @@ describe("renderer playback progress ordering", () => {
   it("reports mutation rejections to callers without poisoning lookups or listings", async () => {
     const failure = deferred<void>()
     const list = vi.fn(async () => [])
-    vi.stubGlobal("vacuumStream", { playbackProgress: { list } })
+    vi.stubGlobal("stillStream", { playbackProgress: { list } })
     const write = queueProgress("failed", () => failure.promise)
     const rejected = expect(write).rejects.toThrow("Disk full")
     const get = vi.fn(async () => "old bookmark")
@@ -76,7 +76,7 @@ describe("renderer playback progress ordering", () => {
   it("does not block a removal behind an obsolete read and propagates read failures", async () => {
     const read = deferred<readonly never[]>()
     const entered = deferred<void>()
-    vi.stubGlobal("vacuumStream", {
+    vi.stubGlobal("stillStream", {
       playbackProgress: {
         list: () => {
           entered.resolve(undefined)

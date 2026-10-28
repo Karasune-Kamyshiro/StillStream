@@ -3,7 +3,7 @@
 import { act, useRef } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { VacuumStreamApi } from "../../../shared/contracts"
+import type { StillStreamApi } from "../../../shared/contracts"
 import type { PlayerSource } from "./PlayerView"
 import { usePlayerChat } from "./usePlayerChat"
 
@@ -15,22 +15,22 @@ const source: PlayerSource = {
 }
 const sessionId = "11111111-1111-4111-8111-111111111111"
 
-type ChatBridge = VacuumStreamApi["chatInput"] & {
-  readonly begin: ReturnType<typeof vi.fn<VacuumStreamApi["chatInput"]["begin"]>>
-  readonly end: ReturnType<typeof vi.fn<VacuumStreamApi["chatInput"]["end"]>>
-  readonly onEscape: ReturnType<typeof vi.fn<VacuumStreamApi["chatInput"]["onEscape"]>>
-  readonly press: ReturnType<typeof vi.fn<VacuumStreamApi["chatInput"]["press"]>>
+type ChatBridge = StillStreamApi["chatInput"] & {
+  readonly begin: ReturnType<typeof vi.fn<StillStreamApi["chatInput"]["begin"]>>
+  readonly end: ReturnType<typeof vi.fn<StillStreamApi["chatInput"]["end"]>>
+  readonly onEscape: ReturnType<typeof vi.fn<StillStreamApi["chatInput"]["onEscape"]>>
+  readonly press: ReturnType<typeof vi.fn<StillStreamApi["chatInput"]["press"]>>
 }
 
 const installChatBridge = (): ChatBridge => {
   const chatInput = {
-    begin: vi.fn<VacuumStreamApi["chatInput"]["begin"]>().mockResolvedValue(undefined),
-    end: vi.fn<VacuumStreamApi["chatInput"]["end"]>().mockResolvedValue(undefined),
-    onEscape: vi.fn<VacuumStreamApi["chatInput"]["onEscape"]>().mockReturnValue(() => undefined),
-    press: vi.fn<VacuumStreamApi["chatInput"]["press"]>().mockResolvedValue(undefined),
-  } satisfies VacuumStreamApi["chatInput"]
+    begin: vi.fn<StillStreamApi["chatInput"]["begin"]>().mockResolvedValue(undefined),
+    end: vi.fn<StillStreamApi["chatInput"]["end"]>().mockResolvedValue(undefined),
+    onEscape: vi.fn<StillStreamApi["chatInput"]["onEscape"]>().mockReturnValue(() => undefined),
+    press: vi.fn<StillStreamApi["chatInput"]["press"]>().mockResolvedValue(undefined),
+  } satisfies StillStreamApi["chatInput"]
   vi.stubGlobal("crypto", { randomUUID: () => sessionId })
-  vi.stubGlobal("vacuumStream", { chatInput })
+  vi.stubGlobal("stillStream", { chatInput })
   return chatInput
 }
 

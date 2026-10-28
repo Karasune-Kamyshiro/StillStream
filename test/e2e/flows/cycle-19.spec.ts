@@ -1,4 +1,4 @@
-import type { VacuumStreamApi } from "../../../src/shared/contracts"
+import type { StillStreamApi } from "../../../src/shared/contracts"
 import { expect, test } from "../support/fixtures"
 import { flowTest } from "../support/ledger-test"
 
@@ -188,7 +188,7 @@ test.describe("cycle-19 device challenge expiry", () => {
     // guessed sleep. This row only runs at all behind E2E_RUN_BLOCKED, because idling for the
     // full device-code lifetime is not viable as part of the default suite.
     const snapshot = await window.evaluate(() =>
-      (globalThis as unknown as { vacuumStream: VacuumStreamApi }).vacuumStream.auth.snapshot(),
+      (globalThis as unknown as { stillStream: StillStreamApi }).stillStream.auth.snapshot(),
     )
     if (snapshot.kind !== "authorizing")
       throw new Error(`Expected an authorizing challenge, got ${snapshot.kind}`)
@@ -267,8 +267,8 @@ test.describe("cycle-19 approval does not interrupt another screen", () => {
       async () =>
         (
           await (
-            globalThis as unknown as { vacuumStream: VacuumStreamApi }
-          ).vacuumStream.auth.snapshot()
+            globalThis as unknown as { stillStream: StillStreamApi }
+          ).stillStream.auth.snapshot()
         ).kind === "authenticated",
       undefined,
       { timeout: 5 * 60_000 },

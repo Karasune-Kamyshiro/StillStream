@@ -4,7 +4,7 @@ import { defaultPreferences } from "../../shared/contracts"
 import { act } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { AuthSnapshot, Page, StreamCard, VacuumStreamApi } from "../../shared/contracts"
+import type { AuthSnapshot, Page, StillStreamApi, StreamCard } from "../../shared/contracts"
 import { App } from "./App"
 import { dispatchControllerKey } from "./focus-navigation"
 import * as controllerModule from "./useAppController"
@@ -44,88 +44,88 @@ const deferred = <Value,>() => {
 const makeBridge = (auth: AuthSnapshot) =>
   ({
     auth: {
-      begin: vi.fn<VacuumStreamApi["auth"]["begin"]>(),
-      logout: vi.fn<VacuumStreamApi["auth"]["logout"]>().mockResolvedValue(undefined),
-      openActivation: vi.fn<VacuumStreamApi["auth"]["openActivation"]>(),
-      setup: vi.fn<VacuumStreamApi["auth"]["setup"]>(),
-      snapshot: vi.fn<VacuumStreamApi["auth"]["snapshot"]>().mockResolvedValue(auth),
+      begin: vi.fn<StillStreamApi["auth"]["begin"]>(),
+      logout: vi.fn<StillStreamApi["auth"]["logout"]>().mockResolvedValue(undefined),
+      openActivation: vi.fn<StillStreamApi["auth"]["openActivation"]>(),
+      setup: vi.fn<StillStreamApi["auth"]["setup"]>(),
+      snapshot: vi.fn<StillStreamApi["auth"]["snapshot"]>().mockResolvedValue(auth),
     },
     catalog: {
       followed: vi
-        .fn<VacuumStreamApi["catalog"]["followed"]>()
+        .fn<StillStreamApi["catalog"]["followed"]>()
         .mockResolvedValue(page(["following"])),
       followedChannels: vi
-        .fn<VacuumStreamApi["catalog"]["followedChannels"]>()
+        .fn<StillStreamApi["catalog"]["followedChannels"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
-      live: vi.fn<VacuumStreamApi["catalog"]["live"]>().mockResolvedValue(page(["home"])),
+      live: vi.fn<StillStreamApi["catalog"]["live"]>().mockResolvedValue(page(["home"])),
       search: vi
-        .fn<VacuumStreamApi["catalog"]["search"]>()
+        .fn<StillStreamApi["catalog"]["search"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
-      topCategories: vi.fn<VacuumStreamApi["catalog"]["topCategories"]>().mockResolvedValue({
+      topCategories: vi.fn<StillStreamApi["catalog"]["topCategories"]>().mockResolvedValue({
         cursor: undefined,
         items: [{ boxArtUrl: "https://example.com/music.jpg", id: "music", name: "Music" }],
       }),
       videos: vi
-        .fn<VacuumStreamApi["catalog"]["videos"]>()
+        .fn<StillStreamApi["catalog"]["videos"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
     },
     chatInput: {
-      begin: vi.fn<VacuumStreamApi["chatInput"]["begin"]>().mockResolvedValue(undefined),
-      end: vi.fn<VacuumStreamApi["chatInput"]["end"]>().mockResolvedValue(undefined),
-      onEscape: vi.fn<VacuumStreamApi["chatInput"]["onEscape"]>().mockReturnValue(() => undefined),
-      press: vi.fn<VacuumStreamApi["chatInput"]["press"]>().mockResolvedValue(undefined),
+      begin: vi.fn<StillStreamApi["chatInput"]["begin"]>().mockResolvedValue(undefined),
+      end: vi.fn<StillStreamApi["chatInput"]["end"]>().mockResolvedValue(undefined),
+      onEscape: vi.fn<StillStreamApi["chatInput"]["onEscape"]>().mockReturnValue(() => undefined),
+      press: vi.fn<StillStreamApi["chatInput"]["press"]>().mockResolvedValue(undefined),
     },
     favourites: {
-      add: vi.fn<VacuumStreamApi["favourites"]["add"]>().mockResolvedValue([]),
-      list: vi.fn<VacuumStreamApi["favourites"]["list"]>().mockResolvedValue([]),
-      remove: vi.fn<VacuumStreamApi["favourites"]["remove"]>().mockResolvedValue([]),
+      add: vi.fn<StillStreamApi["favourites"]["add"]>().mockResolvedValue([]),
+      list: vi.fn<StillStreamApi["favourites"]["list"]>().mockResolvedValue([]),
+      remove: vi.fn<StillStreamApi["favourites"]["remove"]>().mockResolvedValue([]),
     },
     playbackProgress: {
-      get: vi.fn<VacuumStreamApi["playbackProgress"]["get"]>().mockResolvedValue(undefined),
-      list: vi.fn<VacuumStreamApi["playbackProgress"]["list"]>().mockResolvedValue([]),
-      remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>().mockResolvedValue(undefined),
-      save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>().mockResolvedValue(undefined),
+      get: vi.fn<StillStreamApi["playbackProgress"]["get"]>().mockResolvedValue(undefined),
+      list: vi.fn<StillStreamApi["playbackProgress"]["list"]>().mockResolvedValue([]),
+      remove: vi.fn<StillStreamApi["playbackProgress"]["remove"]>().mockResolvedValue(undefined),
+      save: vi.fn<StillStreamApi["playbackProgress"]["save"]>().mockResolvedValue(undefined),
     },
     preferences: {
-      setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
-      update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
+      setStartScreen: vi.fn<StillStreamApi["preferences"]["setStartScreen"]>(),
+      update: vi.fn<StillStreamApi["preferences"]["update"]>(),
       snapshot: vi
-        .fn<VacuumStreamApi["preferences"]["snapshot"]>()
+        .fn<StillStreamApi["preferences"]["snapshot"]>()
         .mockResolvedValue({ ...defaultPreferences(), startFullscreen: false }),
     },
     playerSession: {
       signIn: vi
-        .fn<VacuumStreamApi["playerSession"]["signIn"]>()
+        .fn<StillStreamApi["playerSession"]["signIn"]>()
         .mockResolvedValue({ signedIn: false }),
       signOut: vi
-        .fn<VacuumStreamApi["playerSession"]["signOut"]>()
+        .fn<StillStreamApi["playerSession"]["signOut"]>()
         .mockResolvedValue({ signedIn: false }),
       snapshot: vi
-        .fn<VacuumStreamApi["playerSession"]["snapshot"]>()
+        .fn<StillStreamApi["playerSession"]["snapshot"]>()
         .mockResolvedValue({ signedIn: false }),
     },
     settings: {
-      saveClientId: vi.fn<VacuumStreamApi["settings"]["saveClientId"]>(),
+      saveClientId: vi.fn<StillStreamApi["settings"]["saveClientId"]>(),
       snapshot: vi
-        .fn<VacuumStreamApi["settings"]["snapshot"]>()
+        .fn<StillStreamApi["settings"]["snapshot"]>()
         .mockResolvedValue({ clientId: "abcdefghijklmnopqrstuvwxyz1234", secureStorage: true }),
     },
     system: {
-      activateEmbeddedPlayer: vi.fn<VacuumStreamApi["system"]["activateEmbeddedPlayer"]>(),
-      isSteamGameMode: vi.fn<VacuumStreamApi["system"]["isSteamGameMode"]>(),
+      activateEmbeddedPlayer: vi.fn<StillStreamApi["system"]["activateEmbeddedPlayer"]>(),
+      isSteamGameMode: vi.fn<StillStreamApi["system"]["isSteamGameMode"]>(),
       restoreShellFullscreen: vi
-        .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
+        .fn<StillStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
       onWindowActive: vi
-        .fn<VacuumStreamApi["system"]["onWindowActive"]>()
+        .fn<StillStreamApi["system"]["onWindowActive"]>()
         .mockReturnValue(() => undefined),
       setPlayerLowLatency: vi
-        .fn<VacuumStreamApi["system"]["setPlayerLowLatency"]>()
+        .fn<StillStreamApi["system"]["setPlayerLowLatency"]>()
         .mockResolvedValue(null),
-      setFullscreen: vi.fn<VacuumStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
-      toggleFullscreen: vi.fn<VacuumStreamApi["system"]["toggleFullscreen"]>(),
+      setFullscreen: vi.fn<StillStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
+      toggleFullscreen: vi.fn<StillStreamApi["system"]["toggleFullscreen"]>(),
     },
-  }) satisfies VacuumStreamApi
+  }) satisfies StillStreamApi
 type Bridge = ReturnType<typeof makeBridge>
 const requestFor = (bridge: Bridge, shelf: Shelf) =>
   shelf === "home" ? bridge.catalog.live : bridge.catalog.followed
@@ -189,7 +189,7 @@ const mount = async (
 ) => {
   const bridge = makeBridge(auth)
   configure(bridge)
-  vi.stubGlobal("vacuumStream", bridge)
+  vi.stubGlobal("stillStream", bridge)
   root = createRoot(container)
   await act(async () => root?.render(<App />))
   if (shelf === "following") await activate("nav-following")

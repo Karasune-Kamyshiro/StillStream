@@ -271,7 +271,7 @@ export type StreamCard = z.infer<typeof StreamCardSchema>
 export type VideoCard = z.infer<typeof VideoCardSchema>
 export type VideosInput = z.input<typeof VideosInputSchema>
 
-export interface VacuumStreamApi {
+export interface StillStreamApi {
   readonly auth: {
     readonly begin: () => Promise<DeviceChallenge>
     readonly logout: () => Promise<void>

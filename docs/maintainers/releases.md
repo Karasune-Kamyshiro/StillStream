@@ -1,15 +1,15 @@
 # Releases
 
-Audience: maintainers with write access to `Karasune-Kamyshiro/VacuumStream`.
+Audience: maintainers with write access to `Karasune-Kamyshiro/StillStream`.
 For local setup, see [development](../contributing/development.md).
 
 ## Identity and version source
 
 - Owner: [@Karasune-Kamyshiro](https://github.com/Karasune-Kamyshiro); forked from [eliottness/VacuumStream](https://github.com/eliottness/VacuumStream).
-- Repository: `Karasune-Kamyshiro/VacuumStream`; default branch: `main`.
-- Application ID: `io.github.karasune.VacuumStream` in Electron, Flatpak, desktop, icon, and AppStream metadata.
+- Repository: `Karasune-Kamyshiro/StillStream`; default branch: `main`.
+- Application ID: `io.github.karasune.StillStream` in Electron, Flatpak, desktop, icon, and AppStream metadata.
 - Version source: `package.json`. Release tags must be exactly `v` followed by that version.
-- Keep the release version/date in `flatpak/io.github.karasune.VacuumStream.metainfo.xml` current.
+- Keep the release version/date in `flatpak/io.github.karasune.StillStream.metainfo.xml` current.
 - Preserve contributors' Git authorship; do not replace historical authors with the project owner.
 
 ## Before publishing
@@ -43,8 +43,8 @@ The [release workflow](../../.github/workflows/release.yml) runs on `release: pu
 Expected assets:
 
 ```text
-VacuumStream-VERSION-x86_64.AppImage
-VacuumStream-VERSION-x86_64.flatpak
+StillStream-VERSION-x86_64.AppImage
+StillStream-VERSION-x86_64.flatpak
 SHA256SUMS
 ```
 
@@ -73,12 +73,12 @@ Set `RELEASE_TAG=vVERSION` to also exercise the tag/version guard.
 The Flatpak manifest in `flatpak/` packages `dist/linux-unpacked` for GitHub release bundles. It
 is not the Flathub manifest: Flathub builds entirely from source with no network access.
 
-The Flathub submission lives in the Flathub repository for `io.github.karasune.VacuumStream` and
+The Flathub submission lives in the Flathub repository for `io.github.karasune.StillStream` and
 builds the released source tarball with the npm sources produced by
 `bash scripts/flatpak-node-sources.sh`. That script writes `flatpak/package-lock.json` (committed,
 shipped in the release tarball) and `flatpak/generated-sources.json` (untracked, copied into the
 Flathub repository next to the manifest). Screenshots referenced by
-`flatpak/io.github.karasune.VacuumStream.metainfo.xml` must resolve at a pushed tag before a
+`flatpak/io.github.karasune.StillStream.metainfo.xml` must resolve at a pushed tag before a
 Flathub build runs, because Flathub mirrors them at build time. Track runtime lifecycle and update
 the local manifest, the Flathub manifest, the build-container digest, and this documentation
 together.

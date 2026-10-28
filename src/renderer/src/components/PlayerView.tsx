@@ -74,7 +74,7 @@ const EDGE_SHARE = 0.06
 const POINTER_HIDE_DELAY = 1_500
 
 // Dispatched into this document by main's player focus guard; see src/main/player-focus-guard.ts.
-const PLAYER_ESCAPE_EVENT = "vacuumstream:player-escape"
+const PLAYER_ESCAPE_EVENT = "stillstream:player-escape"
 
 const SEEK_ACTIONS = [
   { id: "player-seek-back-5m", label: "Back 5 minutes", seconds: -300 },
@@ -173,7 +173,7 @@ export const PlayerView = ({
   lowLatencyPreference.current = lowLatency
   const syncLowLatency = useCallback((request: boolean | null): void => {
     setLatencyBusy(true)
-    void window.vacuumStream.system
+    void window.stillStream.system
       .setPlayerLowLatency(request)
       .then(
         (mode) => setLatencyMode(mode),
@@ -637,7 +637,7 @@ export const PlayerView = ({
       progress?.observe(currentTime, totalTime, reason)
     }
     const attemptAutoStart = (): void => {
-      void window.vacuumStream.system.activateEmbeddedPlayer(true).then((playbackStarted) => {
+      void window.stillStream.system.activateEmbeddedPlayer(true).then((playbackStarted) => {
         if (
           !active ||
           autoStartGenerationRef.current !== autoStartGeneration ||
@@ -781,11 +781,11 @@ export const PlayerView = ({
       if (!pausedByApp || document.hidden) return
       pausedByApp = false
       if (playerRef.current === undefined) return
-      void window.vacuumStream.system.activateEmbeddedPlayer(false).then((started) => {
+      void window.stillStream.system.activateEmbeddedPlayer(false).then((started) => {
         if (started) setPaused(false)
       })
     }
-    const unsubscribe = window.vacuumStream.system.onWindowActive((active) =>
+    const unsubscribe = window.stillStream.system.onWindowActive((active) =>
       active ? activate() : deactivate(),
     )
     const onVisibility = (): void => (document.hidden ? deactivate() : activate())
@@ -814,7 +814,7 @@ export const PlayerView = ({
     if (player === undefined) return
     // Twitch pauses for ads without always emitting PAUSE, so the player's own state decides.
     if (player.isPaused()) {
-      void window.vacuumStream.system.activateEmbeddedPlayer(false).then((playbackStarted) => {
+      void window.stillStream.system.activateEmbeddedPlayer(false).then((playbackStarted) => {
         setMuted(player.getMuted())
         if (playbackStarted) setPaused(false)
       })

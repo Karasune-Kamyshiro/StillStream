@@ -4,7 +4,7 @@ import { defaultPreferences } from "../../../shared/contracts"
 import { act } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { PlaybackBookmark, VacuumStreamApi } from "../../../shared/contracts"
+import type { PlaybackBookmark, StillStreamApi } from "../../../shared/contracts"
 import { dispatchControllerKey, useControllerNavigation } from "../focus-navigation"
 import type { TwitchPlayerOptions } from "../twitch-player"
 import type { PlayerSource } from "./PlayerView"
@@ -59,21 +59,21 @@ const installHarness = (saved?: PlaybackBookmark) => {
   const constructed = vi.fn<(elementId: string, options: TwitchPlayerOptions) => void>()
   const listeners = new Map<string, () => void>()
   const progress = {
-    get: vi.fn<VacuumStreamApi["playbackProgress"]["get"]>(async () => saved),
-    list: vi.fn<VacuumStreamApi["playbackProgress"]["list"]>(async () => []),
-    remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>(async () => undefined),
-    save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>(async () => undefined),
+    get: vi.fn<StillStreamApi["playbackProgress"]["get"]>(async () => saved),
+    list: vi.fn<StillStreamApi["playbackProgress"]["list"]>(async () => []),
+    remove: vi.fn<StillStreamApi["playbackProgress"]["remove"]>(async () => undefined),
+    save: vi.fn<StillStreamApi["playbackProgress"]["save"]>(async () => undefined),
   }
   const activateEmbeddedPlayer = vi.fn(async () => true)
   const restoreShellFullscreen = vi.fn(async () => undefined)
-  Object.defineProperty(window, "vacuumStream", {
+  Object.defineProperty(window, "stillStream", {
     configurable: true,
     value: {
       auth: { snapshot: async () => ({ kind: "guest" }) },
       favourites: {
-        add: vi.fn<VacuumStreamApi["favourites"]["add"]>().mockResolvedValue([]),
-        list: vi.fn<VacuumStreamApi["favourites"]["list"]>().mockResolvedValue([]),
-        remove: vi.fn<VacuumStreamApi["favourites"]["remove"]>().mockResolvedValue([]),
+        add: vi.fn<StillStreamApi["favourites"]["add"]>().mockResolvedValue([]),
+        list: vi.fn<StillStreamApi["favourites"]["list"]>().mockResolvedValue([]),
+        remove: vi.fn<StillStreamApi["favourites"]["remove"]>().mockResolvedValue([]),
       },
       playbackProgress: progress,
       settings: { snapshot: async () => ({ clientId: "client", secureStorage: false }) },

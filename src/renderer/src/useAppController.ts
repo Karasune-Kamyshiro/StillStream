@@ -136,14 +136,14 @@ export const useAppController = () => {
   )
   // "Home" is the viewer's start screen: Back and leaving a stream return there.
   const navigateHome = useCallback((): void => {
-    void window.vacuumStream.system.restoreShellFullscreen()
+    void window.stillStream.system.restoreShellFullscreen()
     navigate(startRoute)
   }, [navigate, startRoute])
   const updateStartScreen = useCallback(async (next: StartScreen): Promise<void> => {
-    setPreferences(await window.vacuumStream.preferences.setStartScreen(next))
+    setPreferences(await window.stillStream.preferences.setStartScreen(next))
   }, [])
   const updatePreferences = useCallback(async (update: PreferencesUpdate): Promise<void> => {
-    setPreferences(await window.vacuumStream.preferences.update(update))
+    setPreferences(await window.stillStream.preferences.update(update))
   }, [])
   const updateAuth = useCallback(
     (nextAuth: AuthSnapshot): void => {
@@ -179,7 +179,7 @@ export const useAppController = () => {
     const requestId = ++topCategoriesRequestEpoch.current
     topCategoriesRequest.current = requestId
     try {
-      const page = await window.vacuumStream.catalog.topCategories({ first: 20 })
+      const page = await window.stillStream.catalog.topCategories({ first: 20 })
       if (requestEpoch === authEpoch.current && requestId === topCategoriesRequestEpoch.current) {
         setCategories(page.items)
       }
@@ -194,7 +194,7 @@ export const useAppController = () => {
 
   useEffect(() => {
     let active = true
-    void window.vacuumStream.settings
+    void window.stillStream.settings
       .snapshot()
       .then((settingsSnapshot) => {
         if (active) setSettings(settingsSnapshot)
@@ -202,7 +202,7 @@ export const useAppController = () => {
       .catch((error: unknown) => {
         if (active) setNotice(errorMessage(error))
       })
-    void window.vacuumStream.auth
+    void window.stillStream.auth
       .snapshot()
       .then((authSnapshot) => {
         if (active) updateAuth(authSnapshot)
@@ -213,7 +213,7 @@ export const useAppController = () => {
       .finally(() => {
         if (active) setAuthReady(true)
       })
-    void window.vacuumStream.preferences
+    void window.stillStream.preferences
       .snapshot()
       .then(
         (preferences) => {
@@ -252,7 +252,7 @@ export const useAppController = () => {
   useEffect(() => {
     if (auth.kind !== "authorizing") return
     const timer = window.setInterval(() => {
-      void window.vacuumStream.auth
+      void window.stillStream.auth
         .snapshot()
         .then(updateAuth)
         .catch((error: unknown) => {
@@ -384,7 +384,7 @@ export const useAppController = () => {
     catalogRequestEpoch.current = requestId
     try {
       if (auth.kind === "authenticated") {
-        const items = (await window.vacuumStream.catalog.search({ first: 30, query })).items
+        const items = (await window.stillStream.catalog.search({ first: 30, query })).items
         if (requestEpoch === authEpoch.current && requestId === catalogRequestEpoch.current) {
           setSearchResults(items)
         }
@@ -423,7 +423,7 @@ export const useAppController = () => {
       if (options.clearResults) setVideos([])
       if (options.showLoading) setBusy(true)
       try {
-        const items = (await window.vacuumStream.catalog.videos({ first: 30, userId })).items
+        const items = (await window.stillStream.catalog.videos({ first: 30, userId })).items
         if (requestEpoch === authEpoch.current && requestId === catalogRequestEpoch.current) {
           setVideos(items)
         }

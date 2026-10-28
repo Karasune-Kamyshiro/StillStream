@@ -1,5 +1,5 @@
 {
-  "name": "vacuumstream",
+  "name": "stillstream",
   "version": "0.2.2",
   "description": "A controller-first Twitch client for Linux HTPCs",
   "author": {
@@ -20,7 +20,7 @@
   "engines": {
     "node": ">=24.20.0"
   },
-  "desktopName": "io.github.karasune.VacuumStream.desktop",
+  "desktopName": "io.github.karasune.StillStream.desktop",
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
@@ -71,9 +71,9 @@
   },
   "build": {
     "afterPack": "./scripts/after-pack.cjs",
-    "appId": "io.github.karasune.VacuumStream",
+    "appId": "io.github.karasune.StillStream",
     "artifactName": "${productName}-${version}-${arch}.${ext}",
-    "productName": "VacuumStream",
+    "productName": "StillStream",
     "asar": true,
     "directories": {
       "output": "dist"
@@ -103,7 +103,7 @@
       "synopsis": "Controller-first Twitch viewing for Linux TVs and handhelds",
       "desktop": {
         "entry": {
-          "Name": "VacuumStream",
+          "Name": "StillStream",
           "Comment": "Browse and watch Twitch with a controller",
           "Categories": "AudioVideo;Video;",
           "Keywords": "Twitch;streaming;HTPC;Steam Deck;"

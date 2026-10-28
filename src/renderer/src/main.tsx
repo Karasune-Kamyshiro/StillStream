@@ -14,7 +14,7 @@ if (import.meta.env.DEV && import.meta.env.VITE_DISABLE_REACT_DEVTOOLS !== "1") 
 const rootElement = document.querySelector("#root")
 
 if (rootElement === null) {
-  throw new TypeError("VacuumStream root element is missing")
+  throw new TypeError("StillStream root element is missing")
 }
 
 ReactDOM.createRoot(rootElement).render(

@@ -235,7 +235,7 @@ export const SettingsPanel = ({
 
   useEffect(() => {
     let current = true
-    void window.vacuumStream.playerSession.snapshot().then(
+    void window.stillStream.playerSession.snapshot().then(
       (snapshot) => {
         if (current) setPlayerSession(snapshot)
       },
@@ -260,7 +260,7 @@ export const SettingsPanel = ({
     setBusy(true)
     setError("")
     try {
-      const nextSettings = await window.vacuumStream.settings.saveClientId(clientId)
+      const nextSettings = await window.stillStream.settings.saveClientId(clientId)
       if (isCurrent()) onSettingsChange(nextSettings, nextSettings.clientId !== settings.clientId)
     } catch (caught) {
       if (isCurrent()) setError(errorMessage(caught))
@@ -275,7 +275,7 @@ export const SettingsPanel = ({
   const runSetup = async (isCurrent: () => boolean): Promise<void> => {
     setSetupOpen(true)
     try {
-      const result = await window.vacuumStream.auth.setup()
+      const result = await window.stillStream.auth.setup()
       if (!isCurrent()) return
       onAuthChange(result.auth)
       setPlayerSession(result.player)
@@ -295,7 +295,7 @@ export const SettingsPanel = ({
       if (auth.kind === "authenticated") {
         await runSetup(isCurrent)
       } else {
-        const challenge = await window.vacuumStream.auth.begin()
+        const challenge = await window.stillStream.auth.begin()
         if (isCurrent()) onAuthChange({ challenge, kind: "authorizing" })
       }
     } catch (caught) {
@@ -316,14 +316,14 @@ export const SettingsPanel = ({
     setError("")
     try {
       if (auth.kind === "authenticated") {
-        await window.vacuumStream.auth.logout()
+        await window.stillStream.auth.logout()
         if (isCurrent()) onAuthChange({ kind: "guest" })
         if (playerSession?.signedIn === true) {
-          const nextPlayer = await window.vacuumStream.playerSession.signOut()
+          const nextPlayer = await window.stillStream.playerSession.signOut()
           if (isCurrent()) setPlayerSession(nextPlayer)
         }
       } else if (auth.kind === "authorizing") {
-        await window.vacuumStream.auth.openActivation(auth.challenge.flowId)
+        await window.stillStream.auth.openActivation(auth.challenge.flowId)
       } else {
         await runSetup(isCurrent)
       }
@@ -354,7 +354,7 @@ export const SettingsPanel = ({
           <div>
             <h2 id="account-heading">Twitch account</h2>
             <p>
-              Sign in once in the Twitch window. VacuumStream can then show your followed channels,
+              Sign in once in the Twitch window. StillStream can then show your followed channels,
               and the player knows who is watching, so subscriber and Turbo ad-free benefits apply.
             </p>
           </div>
@@ -445,7 +445,7 @@ export const SettingsPanel = ({
             <h2 id="developer-app-heading">Twitch application</h2>
             <p>
               A public Client ID is built in. Only replace it when using your own Twitch
-              application. VacuumStream never asks for or stores a Client Secret.
+              application. StillStream never asks for or stores a Client Secret.
             </p>
           </div>
           <form onSubmit={save}>
@@ -488,7 +488,7 @@ export const SettingsPanel = ({
             <div>
               <h2 id="player-behaviour-heading">Player behaviour</h2>
               <p>
-                Where VacuumStream opens and returns to (Following needs a signed-in account), how
+                Where StillStream opens and returns to (Following needs a signed-in account), how
                 streams start, and what happens when you switch to another app, such as Steam.
               </p>
             </div>

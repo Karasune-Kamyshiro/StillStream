@@ -3,7 +3,7 @@
 import { act } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { VacuumStreamApi } from "../../../shared/contracts"
+import type { StillStreamApi } from "../../../shared/contracts"
 import { dispatchControllerKey, useControllerNavigation } from "../focus-navigation"
 import type { TwitchPlayerInstance, TwitchPlayerOptions } from "../twitch-player"
 import type { PlayerSource } from "./PlayerView"
@@ -130,12 +130,12 @@ const installHarness = () => {
     return true
   })
   const progress = {
-    get: vi.fn<VacuumStreamApi["playbackProgress"]["get"]>().mockResolvedValue(undefined),
-    list: vi.fn<VacuumStreamApi["playbackProgress"]["list"]>().mockResolvedValue([]),
-    remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>().mockResolvedValue(undefined),
-    save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>().mockResolvedValue(undefined),
+    get: vi.fn<StillStreamApi["playbackProgress"]["get"]>().mockResolvedValue(undefined),
+    list: vi.fn<StillStreamApi["playbackProgress"]["list"]>().mockResolvedValue([]),
+    remove: vi.fn<StillStreamApi["playbackProgress"]["remove"]>().mockResolvedValue(undefined),
+    save: vi.fn<StillStreamApi["playbackProgress"]["save"]>().mockResolvedValue(undefined),
   }
-  vi.stubGlobal("vacuumStream", {
+  vi.stubGlobal("stillStream", {
     playbackProgress: progress,
     system: { activateEmbeddedPlayer, setPlayerLowLatency: async () => true },
   })

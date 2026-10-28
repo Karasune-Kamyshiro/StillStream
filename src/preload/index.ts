@@ -25,8 +25,8 @@ import {
   PreferencesUpdateSchema,
   SettingsSnapshotSchema,
   StartScreenSchema,
+  type StillStreamApi,
   StreamCardSchema,
-  type VacuumStreamApi,
   VideoCardSchema,
 } from "../shared/contracts"
 
@@ -196,6 +196,6 @@ const api = {
     toggleFullscreen: () =>
       ipcRenderer.invoke(CHANNELS.systemToggleFullscreen).then((value) => Boolean(value)),
   },
-} satisfies VacuumStreamApi
+} satisfies StillStreamApi
 
-contextBridge.exposeInMainWorld("vacuumStream", api)
+contextBridge.exposeInMainWorld("stillStream", api)

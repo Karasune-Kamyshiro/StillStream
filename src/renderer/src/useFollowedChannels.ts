@@ -22,9 +22,9 @@ const emptyCatalog = <Item>(): Catalog<Item> => ({
 })
 
 export const catalogRequests = {
-  followed: (input: CursorInput) => window.vacuumStream.catalog.followed(input),
-  followedChannels: (input: CursorInput) => window.vacuumStream.catalog.followedChannels(input),
-  live: (input: LiveInput) => window.vacuumStream.catalog.live(input),
+  followed: (input: CursorInput) => window.stillStream.catalog.followed(input),
+  followedChannels: (input: CursorInput) => window.stillStream.catalog.followedChannels(input),
+  live: (input: LiveInput) => window.stillStream.catalog.live(input),
 }
 
 // The live shelves and directory share request arbitration; only their card shapes differ.

@@ -11,7 +11,7 @@
 
 ```bash
 git clone https://github.com/Karasune-Kamyshiro/VacuumStream.git
-cd VacuumStream
+cd StillStream
 bun install --frozen-lockfile
 bun run dev
 ```
@@ -49,7 +49,7 @@ certificate behavior, use a packaged build:
 
 ```bash
 bun run pack
-./dist/linux-unpacked/vacuumstream
+./dist/linux-unpacked/stillstream
 ```
 
 OAuth tests do not prove real Twitch authorization or physical controller compatibility. Record

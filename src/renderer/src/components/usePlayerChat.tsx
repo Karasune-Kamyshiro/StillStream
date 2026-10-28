@@ -64,7 +64,7 @@ export const usePlayerChat = (
     session.frame.tabIndex = -1
     setInteracting(false)
     focusControl(buttonRef.current ?? backButtonRef.current)
-    void window.vacuumStream.chatInput.end(session.id).catch((cause: unknown) => {
+    void window.stillStream.chatInput.end(session.id).catch((cause: unknown) => {
       console.error("Could not end chat input", cause)
     })
   }, [backButtonRef])
@@ -113,7 +113,7 @@ export const usePlayerChat = (
         "Native chat input unavailable. Enter chat again to use a keyboard or Steam Input; Escape returns here.",
       )
     }
-    const unsubscribe = window.vacuumStream.chatInput.onEscape((escapedSession, failure) => {
+    const unsubscribe = window.stillStream.chatInput.onEscape((escapedSession, failure) => {
       if (sessionRef.current?.id !== escapedSession) return
       if (failure === "transport") transportFailed()
       else endInteraction()
@@ -125,7 +125,7 @@ export const usePlayerChat = (
       const action = (event as CustomEvent<ChatGamepadAction>).detail
       if (action === "exit") endInteraction()
       else if (ready && action !== "consume") {
-        void window.vacuumStream.chatInput.press(id, action).catch(transportFailed)
+        void window.stillStream.chatInput.press(id, action).catch(transportFailed)
       }
     }
     // Chat navigation is forwarded through the native input bridge. Shell shortcuts cannot escape.
@@ -147,7 +147,7 @@ export const usePlayerChat = (
               ? "activate"
               : undefined
       if (action !== undefined) {
-        void window.vacuumStream.chatInput.press(id, action).catch(transportFailed)
+        void window.stillStream.chatInput.press(id, action).catch(transportFailed)
       }
     }
     document.addEventListener("keydown", onKeyDown, true)
@@ -164,7 +164,7 @@ export const usePlayerChat = (
       id,
     }
     // Arm Escape before handing focus across the origin boundary. Never replay the entry key.
-    void window.vacuumStream.chatInput.begin(id).then(
+    void window.stillStream.chatInput.begin(id).then(
       () => {
         if (sessionRef.current?.id !== id) return
         ready = true

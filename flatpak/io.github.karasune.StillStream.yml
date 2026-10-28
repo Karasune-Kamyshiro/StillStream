@@ -1,10 +1,10 @@
-id: io.github.karasune.VacuumStream
+id: io.github.karasune.StillStream
 runtime: org.freedesktop.Platform
 runtime-version: "25.08"
 sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
 base-version: "25.08"
-command: vacuumstream
+command: stillstream
 separate-locales: false
 
 finish-args:
@@ -22,24 +22,24 @@ finish-args:
   - --talk-name=org.kde.kwalletd6
 
 modules:
-  - name: vacuumstream
+  - name: stillstream
     buildsystem: simple
     build-commands:
-      - cp -a app /app/vacuumstream
-      - install -Dm755 vacuumstream.sh /app/bin/vacuumstream
-      - install -Dm644 io.github.karasune.VacuumStream.desktop /app/share/applications/io.github.karasune.VacuumStream.desktop
-      - install -Dm644 io.github.karasune.VacuumStream.metainfo.xml /app/share/metainfo/io.github.karasune.VacuumStream.metainfo.xml
-      - install -Dm644 icon.png /app/share/icons/hicolor/512x512/apps/io.github.karasune.VacuumStream.png
+      - cp -a app /app/stillstream
+      - install -Dm755 stillstream.sh /app/bin/stillstream
+      - install -Dm644 io.github.karasune.StillStream.desktop /app/share/applications/io.github.karasune.StillStream.desktop
+      - install -Dm644 io.github.karasune.StillStream.metainfo.xml /app/share/metainfo/io.github.karasune.StillStream.metainfo.xml
+      - install -Dm644 icon.png /app/share/icons/hicolor/512x512/apps/io.github.karasune.StillStream.png
     sources:
       - type: dir
         path: ../dist/linux-unpacked
         dest: app
       - type: file
-        path: vacuumstream.sh
+        path: stillstream.sh
       - type: file
-        path: io.github.karasune.VacuumStream.desktop
+        path: io.github.karasune.StillStream.desktop
       - type: file
-        path: io.github.karasune.VacuumStream.metainfo.xml
+        path: io.github.karasune.StillStream.metainfo.xml
       - type: file
         path: ../build/icon.png
         dest-filename: icon.png

@@ -8,7 +8,7 @@ import { PreferencesStore } from "./preferences-store"
 describe("preferences store", () => {
   let directory: string
   beforeEach(async () => {
-    directory = await mkdtemp(join(tmpdir(), "vacuumstream-preferences-"))
+    directory = await mkdtemp(join(tmpdir(), "stillstream-preferences-"))
   })
   afterEach(async () => {
     await rm(directory, { force: true, recursive: true })

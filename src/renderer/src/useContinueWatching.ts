@@ -66,7 +66,7 @@ export const useContinueWatching = (active: boolean) => {
       status: "ready",
     }))
     try {
-      await queueProgress(videoId, () => window.vacuumStream.playbackProgress.remove(videoId))
+      await queueProgress(videoId, () => window.stillStream.playbackProgress.remove(videoId))
       if (requestId !== generation.current) return
       setState((current) => ({
         ...current,

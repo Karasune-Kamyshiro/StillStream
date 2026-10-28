@@ -6,7 +6,7 @@
 
 Use the [Releases page](https://github.com/Karasune-Kamyshiro/VacuumStream/releases). The supported
 build architecture is Linux **x86_64** (also called AMD64). Choose Flatpak for immutable
-gaming systems, or AppImage for a standalone executable. VacuumStream is not on Flathub.
+gaming systems, or AppImage for a standalone executable. StillStream is not on Flathub.
 If no release exists, [build from source](../contributing/development.md).
 
 Download both assets and `SHA256SUMS` from the same release to verify them:
@@ -27,8 +27,8 @@ Requires Flatpak 1.16 or newer for gamepad device permissions. In Desktop Mode:
 
 ```bash
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user ./VacuumStream-0.2.1-x86_64.flatpak
-flatpak run io.github.karasune.VacuumStream
+flatpak install --user ./StillStream-0.2.1-x86_64.flatpak
+flatpak run io.github.karasune.StillStream
 ```
 
 The bundle references Flathub for runtime dependencies; this does not make it a Flathub release.
@@ -40,14 +40,14 @@ the public build does not migrate their settings or tokens. Sign in again rather
 ### AppImage
 
 ```bash
-chmod +x VacuumStream-0.2.1-x86_64.AppImage
-./VacuumStream-0.2.1-x86_64.AppImage
+chmod +x StillStream-0.2.1-x86_64.AppImage
+./StillStream-0.2.1-x86_64.AppImage
 ```
 
 If FUSE is unavailable:
 
 ```bash
-APPIMAGE_EXTRACT_AND_RUN=1 ./VacuumStream-0.2.1-x86_64.AppImage
+APPIMAGE_EXTRACT_AND_RUN=1 ./StillStream-0.2.1-x86_64.AppImage
 ```
 
 Linux must permit Chromium's sandbox. Do not work around startup failures using `--no-sandbox`;
@@ -55,7 +55,7 @@ prefer Flatpak if your distribution blocks unprivileged user namespaces.
 
 ## First run
 
-VacuumStream runs one application instance per profile (its user-data directory). Launching it
+StillStream runs one application instance per profile (its user-data directory). Launching it
 again brings the existing window forward, restoring it if minimized, without restarting playback,
 changing the current screen, or changing fullscreen mode. Repeated launches during startup still
 open only one window. The extra process exits without opening the profile's stores.
@@ -73,13 +73,13 @@ For personalized discovery and ad-free viewing on channels you subscribe to:
 4. Confirm on that page. The window closes by itself, the account action becomes **Sign out**,
    and the card shows that the player is signed in too.
 
-In Steam Game Mode, or whenever VacuumStream is fullscreen, Twitch's pages open inside the app
+In Steam Game Mode, or whenever StillStream is fullscreen, Twitch's pages open inside the app
 window rather than as a separate window. Press **B** (Escape) to cancel. To type, open Steam's
 on-screen keyboard (**Steam + X**) when a text field on Twitch's page is selected.
 Twitch's pages scale with the screen there (about 250% on a 4K TV); **Ctrl + plus/minus**
 adjusts the size and **Ctrl + 0** resets it.
 
-This signs in two things at once: VacuumStream's read-only access to your followed channels,
+This signs in two things at once: StillStream's read-only access to your followed channels,
 and the Twitch player itself, which is what lets subscriber and Turbo ad-free benefits apply.
 **Sign out** signs out of both.
 
@@ -135,7 +135,7 @@ category are sent to Settings to sign in first.
 
 Device authorization authenticates discovery, **not the embedded player**. Twitch may show
 advertisements and its own offline, regional, or error screens. Browser cookies are not imported.
-VacuumStream prefers the Linux keyring. If none is available, it stores the token in its private
+StillStream prefers the Linux keyring. If none is available, it stores the token in its private
 application-data directory with owner-only file permissions and logs a security warning.
 
 ## Favourite channels
@@ -222,7 +222,7 @@ size and opacity, and chat text size. Each option changes with OK, Space or A.
 Choose **Captions**, between Quality and Past broadcasts, for live streams or recordings.
 Left/Right selects **Show**, **Hide**, or **Close**; Enter activates the choice. Show and Hide
 request a setting from Twitch, not a report that captions are available or rendering. Captions
-come from the broadcaster's own stream; Twitch renders and styles them. VacuumStream does
+come from the broadcaster's own stream; Twitch renders and styles them. StillStream does
 not detect caption availability or generate captions. Until you choose Show or Hide, Twitch's
 own default is untouched. These commands are disabled until the player is ready, but Captions
 and Close remain reachable while loading or offline. Close returns focus to Captions; Escape
@@ -238,12 +238,12 @@ Enter chat, then Reload chat; Up returns to Hide chat. These controls remain ava
 the player is loading or offline. Showing or reloading chat does not move focus into Twitch.
 
 On a fresh profile, Twitch may ask for cookie/advertising consent before showing messages.
-Choose **Enter chat** to interact with **Twitch's own interface**, not a VacuumStream dialog.
+Choose **Enter chat** to interact with **Twitch's own interface**, not a StillStream dialog.
 With a native gamepad, **Down/Right** on the D-pad or left stick moves to the next control,
 **Up/Left** moves to the previous control, **A** activates it, and **B** returns to Hide chat.
 Release the entry press before choosing anything: entering chat never activates a Twitch choice.
 Physical keyboards and Steam Input keyboard mappings still use **Tab / Shift+Tab**, **Enter**,
-and **Escape**. Twitch's Accept/Customize/Reject choices remain entirely yours; VacuumStream
+and **Escape**. Twitch's Accept/Customize/Reject choices remain entirely yours; StillStream
 does not automatically accept consent, seed cookies, or store a consent decision.
 
 A persistent hint outside the embeds remains visible in this mode. Holding B/Escape exits chat
@@ -253,8 +253,8 @@ from the window ends the mode; returning never resumes it.
 Native chat actions use a limited privileged input transport, attached only on the first native
 action. If it is unavailable (for example, another debugger owns the window) or fails, an error
 appears and focus returns to Hide chat. You can enter again and use a keyboard or Steam Input
-without that transport. There is no VacuumStream controller chat composer or VOD chat replay. Twitch handles chat's connection and error messages;
-VacuumStream sign-in does not sign you into chat. The enlarged pane stacks below the video
+without that transport. There is no StillStream controller chat composer or VOD chat replay. Twitch handles chat's connection and error messages;
+StillStream sign-in does not sign you into chat. The enlarged pane stacks below the video
 on smaller screens, with scrolling rather than covering or shrinking the video below 400x300.
 
 Past broadcasts show elapsed/total time and jumps back or forward by 30 seconds or 5 minutes.
@@ -305,13 +305,13 @@ on-screen Backspace and Search buttons remain available.
 
 ## Steam Deck and Bazzite Gaming Mode
 
-Install in Desktop Mode. Add VacuumStream from the application list as a non-Steam game.
+Install in Desktop Mode. Add StillStream from the application list as a non-Steam game.
 If adding it manually, use `/usr/bin/flatpak` as the executable and this launch argument:
 
 ```text
-run io.github.karasune.VacuumStream
+run io.github.karasune.StillStream
 ```
 
-Return to Gaming Mode. Use the Steam Input mapping above if needed. VacuumStream starts
+Return to Gaming Mode. Use the Steam Input mapping above if needed. StillStream starts
 fullscreen when both `SteamOS=1` and `SteamGamepadUI=1` are supplied by the session.
 These are target environments; report hardware-specific results with your OS version and bindings.

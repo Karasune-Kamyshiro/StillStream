@@ -43,7 +43,7 @@ describe("player focus guard", () => {
     contents.focusedFrame = { url: PLAYER }
     expect(press("keyDown")).toHaveBeenCalledTimes(1)
     expect(contents.mainFrame.executeJavaScript).toHaveBeenCalledExactlyOnceWith(
-      expect.stringContaining("vacuumstream:player-escape"),
+      expect.stringContaining("stillstream:player-escape"),
       true,
     )
     expect(press("keyUp")).toHaveBeenCalledTimes(1)

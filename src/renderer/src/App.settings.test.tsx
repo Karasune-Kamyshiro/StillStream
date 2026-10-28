@@ -5,7 +5,7 @@ import { act } from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { renderToStaticMarkup } from "react-dom/server"
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest"
-import type { AuthSnapshot, DeviceChallenge, VacuumStreamApi } from "../../shared/contracts"
+import type { AuthSnapshot, DeviceChallenge, StillStreamApi } from "../../shared/contracts"
 import { App } from "./App"
 import { dispatchControllerKey } from "./focus-navigation"
 import * as playerModule from "./twitch-player"
@@ -41,102 +41,102 @@ const deferred = <T,>() => {
   return { ...controls, promise }
 }
 const makeBridge = (auth: AuthSnapshot) => {
-  const begin = vi.fn<VacuumStreamApi["auth"]["begin"]>()
+  const begin = vi.fn<StillStreamApi["auth"]["begin"]>()
   return makeBridgeWith(auth, begin)
 }
 // One-click setup is modelled as the viewer closing the Twitch window once the code was issued,
 // which leaves the account authorizing exactly as the device flow does. Races stay on `begin`.
-const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<VacuumStreamApi["auth"]["begin"]>) =>
+const makeBridgeWith = (auth: AuthSnapshot, begin: Mock<StillStreamApi["auth"]["begin"]>) =>
   ({
     auth: {
       begin,
-      logout: vi.fn<VacuumStreamApi["auth"]["logout"]>().mockResolvedValue(undefined),
+      logout: vi.fn<StillStreamApi["auth"]["logout"]>().mockResolvedValue(undefined),
       openActivation: vi
-        .fn<VacuumStreamApi["auth"]["openActivation"]>()
+        .fn<StillStreamApi["auth"]["openActivation"]>()
         .mockResolvedValue(undefined),
-      setup: vi.fn<VacuumStreamApi["auth"]["setup"]>(async () => ({
+      setup: vi.fn<StillStreamApi["auth"]["setup"]>(async () => ({
         auth: { challenge: await begin(), kind: "authorizing" },
         player: { signedIn: false },
       })),
-      snapshot: vi.fn<VacuumStreamApi["auth"]["snapshot"]>().mockResolvedValue(auth),
+      snapshot: vi.fn<StillStreamApi["auth"]["snapshot"]>().mockResolvedValue(auth),
     },
     catalog: {
       followed: vi
-        .fn<VacuumStreamApi["catalog"]["followed"]>()
+        .fn<StillStreamApi["catalog"]["followed"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       followedChannels: vi
-        .fn<VacuumStreamApi["catalog"]["followedChannels"]>()
+        .fn<StillStreamApi["catalog"]["followedChannels"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       live: vi
-        .fn<VacuumStreamApi["catalog"]["live"]>()
+        .fn<StillStreamApi["catalog"]["live"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       search: vi
-        .fn<VacuumStreamApi["catalog"]["search"]>()
+        .fn<StillStreamApi["catalog"]["search"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       topCategories: vi
-        .fn<VacuumStreamApi["catalog"]["topCategories"]>()
+        .fn<StillStreamApi["catalog"]["topCategories"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
       videos: vi
-        .fn<VacuumStreamApi["catalog"]["videos"]>()
+        .fn<StillStreamApi["catalog"]["videos"]>()
         .mockResolvedValue({ cursor: undefined, items: [] }),
     },
     chatInput: {
-      begin: vi.fn<VacuumStreamApi["chatInput"]["begin"]>(),
-      end: vi.fn<VacuumStreamApi["chatInput"]["end"]>(),
-      onEscape: vi.fn<VacuumStreamApi["chatInput"]["onEscape"]>(),
-      press: vi.fn<VacuumStreamApi["chatInput"]["press"]>().mockResolvedValue(undefined),
+      begin: vi.fn<StillStreamApi["chatInput"]["begin"]>(),
+      end: vi.fn<StillStreamApi["chatInput"]["end"]>(),
+      onEscape: vi.fn<StillStreamApi["chatInput"]["onEscape"]>(),
+      press: vi.fn<StillStreamApi["chatInput"]["press"]>().mockResolvedValue(undefined),
     },
     favourites: {
-      add: vi.fn<VacuumStreamApi["favourites"]["add"]>(),
-      list: vi.fn<VacuumStreamApi["favourites"]["list"]>().mockResolvedValue([]),
-      remove: vi.fn<VacuumStreamApi["favourites"]["remove"]>(),
+      add: vi.fn<StillStreamApi["favourites"]["add"]>(),
+      list: vi.fn<StillStreamApi["favourites"]["list"]>().mockResolvedValue([]),
+      remove: vi.fn<StillStreamApi["favourites"]["remove"]>(),
     },
     playbackProgress: {
-      get: vi.fn<VacuumStreamApi["playbackProgress"]["get"]>(),
-      list: vi.fn<VacuumStreamApi["playbackProgress"]["list"]>().mockResolvedValue([]),
-      remove: vi.fn<VacuumStreamApi["playbackProgress"]["remove"]>(),
-      save: vi.fn<VacuumStreamApi["playbackProgress"]["save"]>(),
+      get: vi.fn<StillStreamApi["playbackProgress"]["get"]>(),
+      list: vi.fn<StillStreamApi["playbackProgress"]["list"]>().mockResolvedValue([]),
+      remove: vi.fn<StillStreamApi["playbackProgress"]["remove"]>(),
+      save: vi.fn<StillStreamApi["playbackProgress"]["save"]>(),
     },
     preferences: {
-      setStartScreen: vi.fn<VacuumStreamApi["preferences"]["setStartScreen"]>(),
-      update: vi.fn<VacuumStreamApi["preferences"]["update"]>(),
+      setStartScreen: vi.fn<StillStreamApi["preferences"]["setStartScreen"]>(),
+      update: vi.fn<StillStreamApi["preferences"]["update"]>(),
       snapshot: vi
-        .fn<VacuumStreamApi["preferences"]["snapshot"]>()
+        .fn<StillStreamApi["preferences"]["snapshot"]>()
         .mockResolvedValue({ ...defaultPreferences(), startFullscreen: false }),
     },
     playerSession: {
       signIn: vi
-        .fn<VacuumStreamApi["playerSession"]["signIn"]>()
+        .fn<StillStreamApi["playerSession"]["signIn"]>()
         .mockResolvedValue({ signedIn: false }),
       signOut: vi
-        .fn<VacuumStreamApi["playerSession"]["signOut"]>()
+        .fn<StillStreamApi["playerSession"]["signOut"]>()
         .mockResolvedValue({ signedIn: false }),
       snapshot: vi
-        .fn<VacuumStreamApi["playerSession"]["snapshot"]>()
+        .fn<StillStreamApi["playerSession"]["snapshot"]>()
         .mockResolvedValue({ signedIn: false }),
     },
     settings: {
-      saveClientId: vi.fn<VacuumStreamApi["settings"]["saveClientId"]>(),
+      saveClientId: vi.fn<StillStreamApi["settings"]["saveClientId"]>(),
       snapshot: vi
-        .fn<VacuumStreamApi["settings"]["snapshot"]>()
+        .fn<StillStreamApi["settings"]["snapshot"]>()
         .mockResolvedValue({ clientId: "abcdefghijklmnopqrstuvwxyz1234", secureStorage: false }),
     },
     system: {
-      activateEmbeddedPlayer: vi.fn<VacuumStreamApi["system"]["activateEmbeddedPlayer"]>(),
-      isSteamGameMode: vi.fn<VacuumStreamApi["system"]["isSteamGameMode"]>(),
+      activateEmbeddedPlayer: vi.fn<StillStreamApi["system"]["activateEmbeddedPlayer"]>(),
+      isSteamGameMode: vi.fn<StillStreamApi["system"]["isSteamGameMode"]>(),
       restoreShellFullscreen: vi
-        .fn<VacuumStreamApi["system"]["restoreShellFullscreen"]>()
+        .fn<StillStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
       onWindowActive: vi
-        .fn<VacuumStreamApi["system"]["onWindowActive"]>()
+        .fn<StillStreamApi["system"]["onWindowActive"]>()
         .mockReturnValue(() => undefined),
       setPlayerLowLatency: vi
-        .fn<VacuumStreamApi["system"]["setPlayerLowLatency"]>()
+        .fn<StillStreamApi["system"]["setPlayerLowLatency"]>()
         .mockResolvedValue(null),
-      setFullscreen: vi.fn<VacuumStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
-      toggleFullscreen: vi.fn<VacuumStreamApi["system"]["toggleFullscreen"]>(),
+      setFullscreen: vi.fn<StillStreamApi["system"]["setFullscreen"]>().mockResolvedValue(false),
+      toggleFullscreen: vi.fn<StillStreamApi["system"]["toggleFullscreen"]>(),
     },
-  }) satisfies VacuumStreamApi
+  }) satisfies StillStreamApi
 
 let root: Root | undefined
 let container: HTMLDivElement
@@ -196,7 +196,7 @@ const activate = async (id: string) => {
 }
 const mount = async (auth: AuthSnapshot = { kind: "guest" }) => {
   const bridge = makeBridge(auth)
-  vi.stubGlobal("vacuumStream", bridge)
+  vi.stubGlobal("stillStream", bridge)
   root = createRoot(container)
   await act(async () => root?.render(<App />))
   await activate("nav-settings")
@@ -534,7 +534,7 @@ describe("Start screen preference", () => {
       ...defaultPreferences(),
       startScreen: next,
     }))
-    vi.stubGlobal("vacuumStream", bridge)
+    vi.stubGlobal("stillStream", bridge)
     root = createRoot(container)
     await act(async () => root?.render(<App />))
     return bridge
@@ -585,7 +585,7 @@ describe("Chat preferences", () => {
       saved = PreferencesSnapshotSchema.parse({ ...saved, ...update })
       return saved
     })
-    vi.stubGlobal("vacuumStream", bridge)
+    vi.stubGlobal("stillStream", bridge)
     root = createRoot(container)
     await act(async () => root?.render(<App />))
     await activate("nav-settings")
@@ -627,7 +627,7 @@ describe("Stream fullscreen preference", () => {
       saved = PreferencesSnapshotSchema.parse({ ...saved, ...update })
       return saved
     })
-    vi.stubGlobal("vacuumStream", bridge)
+    vi.stubGlobal("stillStream", bridge)
     root = createRoot(container)
     await act(async () => root?.render(<App />))
     await activate("nav-settings")
@@ -651,7 +651,7 @@ describe("Stream fullscreen preference", () => {
 describe("Settings return path", () => {
   it("sends Left from Settings back to the tab the viewer came from", async () => {
     const bridge = makeBridge(authenticated)
-    vi.stubGlobal("vacuumStream", bridge)
+    vi.stubGlobal("stillStream", bridge)
     root = createRoot(container)
     await act(async () => root?.render(<App />))
     await activate("nav-following")
@@ -673,7 +673,7 @@ describe("Settings return path", () => {
       saved = PreferencesSnapshotSchema.parse({ ...saved, ...update })
       return saved
     })
-    vi.stubGlobal("vacuumStream", bridge)
+    vi.stubGlobal("stillStream", bridge)
     root = createRoot(container)
     await act(async () => root?.render(<App />))
     await activate("nav-settings")
@@ -689,7 +689,7 @@ describe("Sidebar navigation", () => {
   it("moves Up/Down between tabs only, never into the page beside them", async () => {
     compactNavigation = false
     const bridge = makeBridge(authenticated)
-    vi.stubGlobal("vacuumStream", bridge)
+    vi.stubGlobal("stillStream", bridge)
     root = createRoot(container)
     await act(async () => root?.render(<App />))
     await activate("nav-search")

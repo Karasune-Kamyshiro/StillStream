@@ -17,5 +17,5 @@ export const queueProgress = <T>(videoId: string, operation: () => Promise<T>): 
 // Do not serialize mutations behind reads: an obsolete listing must not block Forget progress.
 export const listProgress = async () => {
   await Promise.allSettled([...pendingProgress.values()])
-  return window.vacuumStream.playbackProgress.list()
+  return window.stillStream.playbackProgress.list()
 }
