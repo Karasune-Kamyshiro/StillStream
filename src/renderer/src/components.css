@@ -17,8 +17,10 @@
 }
 
 .navigation__brand img {
-  inline-size: 2rem;
-  block-size: 2rem;
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  /* The mark is a wide arrow in a square canvas; trim the empty top and bottom. */
+  margin-block: -0.75rem;
 }
 
 .navigation__brand strong {
