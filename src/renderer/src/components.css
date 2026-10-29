@@ -17,18 +17,18 @@
 }
 
 .navigation__brand img {
-  inline-size: 3.25rem;
-  block-size: 3.25rem;
+  inline-size: 4.75rem;
+  block-size: 4.75rem;
   /* The mark is a wide arrow in a square canvas; trim the empty top and bottom. */
-  margin-block: -0.75rem;
+  margin-block: -1.25rem -0.75rem;
 }
 
 .navigation__brand strong {
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-stretch: var(--display-stretch);
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  /* Atkinson Hyperlegible keeps the i and the two l's of "Still" clearly apart. */
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .navigation__items {
