@@ -19,8 +19,10 @@
 .navigation__brand img {
   inline-size: 4.75rem;
   block-size: 4.75rem;
-  /* The mark is a wide arrow in a square canvas; trim the empty top and bottom. */
-  margin-block: -1.25rem -0.75rem;
+  /* The mark is a wide arrow in a square canvas: trim the empty top and bottom. The arrow sits
+     lower than the canvas edge allows (away from the corner) and its reflection tucks into the
+     wordmark's margin, so "Still" stays put and reads as part of the mark. */
+  margin-block: -0.5rem -1.5rem;
 }
 
 .navigation__brand strong {
@@ -344,4 +346,33 @@
   color: var(--color-text-muted);
   background: var(--color-rail);
   font-size: var(--text-body);
+}
+
+/* Live preview over a focused card's thumbnail: fades in once the player has drawn a frame, so
+   the thumbnail covers Twitch's loading spinner. The badges stay on top. */
+.stream-preview {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stream-preview[data-loaded="true"] {
+  animation: stream-preview-in var(--dur-press) var(--ease-out) 0.9s forwards;
+}
+
+@keyframes stream-preview-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stream-preview[data-loaded="true"] {
+    animation-duration: 0s;
+  }
 }

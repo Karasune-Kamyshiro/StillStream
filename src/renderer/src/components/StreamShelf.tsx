@@ -1,5 +1,6 @@
 import { useCallback, useId, useLayoutEffect, useRef } from "react"
 import type { StreamCard as StreamCardModel } from "../../../shared/contracts"
+import { StreamPreview, usePreviewTarget } from "./StreamPreview"
 
 type StreamShelfProps = {
   readonly cursor?: string | undefined
@@ -46,6 +47,7 @@ export const StreamShelf = ({
   wrap = false,
 }: StreamShelfProps) => {
   const headingId = useId()
+  const preview = usePreviewTarget()
   const refreshRef = useRef<HTMLButtonElement>(null)
   const actionRef = useRef<HTMLButtonElement | null>(null)
   const keepActionFocus = useCallback((button: HTMLButtonElement | null): void => {
@@ -247,9 +249,17 @@ export const StreamShelf = ({
               }
               data-focusable="true"
               key={stream.id}
+              onBlur={() => preview.disarm(stream.id)}
               onClick={() => onSelect(stream)}
               onFocus={(event) => {
                 focusedCardRef.current = event.currentTarget
+                if (stream.startedAt !== "") preview.arm(stream.id)
+              }}
+              onMouseEnter={() => {
+                if (stream.startedAt !== "") preview.arm(stream.id)
+              }}
+              onMouseLeave={(event) => {
+                if (event.currentTarget !== document.activeElement) preview.disarm(stream.id)
               }}
               type="button"
             >
@@ -265,6 +275,9 @@ export const StreamShelf = ({
                   src={stream.thumbnailUrl}
                   width="640"
                 />
+                {preview.previewId === stream.id ? (
+                  <StreamPreview channel={stream.userLogin} />
+                ) : null}
                 {stream.startedAt === "" ? null : <span className="live-badge">Live</span>}
                 <span className="viewer-badge">{formatViewers(stream.viewerCount)}</span>
               </span>
