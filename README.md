@@ -1,6 +1,6 @@
 # StillStream
 
-[![CI](https://github.com/Karasune-Kamyshiro/VacuumStream/actions/workflows/ci.yml/badge.svg)](https://github.com/Karasune-Kamyshiro/VacuumStream/actions/workflows/ci.yml)
+[![CI](https://github.com/Karasune-Kamyshiro/StillStream/actions/workflows/ci.yml/badge.svg)](https://github.com/Karasune-Kamyshiro/StillStream/actions/workflows/ci.yml)
 
 A controller-first Twitch client for Linux TVs and handhelds. Browse from the sofa with
 four arrow keys, Enter, and Escape, or a gamepad. Playback uses Twitch's official player.
@@ -16,7 +16,7 @@ are not currently provided.
 
 ## Get started
 
-Download an AppImage or Flatpak from [GitHub Releases](https://github.com/Karasune-Kamyshiro/VacuumStream/releases),
+Download an AppImage or Flatpak from [GitHub Releases](https://github.com/Karasune-Kamyshiro/StillStream/releases),
 then follow the [installation and first-run guide](docs/users/getting-started.md).
 If there is no published release yet, use the [source setup](docs/contributing/development.md).
 

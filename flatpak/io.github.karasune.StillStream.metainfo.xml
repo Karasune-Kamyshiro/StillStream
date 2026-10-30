@@ -59,15 +59,26 @@
     <control>pointing</control>
     <control>tv-remote</control>
   </supports>
-  <url type="homepage">https://github.com/Karasune-Kamyshiro/VacuumStream</url>
-  <url type="bugtracker">https://github.com/Karasune-Kamyshiro/VacuumStream/issues</url>
-  <url type="faq">https://github.com/Karasune-Kamyshiro/VacuumStream/blob/main/docs/users/troubleshooting.md</url>
-  <url type="help">https://github.com/Karasune-Kamyshiro/VacuumStream/blob/main/docs/users/getting-started.md</url>
-  <url type="contribute">https://github.com/Karasune-Kamyshiro/VacuumStream/blob/main/CONTRIBUTING.md</url>
-  <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/VacuumStream</url>
+  <url type="homepage">https://github.com/Karasune-Kamyshiro/StillStream</url>
+  <url type="bugtracker">https://github.com/Karasune-Kamyshiro/StillStream/issues</url>
+  <url type="faq">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/docs/users/troubleshooting.md</url>
+  <url type="help">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/docs/users/getting-started.md</url>
+  <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
+  <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.1" date="2026-10-30" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.1</url>
+      <description>
+        <p>Controller fixes, for testing.</p>
+        <ul>
+          <li>Xbox and other XInput-style controllers now work on SteamOS, with or without Steam Input: every connected controller is read, not only the first one listed.</li>
+          <li>Controllers without a recognised layout have their buttons and d-pad translated.</li>
+          <li>Settings lists the controllers the app can see and the buttons each one reports.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.2" date="2026-10-28">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.2</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.2</url>
       <description>
         <p>VacuumStream is now StillStream, with a new icon.</p>
         <ul>
@@ -77,7 +88,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.13" date="2026-10-27">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.13</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.13</url>
       <description>
         <p>Navigation fixes.</p>
         <ul>
@@ -87,7 +98,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.12" date="2026-10-27">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.12</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.12</url>
       <description>
         <p>Settings and background play.</p>
         <ul>
@@ -98,7 +109,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.11" date="2026-10-27">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.11</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.11</url>
       <description>
         <p>Consistent overlays.</p>
         <ul>
@@ -108,7 +119,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.10" date="2026-10-27">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.10</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.10</url>
       <description>
         <p>Fullscreen controls fix.</p>
         <ul>
@@ -119,7 +130,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.9" date="2026-10-27">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.9</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.9</url>
       <description>
         <p>Fullscreen-first player.</p>
         <ul>
@@ -130,7 +141,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.8" date="2026-10-26">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.8</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.8</url>
       <description>
         <p>Player polish.</p>
         <ul>
@@ -140,7 +151,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.7" date="2026-10-26">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.7</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.7</url>
       <description>
         <p>TV controls, live panel and chat overlay.</p>
         <ul>
@@ -153,7 +164,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.6" date="2026-10-26">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.6</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.6</url>
       <description>
         <p>TV remote fix.</p>
         <ul>
@@ -162,7 +173,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.5" date="2026-10-25">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.5</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.5</url>
       <description>
         <p>Living-room comfort.</p>
         <ul>
@@ -172,7 +183,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.4" date="2026-10-25">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.4</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.4</url>
       <description>
         <p>Readable sign-in on TVs.</p>
         <ul>
@@ -182,7 +193,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.3" date="2026-10-25">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.3</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.3</url>
       <description>
         <p>Steam Game Mode sign-in fix.</p>
         <ul>
@@ -192,7 +203,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.2" date="2026-10-25">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.2</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.2</url>
       <description>
         <p>Fullscreen fix.</p>
         <ul>
@@ -202,7 +213,7 @@
       </description>
     </release>
     <release version="0.2.1-fork.1" date="2026-10-25">
-      <url type="details">https://github.com/Karasune-Kamyshiro/VacuumStream/releases/tag/v0.2.1-fork.1</url>
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.1-fork.1</url>
       <description>
         <p>First release of the Karasune fork.</p>
         <ul>

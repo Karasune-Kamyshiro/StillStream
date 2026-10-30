@@ -1,6 +1,6 @@
 {
   "name": "stillstream",
-  "version": "0.2.2",
+  "version": "0.2.3-test.1",
   "description": "A controller-first Twitch client for Linux HTPCs",
   "author": {
     "name": "Eliott Bouhana",
@@ -8,13 +8,13 @@
   },
   "license": "MIT",
   "private": true,
-  "homepage": "https://github.com/Karasune-Kamyshiro/VacuumStream",
+  "homepage": "https://github.com/Karasune-Kamyshiro/StillStream",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Karasune-Kamyshiro/VacuumStream.git"
+    "url": "https://github.com/Karasune-Kamyshiro/StillStream.git"
   },
   "bugs": {
-    "url": "https://github.com/Karasune-Kamyshiro/VacuumStream/issues"
+    "url": "https://github.com/Karasune-Kamyshiro/StillStream/issues"
   },
   "packageManager": "bun@1.4.2",
   "engines": {

@@ -1,6 +1,6 @@
 # Troubleshooting
 
-[Installation and controls](getting-started.md) · [Report a bug](https://github.com/Karasune-Kamyshiro/VacuumStream/issues/new/choose)
+[Installation and controls](getting-started.md) · [Report a bug](https://github.com/Karasune-Kamyshiro/StillStream/issues/new/choose)
 
 ## Device sign-in fails
 

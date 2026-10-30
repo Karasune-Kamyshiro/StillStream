@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { type ControllerState, readControllerState } from "./gamepad-input"
 
 export const FOCUS_DIRECTIONS = ["down", "left", "right", "up"] as const
 export type FocusDirection = (typeof FOCUS_DIRECTIONS)[number]
@@ -133,21 +134,22 @@ export type SearchGamepadAction = "delete" | "submit"
 type GamepadInput = string | 2 | 3
 
 const keyboardForGamepad = (
-  gamepad: Gamepad,
+  state: ControllerState,
   dispatchedFaces: ReadonlySet<number>,
 ): GamepadInput | undefined => {
-  if (gamepad.buttons[0]?.pressed === true) return "Enter"
-  if (gamepad.buttons[1]?.pressed === true) return "Escape"
-  if (gamepad.buttons[2]?.pressed === true && !dispatchedFaces.has(2)) return 2
-  if (gamepad.buttons[3]?.pressed === true && !dispatchedFaces.has(3)) return 3
+  const { pressed } = state
+  if (pressed.has(0)) return "Enter"
+  if (pressed.has(1)) return "Escape"
+  if (pressed.has(2) && !dispatchedFaces.has(2)) return 2
+  if (pressed.has(3) && !dispatchedFaces.has(3)) return 3
   // Once both edges are handled, held faces retain their priority over lower-priority controls.
-  if (gamepad.buttons[2]?.pressed === true) return 2
-  if (gamepad.buttons[3]?.pressed === true) return 3
-  if (gamepad.buttons[9]?.pressed === true) return "F10"
-  if (gamepad.buttons[12]?.pressed === true || (gamepad.axes[1] ?? 0) < -0.55) return "ArrowUp"
-  if (gamepad.buttons[13]?.pressed === true || (gamepad.axes[1] ?? 0) > 0.55) return "ArrowDown"
-  if (gamepad.buttons[14]?.pressed === true || (gamepad.axes[0] ?? 0) < -0.55) return "ArrowLeft"
-  if (gamepad.buttons[15]?.pressed === true || (gamepad.axes[0] ?? 0) > 0.55) return "ArrowRight"
+  if (pressed.has(2)) return 2
+  if (pressed.has(3)) return 3
+  if (pressed.has(9)) return "F10"
+  if (pressed.has(12) || state.y < -0.55) return "ArrowUp"
+  if (pressed.has(13) || state.y > 0.55) return "ArrowDown"
+  if (pressed.has(14) || state.x < -0.55) return "ArrowLeft"
+  if (pressed.has(15) || state.x > 0.55) return "ArrowRight"
   return undefined
 }
 
@@ -232,15 +234,13 @@ const installGamepadBridge = (): (() => void) => {
   let repeatedAt = 0
 
   const poll = (now: number): void => {
-    const gamepad = navigator.getGamepads().find((candidate) => candidate?.connected === true)
+    // Every connected controller counts: SteamOS can list idle or grabbed devices first.
+    const state = readControllerState(navigator.getGamepads())
     // Only a dispatched edge is consumed. A held face must not hide another face's new edge.
     for (const button of dispatchedFaces) {
-      if (gamepad?.buttons[button]?.pressed !== true) dispatchedFaces.delete(button)
+      if (!state.pressed.has(button)) dispatchedFaces.delete(button)
     }
-    const input =
-      gamepad === undefined || gamepad === null
-        ? undefined
-        : keyboardForGamepad(gamepad, dispatchedFaces)
+    const input = keyboardForGamepad(state, dispatchedFaces)
     const changed = typeof input === "number" ? !dispatchedFaces.has(input) : input !== activeInput
     const repeats =
       typeof input === "string" &&

@@ -987,3 +987,29 @@
     transition-duration: 0s;
   }
 }
+
+.controller-status {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-badge);
+}
+
+.controller-status ul {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.controller-status li {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.controller-status li span {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}

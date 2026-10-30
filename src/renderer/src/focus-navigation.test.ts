@@ -177,6 +177,22 @@ describe("native gamepad press identity", () => {
     vi.unstubAllGlobals()
   })
 
+  it("reads a press from a controller listed after an idle one", async () => {
+    const idle = {
+      axes: [0, 0],
+      buttons: Array.from({ length: 16 }, () => ({ pressed: false, touched: false, value: 0 })),
+      connected: true,
+    }
+    // SteamOS lists the device Steam grabbed (never pressed) before Steam's virtual pad.
+    vi.stubGlobal("navigator", { getGamepads: () => [idle, snapshot] })
+    const clicks = vi.fn()
+    target.addEventListener("click", clicks)
+    await frame(0, [0])
+    await frame(16, [])
+    await frame(32, [0])
+    expect(clicks).toHaveBeenCalledTimes(2)
+  })
+
   it("offers cancelable chat actions after press detection and before shell activation or shortcuts", async () => {
     const actions: Event[] = []
     const activate = vi.fn()

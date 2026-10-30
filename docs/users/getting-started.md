@@ -4,7 +4,7 @@
 
 ## Choose a download
 
-Use the [Releases page](https://github.com/Karasune-Kamyshiro/VacuumStream/releases). The supported
+Use the [Releases page](https://github.com/Karasune-Kamyshiro/StillStream/releases). The supported
 build architecture is Linux **x86_64** (also called AMD64). Choose Flatpak for immutable
 gaming systems, or AppImage for a standalone executable. StillStream is not on Flathub.
 If no release exists, [build from source](../contributing/development.md).

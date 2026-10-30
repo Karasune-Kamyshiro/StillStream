@@ -10,7 +10,7 @@
 - Git and the desktop libraries required by Electron on your distribution.
 
 ```bash
-git clone https://github.com/Karasune-Kamyshiro/VacuumStream.git
+git clone https://github.com/Karasune-Kamyshiro/StillStream.git
 cd StillStream
 bun install --frozen-lockfile
 bun run dev

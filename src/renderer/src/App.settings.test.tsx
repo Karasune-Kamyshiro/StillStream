@@ -288,6 +288,7 @@ describe("Settings in the mounted App", () => {
         "developer-app-heading",
         "player-behaviour-heading",
         "chat-heading",
+        "controllers-heading",
       ])
       expect(
         container.querySelectorAll(

@@ -12,7 +12,7 @@ documentation fixes, and code contributions are welcome.
 
 ## Issues and pull requests
 
-Use the [issue templates](https://github.com/Karasune-Kamyshiro/VacuumStream/issues/new/choose) for bugs
+Use the [issue templates](https://github.com/Karasune-Kamyshiro/StillStream/issues/new/choose) for bugs
 and feature requests. Include your version, distribution, installation method, and reproduction
 steps. Describe whether you used native gamepad input or Steam Input keyboard mapping.
 

@@ -8,7 +8,7 @@ import {
   SignOutIcon,
 } from "@phosphor-icons/react"
 import { QRCodeSVG } from "qrcode.react"
-import { type ComponentProps, createContext, useContext, useEffect, useRef, useState } from "react"
+import { type ComponentProps, useContext, useEffect, useRef, useState } from "react"
 import type {
   AuthSnapshot,
   ChatOverlayOpacity,
@@ -27,6 +27,8 @@ import {
   nextOption,
 } from "../chat-appearance"
 import { registerBackDismissal } from "../focus-navigation"
+import { ControllerStatus } from "./ControllerStatus"
+import { SettingsNavContext } from "./settings-nav-context"
 
 type SettingsPanelProps = {
   readonly auth: AuthSnapshot
@@ -80,7 +82,6 @@ const errorMessage = (error: unknown): string =>
  * Left from any Settings control returns to the sidebar tab the viewer came from (for example
  * Following), not to the Settings tab itself, so finishing in Settings is one Left and OK away.
  */
-const SettingsNavContext = createContext("nav-settings")
 
 /**
  * An on/off option. A button rather than a checkbox: TV remotes send Enter for OK, which never
@@ -686,6 +687,7 @@ export const SettingsPanel = ({
             </div>
           </section>
         )}
+        <ControllerStatus />
         {error !== "" ? (
           <p className="error-message" role="alert">
             {error}

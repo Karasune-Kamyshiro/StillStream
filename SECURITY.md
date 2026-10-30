@@ -2,7 +2,7 @@
 
 ## Report a vulnerability
 
-Use [GitHub private vulnerability reporting](https://github.com/Karasune-Kamyshiro/VacuumStream/security/advisories/new).
+Use [GitHub private vulnerability reporting](https://github.com/Karasune-Kamyshiro/StillStream/security/advisories/new).
 Do not disclose a vulnerability, working exploit, or account token in a public issue.
 Include the affected version, reproduction steps, impact, and sanitized evidence.
 
