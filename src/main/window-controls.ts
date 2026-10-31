@@ -52,6 +52,35 @@ export const activateEmbeddedPlayer = async (
     }
     const beforeTime = video.currentTime;
     void video.play().catch(() => undefined);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    if (video.paused) {
+      // Twitch can decline its own autoplay (small or freshly revealed embeds) and then ignores a
+      // bare video.play(): it shows its paused poster with a play button. Press that button, and
+      // ask Twitch's media player itself to play, found the same way as the low-latency switch.
+      const resume =
+        document.querySelector('[data-a-target="player-overlay-play-button"]') ??
+        document.querySelector('[data-a-target="player-play-pause-button"]');
+      if (resume instanceof HTMLElement) resume.click();
+      const fiberOf = (element) => {
+        const key = Object.keys(element).find(
+          (name) => name.startsWith("__reactFiber$") || name.startsWith("__reactInternalInstance$"),
+        );
+        return key === undefined ? undefined : element[key];
+      };
+      let element = video;
+      let fiber;
+      for (let hops = 0; element && hops < 30 && !(fiber = fiberOf(element)); hops++) {
+        element = element.parentElement;
+      }
+      for (let depth = 0; fiber && depth < 80; depth++) {
+        const candidate = fiber.memoizedProps && fiber.memoizedProps.mediaPlayerInstance;
+        if (candidate && typeof candidate.play === 'function') {
+          try { candidate.play(); } catch {}
+          break;
+        }
+        fiber = fiber.return;
+      }
+    }
     await new Promise((resolve) => setTimeout(resolve, 600));
     return {
       beforeTime,

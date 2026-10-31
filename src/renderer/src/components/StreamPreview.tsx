@@ -8,7 +8,7 @@ export const PREVIEW_DELAY_MS = 1000
  */
 export const PREVIEW_PRELOAD_MS = 250
 
-const PREVIEW_ACTIVATION_DELAYS_MS = [0, 800, 2000, 4000] as const
+const PREVIEW_ACTIVATION_DELAYS_MS = [0, 800, 2000, 3500, 5500, 8000] as const
 
 // Twitch only autoplays embeds of at least 400x300 CSS pixels; smaller ones stay on their poster.
 const MIN_WIDTH = 400

@@ -66,6 +66,15 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.6" date="2026-10-31" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.6</url>
+      <description>
+        <p>Live preview fix, for testing.</p>
+        <ul>
+          <li>When Twitch leaves a player on its paused poster, the app presses Twitch's own play button and starts Twitch's media player directly.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.3-test.5" date="2026-10-31" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.5</url>
       <description>
