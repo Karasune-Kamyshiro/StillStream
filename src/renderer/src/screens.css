@@ -938,12 +938,23 @@
   text-align: start;
 }
 
-.live-panel__card img {
-  inline-size: 100%;
+/* Holds the thumbnail and, over it, a live preview laid out like the browse cards' one. */
+.live-panel__art {
+  position: relative;
+  display: block;
+  overflow: hidden;
   aspect-ratio: 16 / 9;
-  object-fit: cover;
   border-radius: var(--radius-control);
   background: var(--color-raised);
+}
+
+.live-panel__card img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
 }
 
 .live-panel__card[aria-current="true"] {

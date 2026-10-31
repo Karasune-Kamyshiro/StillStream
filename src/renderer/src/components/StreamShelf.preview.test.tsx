@@ -93,7 +93,7 @@ describe("stream card live preview", () => {
     expect(container.querySelector("iframe")).toBeNull()
   })
 
-  const withBridge = (activate: (audible: boolean) => Promise<boolean>) =>
+  const withBridge = (activate: (audible: boolean, target?: string) => Promise<boolean>) =>
     vi.stubGlobal("stillStream", { system: { activateEmbeddedPlayer: activate } })
   const settle = async (ms: number) => {
     for (let elapsed = 0; elapsed < ms; elapsed += 50) {
@@ -107,7 +107,7 @@ describe("stream card live preview", () => {
   }
 
   it("starts the player muted behind the thumbnail and shows it once it plays", async () => {
-    const activate = vi.fn<(audible: boolean) => Promise<boolean>>()
+    const activate = vi.fn<(audible: boolean, target?: string) => Promise<boolean>>()
     activate.mockResolvedValueOnce(false).mockResolvedValue(true)
     withBridge(activate)
     await loadPreview()
@@ -115,7 +115,10 @@ describe("stream card live preview", () => {
     expect(previewOf("live")?.dataset["revealed"]).toBe("false")
     // The next try, a moment later, finds the video playing and the preview shows.
     await settle(300)
-    expect(activate.mock.calls).toEqual([[false], [false]])
+    expect(activate.mock.calls).toEqual([
+      [false, "preview"],
+      [false, "preview"],
+    ])
     expect(previewOf("live")?.dataset["revealed"]).toBe("true")
     await settle(5000)
     // Already playing and previews are muted: nothing more to start.
@@ -123,7 +126,9 @@ describe("stream card live preview", () => {
   })
 
   it("shows a player that will not start behind the thumbnail after a grace period", async () => {
-    const activate = vi.fn<(audible: boolean) => Promise<boolean>>().mockResolvedValue(false)
+    const activate = vi
+      .fn<(audible: boolean, target?: string) => Promise<boolean>>()
+      .mockResolvedValue(false)
     withBridge(activate)
     await loadPreview()
     await settle(PREVIEW_DELAY_MS - PREVIEW_PRELOAD_MS + REVEAL_GRACE_MS - 50)
@@ -133,7 +138,9 @@ describe("stream card live preview", () => {
   })
 
   it("starts muted while hidden, then with sound once shown when previews have sound", async () => {
-    const activate = vi.fn<(audible: boolean) => Promise<boolean>>().mockResolvedValue(true)
+    const activate = vi
+      .fn<(audible: boolean, target?: string) => Promise<boolean>>()
+      .mockResolvedValue(true)
     withBridge(activate)
     await act(async () =>
       root.render(
@@ -148,8 +155,11 @@ describe("stream card live preview", () => {
       ),
     )
     await loadPreview()
-    expect(activate.mock.calls).toEqual([[false]])
+    expect(activate.mock.calls).toEqual([[false, "preview"]])
     await settle(PREVIEW_DELAY_MS)
-    expect(activate.mock.calls).toEqual([[false], [true]])
+    expect(activate.mock.calls).toEqual([
+      [false, "preview"],
+      [true, "preview"],
+    ])
   })
 })

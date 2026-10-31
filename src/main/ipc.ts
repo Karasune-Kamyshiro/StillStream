@@ -213,10 +213,17 @@ export const registerIpc = (options: IpcOptions): void => {
     z.tuple([]).parse(input)
     return options.playerSession.signOut()
   })
-  ipcMain.handle(CHANNELS.systemActivateEmbeddedPlayer, async (event, input: unknown) => {
-    authorize(event)
-    return activateEmbeddedPlayer(options.mainWindow.webContents, z.boolean().parse(input))
-  })
+  ipcMain.handle(
+    CHANNELS.systemActivateEmbeddedPlayer,
+    async (event, input: unknown, target: unknown = "player") => {
+      authorize(event)
+      return activateEmbeddedPlayer(
+        options.mainWindow.webContents,
+        z.boolean().parse(input),
+        z.enum(["player", "preview"]).parse(target),
+      )
+    },
+  )
   ipcMain.handle(CHANNELS.systemIsSteamGameMode, (event) => {
     authorize(event)
     return options.runningInSteamGameMode

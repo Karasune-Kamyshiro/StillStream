@@ -1,11 +1,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { StreamCard } from "../../../shared/contracts"
 import { markControllerFocus } from "../focus-navigation"
+import { StreamPreview, usePreviewTarget } from "./StreamPreview"
 
 type LivePanelProps = {
   /** The channel already playing; it is marked and focused first. */
   readonly currentChannel: string | undefined
   readonly onClose: () => void
+  /** A live preview starts (true) or stops (false) playing with sound. */
+  readonly onPreviewAudible?: (audible: boolean) => void
   /** Pointer entered (true) or left (false) the panel, for pointer-driven auto-close. */
   readonly onPointerInside?: (inside: boolean) => void
   readonly onSelect: (stream: StreamCard) => void
@@ -31,11 +34,14 @@ export const LivePanel = ({
   currentChannel,
   onClose,
   onPointerInside,
+  onPreviewAudible,
   onSelect,
   signedIn,
 }: LivePanelProps) => {
   const [state, setState] = useState<LiveState>({ kind: "loading" })
   const panelRef = useRef<HTMLElement>(null)
+  // Same live preview as the browse cards; never for the channel already playing.
+  const preview = usePreviewTarget()
 
   useEffect(() => {
     if (!signedIn) return
@@ -129,10 +135,29 @@ export const LivePanel = ({
                 data-focus-right={cardId(streams[index + 1] ?? first ?? stream)}
                 data-focus-up={cardId(stream)}
                 data-focusable="true"
+                onBlur={() => preview.disarm(stream.id)}
                 onClick={() => onSelect(stream)}
+                onFocus={() => {
+                  if (stream.userLogin !== currentChannel) preview.arm(stream.id)
+                }}
+                onMouseEnter={() => {
+                  if (stream.userLogin !== currentChannel) preview.arm(stream.id)
+                }}
+                onMouseLeave={(event) => {
+                  if (event.currentTarget !== document.activeElement) preview.disarm(stream.id)
+                }}
                 type="button"
               >
-                <img alt="" decoding="async" loading="lazy" src={stream.thumbnailUrl} />
+                <span className="live-panel__art">
+                  <img alt="" decoding="async" loading="lazy" src={stream.thumbnailUrl} />
+                  {preview.mountedId === stream.id ? (
+                    <StreamPreview
+                      channel={stream.userLogin}
+                      onAudibleChange={onPreviewAudible}
+                      revealed={preview.revealedId === stream.id}
+                    />
+                  ) : null}
+                </span>
                 <span className="live-panel__name">{stream.userName}</span>
                 <span className="live-panel__meta">
                   {stream.category === "" ? "Live" : stream.category} ·{" "}

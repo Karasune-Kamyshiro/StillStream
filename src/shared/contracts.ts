@@ -325,7 +325,11 @@ export interface StillStreamApi {
     readonly snapshot: () => Promise<SettingsSnapshot>
   }
   readonly system: {
-    readonly activateEmbeddedPlayer: (audible: boolean) => Promise<boolean>
+    /** Starts the stream being watched, or with "preview" the live preview on screen. */
+    readonly activateEmbeddedPlayer: (
+      audible: boolean,
+      target?: "player" | "preview",
+    ) => Promise<boolean>
     readonly isSteamGameMode: () => Promise<boolean>
     readonly restoreShellFullscreen: () => Promise<boolean>
     /**

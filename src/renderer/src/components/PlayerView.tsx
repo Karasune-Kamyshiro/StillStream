@@ -823,10 +823,32 @@ export const PlayerView = ({
     }
   }
 
+  // A live preview with sound in the live panel takes over the audio: the stream being watched
+  // is muted while it plays and gets its previous state back afterwards. A viewer who unmutes
+  // the stream meanwhile keeps that choice.
+  const mutedForPreview = useRef(false)
+  const onPreviewAudible = useCallback((audible: boolean): void => {
+    const player = playerRef.current
+    if (player === undefined) return
+    if (audible) {
+      if (player.getMuted()) return
+      mutedForPreview.current = true
+      player.setMuted(true)
+      setMuted(true)
+      return
+    }
+    if (!mutedForPreview.current) return
+    mutedForPreview.current = false
+    if (!player.getMuted()) return
+    player.setMuted(false)
+    setMuted(false)
+  }, [])
+
   const toggleMuted = (): void => {
     cancelAutoStart()
     const player = playerRef.current
     if (player === undefined) return
+    mutedForPreview.current = false
     const nextMuted = !player.getMuted()
     player.setMuted(nextMuted)
     setMuted(nextMuted)
@@ -1111,6 +1133,7 @@ export const PlayerView = ({
             currentChannel={source.kind === "live" ? source.channel : undefined}
             onClose={closeLivePanel}
             onPointerInside={onLivePanelPointer}
+            onPreviewAudible={onPreviewAudible}
             onSelect={switchStream}
             signedIn={signedIn}
           />

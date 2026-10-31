@@ -27,6 +27,9 @@ const HIDDEN_ACTIVATION_PAUSE_MS = 200
 /** How long a revealed preview may wait behind the thumbnail for its video before showing anyway. */
 export const REVEAL_GRACE_MS = 1500
 
+/** Must match PREVIEW_FRAME_NAME in the main process, which finds preview frames by it. */
+export const PREVIEW_FRAME_NAME = "stillstream-preview"
+
 /** True when live previews play with sound (the "Play live previews with sound" setting). */
 export const PreviewSoundContext = createContext(false)
 
@@ -111,9 +114,12 @@ const frameBoxFor = (width: number, height: number): FrameBox => {
 export const StreamPreview = ({
   channel,
   revealed,
+  onAudibleChange,
 }: {
   readonly channel: string
   readonly revealed: boolean
+  /** Told when the preview starts and stops playing with sound, so other audio can make room. */
+  readonly onAudibleChange?: ((audible: boolean) => void) | undefined
 }) => {
   const [loaded, setLoaded] = useState(false)
   const [box, setBox] = useState<FrameBox>(() => frameBoxFor(0, 0))
@@ -147,7 +153,7 @@ export const StreamPreview = ({
     let timer: ReturnType<typeof setTimeout> | undefined
     // One try at a time: the next starts a moment after the previous one reported back.
     const attempt = (): void => {
-      void window.stillStream.system.activateEmbeddedPlayer(false).then(
+      void window.stillStream.system.activateEmbeddedPlayer(false, "preview").then(
         (started) => {
           if (cancelled) return
           if (started) setPlaying(true)
@@ -177,7 +183,7 @@ export const StreamPreview = ({
     const timers = PREVIEW_ACTIVATION_DELAYS_MS.map((delay) =>
       setTimeout(() => {
         if (cancelled) return
-        void window.stillStream.system.activateEmbeddedPlayer(sound).then(
+        void window.stillStream.system.activateEmbeddedPlayer(sound, "preview").then(
           (started) => {
             if (started) cancelled = true
           },
@@ -191,11 +197,21 @@ export const StreamPreview = ({
     }
   }, [loaded, shown, playing, sound])
 
+  const audibleChange = useRef(onAudibleChange)
+  audibleChange.current = onAudibleChange
+  useEffect(() => {
+    if (!shown || !sound) return
+    audibleChange.current?.(true)
+    return () => audibleChange.current?.(false)
+  }, [shown, sound])
+
   return (
     <iframe
       allow="autoplay"
       aria-hidden="true"
       className="stream-preview"
+      // Main tells this frame apart from the stream being watched by its name.
+      name={PREVIEW_FRAME_NAME}
       data-revealed={shown}
       height={Math.round(box.height)}
       inert

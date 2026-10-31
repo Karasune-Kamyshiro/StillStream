@@ -66,6 +66,16 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.12" date="2026-10-31" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.12</url>
+      <description>
+        <p>Live previews in the player, for testing.</p>
+        <ul>
+          <li>The Following panel in the player (Down) previews the selected channel too.</li>
+          <li>With "Play live previews with sound" on, the stream being watched is muted while a preview plays and comes back when you move on; otherwise previews stay silent.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.3-test.11" date="2026-10-31" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.11</url>
       <description>

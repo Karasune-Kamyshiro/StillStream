@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   activateEmbeddedPlayer,
+  PREVIEW_FRAME_NAME,
   restoreShellFullscreen,
   setEmbeddedPlayerLowLatency,
 } from "./window-controls"
@@ -121,6 +122,58 @@ describe("window controller actions", () => {
     // Then the shell returns to its intended fullscreen baseline
     expect(fullscreen).toBe(true)
     expect(fullscreenStates).toEqual([true])
+  })
+})
+
+describe("stream and live preview frames", () => {
+  const playing = {
+    beforeTime: 0,
+    currentTime: 1,
+    muted: true,
+    paused: false,
+    readyState: 4,
+    volume: 1,
+  }
+  const frames = (calls: string[]) => ({
+    mainFrame: {
+      frames: [
+        {
+          executeJavaScript: async (): Promise<unknown> => {
+            calls.push("preview")
+            return playing
+          },
+          name: PREVIEW_FRAME_NAME,
+          url: "https://player.twitch.tv/?channel=other",
+        },
+        {
+          executeJavaScript: async (): Promise<unknown> => {
+            calls.push("player")
+            return playing
+          },
+          name: "",
+          url: "https://player.twitch.tv/?channel=watched",
+        },
+      ],
+    },
+  })
+
+  it("starts the watched stream, never a preview listed before it", async () => {
+    const calls: string[] = []
+    expect(await activateEmbeddedPlayer(frames(calls), false)).toBe(true)
+    expect(calls).toEqual(["player"])
+  })
+
+  it("starts the named preview frame when asked for the preview", async () => {
+    const calls: string[] = []
+    expect(await activateEmbeddedPlayer(frames(calls), false, "preview")).toBe(true)
+    expect(calls).toEqual(["preview"])
+  })
+
+  it("leaves the watched stream alone when no preview is showing", async () => {
+    const calls: string[] = []
+    const onlyPlayer = { mainFrame: { frames: frames(calls).mainFrame.frames.slice(1) } }
+    expect(await activateEmbeddedPlayer(onlyPlayer, false, "preview")).toBe(false)
+    expect(calls).toEqual([])
   })
 })
 

@@ -5,6 +5,8 @@ type FullscreenWindow = Pick<BrowserWindow, "setFullScreen">
 type StatefulFullscreenWindow = Pick<BrowserWindow, "isFullScreen" | "setFullScreen">
 type ScriptFrame = {
   readonly executeJavaScript: (code: string, userGesture?: boolean) => Promise<unknown>
+  /** The frame's name; live previews are named PREVIEW_FRAME_NAME. */
+  readonly name?: string
   readonly url: string
 }
 type ScriptWebContents = {
@@ -20,6 +22,25 @@ const MediaSampleSchema = z.object({
   volume: z.number().min(0).max(1),
 })
 
+/** The iframe name that marks a live preview, so it is never mistaken for the stream playing. */
+export const PREVIEW_FRAME_NAME = "stillstream-preview"
+export type EmbeddedPlayerTarget = "player" | "preview"
+
+/**
+ * The stream being watched and a live preview (on a card or in the player's live panel) are both
+ * Twitch embeds; the preview's frame is named, so each request reaches the one it means.
+ */
+const findPlayerFrame = (
+  webContents: ScriptWebContents,
+  target: EmbeddedPlayerTarget,
+): ScriptFrame | undefined =>
+  webContents.mainFrame.frames.find(
+    (frame) =>
+      URL.canParse(frame.url) &&
+      new URL(frame.url).origin === "https://player.twitch.tv" &&
+      (frame.name === PREVIEW_FRAME_NAME) === (target === "preview"),
+  )
+
 /**
  * Twitch's player internals change without notice. When the embed refuses to start, what it
  * showed is written to the terminal, so a report from a real setup says which control to press.
@@ -32,10 +53,9 @@ const reportStalledPlayer = (value: unknown): void => {
 export const activateEmbeddedPlayer = async (
   webContents: ScriptWebContents,
   audible: boolean,
+  target: EmbeddedPlayerTarget = "player",
 ): Promise<boolean> => {
-  const playerFrame = webContents.mainFrame.frames.find(
-    (frame) => URL.canParse(frame.url) && new URL(frame.url).origin === "https://player.twitch.tv",
-  )
+  const playerFrame = findPlayerFrame(webContents, target)
   if (playerFrame === undefined) return false
   const script = `(async () => {
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -195,9 +215,7 @@ export const setEmbeddedPlayerLowLatency = async (
   webContents: ScriptWebContents,
   enabled: boolean | null,
 ): Promise<boolean | null> => {
-  const playerFrame = webContents.mainFrame.frames.find(
-    (frame) => URL.canParse(frame.url) && new URL(frame.url).origin === "https://player.twitch.tv",
-  )
+  const playerFrame = findPlayerFrame(webContents, "player")
   if (playerFrame === undefined) return null
   const request = enabled === null ? "null" : String(enabled)
   const script = `(async () => {

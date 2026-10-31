@@ -168,9 +168,9 @@ const api = {
         .then((value) => SettingsSnapshotSchema.parse(value)),
   },
   system: {
-    activateEmbeddedPlayer: (audible) =>
+    activateEmbeddedPlayer: (audible, target = "player") =>
       ipcRenderer
-        .invoke(CHANNELS.systemActivateEmbeddedPlayer, audible)
+        .invoke(CHANNELS.systemActivateEmbeddedPlayer, audible, target)
         .then((value) => Boolean(value)),
     isSteamGameMode: () =>
       ipcRenderer.invoke(CHANNELS.systemIsSteamGameMode).then((value) => Boolean(value)),

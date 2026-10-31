@@ -121,32 +121,34 @@ export const App = () => {
   }
   if (controller.screen.kind === "player") {
     return (
-      <PlayerView
-        fullscreenCarry={fullscreenCarry.current}
-        onSwitchStream={controller.openStream}
-        signedIn={controller.auth.kind === "authenticated"}
-        startInFullscreen={controller.preferences.startFullscreen}
-        pauseWhenInactive={controller.preferences.pauseWhenInactive}
-        key={
-          controller.screen.source.kind === "live"
-            ? controller.screen.source.channel
-            : controller.screen.source.videoId
-        }
-        chatAppearance={chatAppearance(controller.preferences)}
-        {...(controller.preferences.lowLatency === undefined
-          ? {}
-          : { lowLatency: controller.preferences.lowLatency })}
-        onBack={controller.navigateHome}
-        onChatLayoutChange={(chatLayout) => void controller.updatePreferences({ chatLayout })}
-        onLowLatencyChange={(lowLatency) => void controller.updatePreferences({ lowLatency })}
-        onPastBroadcasts={(userId) => void controller.showPastBroadcasts(userId)}
-        onQualityChange={(quality) => void controller.updatePreferences({ quality })}
-        {...(controller.preferences.quality === undefined
-          ? {}
-          : { preferredQuality: controller.preferences.quality })}
-        onSetFullscreen={(fullscreen) => window.stillStream.system.setFullscreen(fullscreen)}
-        source={controller.screen.source}
-      />
+      <PreviewSoundContext.Provider value={controller.preferences.previewSound}>
+        <PlayerView
+          fullscreenCarry={fullscreenCarry.current}
+          onSwitchStream={controller.openStream}
+          signedIn={controller.auth.kind === "authenticated"}
+          startInFullscreen={controller.preferences.startFullscreen}
+          pauseWhenInactive={controller.preferences.pauseWhenInactive}
+          key={
+            controller.screen.source.kind === "live"
+              ? controller.screen.source.channel
+              : controller.screen.source.videoId
+          }
+          chatAppearance={chatAppearance(controller.preferences)}
+          {...(controller.preferences.lowLatency === undefined
+            ? {}
+            : { lowLatency: controller.preferences.lowLatency })}
+          onBack={controller.navigateHome}
+          onChatLayoutChange={(chatLayout) => void controller.updatePreferences({ chatLayout })}
+          onLowLatencyChange={(lowLatency) => void controller.updatePreferences({ lowLatency })}
+          onPastBroadcasts={(userId) => void controller.showPastBroadcasts(userId)}
+          onQualityChange={(quality) => void controller.updatePreferences({ quality })}
+          {...(controller.preferences.quality === undefined
+            ? {}
+            : { preferredQuality: controller.preferences.quality })}
+          onSetFullscreen={(fullscreen) => window.stillStream.system.setFullscreen(fullscreen)}
+          source={controller.screen.source}
+        />
+      </PreviewSoundContext.Provider>
     )
   }
 
