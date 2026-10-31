@@ -348,31 +348,19 @@
   font-size: var(--text-body);
 }
 
-/* Live preview over a focused card's thumbnail: fades in once the player has drawn a frame, so
-   the thumbnail covers Twitch's loading spinner. The badges stay on top. */
+/* Live preview over a focused card's thumbnail. The player loads underneath the thumbnail
+   (which shares its z-index but comes first) and covers it once revealed; the badges stay on top.
+   It is laid out at Twitch's autoplay minimum size and scaled down from the top-left corner. */
 .stream-preview {
   position: absolute;
-  z-index: 1;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
+  z-index: 0;
+  inset-block-start: 0;
+  inset-inline-start: 0;
   border: 0;
-  opacity: 0;
   pointer-events: none;
+  transform-origin: 0 0;
 }
 
-.stream-preview[data-loaded="true"] {
-  animation: stream-preview-in var(--dur-press) var(--ease-out) 0.9s forwards;
-}
-
-@keyframes stream-preview-in {
-  to {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .stream-preview[data-loaded="true"] {
-    animation-duration: 0s;
-  }
+.stream-preview[data-revealed="true"] {
+  z-index: 1;
 }

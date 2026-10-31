@@ -275,8 +275,11 @@ export const StreamShelf = ({
                   src={stream.thumbnailUrl}
                   width="640"
                 />
-                {preview.previewId === stream.id ? (
-                  <StreamPreview channel={stream.userLogin} />
+                {preview.mountedId === stream.id ? (
+                  <StreamPreview
+                    channel={stream.userLogin}
+                    revealed={preview.revealedId === stream.id}
+                  />
                 ) : null}
                 {stream.startedAt === "" ? null : <span className="live-badge">Live</span>}
                 <span className="viewer-badge">{formatViewers(stream.viewerCount)}</span>
