@@ -14,10 +14,11 @@ finish-args:
   - --socket=wayland
   - --socket=x11
   - --socket=pulseaudio
-  - --device=dri
-  - --device=input
-  # Chromium finds gamepads through udev's device database; without it Xbox-style pads (and
-  # Steam Input's virtual pad) stay invisible, as in other Flatpak Chromium browsers.
+  # Controllers: Chromium reads some pads as evdev input devices and others over hidraw, which
+  # only --device=all exposes; it also needs udev's device database to recognise them at all.
+  # Without both, Xbox-style pads and Steam Input's virtual pad can stay invisible (VacuumTube
+  # on Flathub ships the same pair for the same reason). --device=all also covers the GPU.
+  - --device=all
   - --filesystem=/run/udev:ro
   - --talk-name=org.freedesktop.ScreenSaver
   - --talk-name=org.freedesktop.secrets

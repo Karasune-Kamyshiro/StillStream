@@ -139,7 +139,7 @@ Raw input access plus the udev database enable native gamepads; no home-director
 AppImage is a fallback where Chromium user namespaces are available; sandbox failures are
 never worked around with `--no-sandbox`.
 
-Flatpak's `--device=input` exposes the sandbox to all host input devices, not only gamepads,
+Flatpak's `--device=all` exposes the sandbox to all host devices (input, hidraw, GPU), not only gamepads,
 and fallback X11 has weaker isolation than Wayland. These are accepted HTPC compatibility
 tradeoffs: Wayland remains preferred, and packages must be
 built from reviewed source. The only filesystem access is read-only `/run/udev`, the device

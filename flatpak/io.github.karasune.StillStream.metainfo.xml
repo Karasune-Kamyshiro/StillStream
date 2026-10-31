@@ -66,6 +66,15 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.4" date="2026-10-31" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.4</url>
+      <description>
+        <p>Controller access, for testing.</p>
+        <ul>
+          <li>The Flatpak gets the same device access as other controller-first Electron apps, so Chromium can read every kind of controller.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.3-test.3" date="2026-10-31" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.3</url>
       <description>
