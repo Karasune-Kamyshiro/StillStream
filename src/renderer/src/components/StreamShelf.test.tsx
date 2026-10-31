@@ -136,7 +136,9 @@ describe("stream shelf", () => {
       expect(markup).toContain(`data-focus-id="home-${state === "error" ? "retry" : "more"}"`)
       expect(markup).toContain('data-focus-up="home-refresh"')
       expect(markup.includes('role="alert"')).toBe(state === "error")
-      expect(markup.includes('role="status"')).toBe(state === "loading")
+      // The update is reported in the heading, so the cards never move down for it.
+      expect(markup.includes("Updating…")).toBe(state === "loading")
+      expect(markup).not.toContain('role="status"')
     },
   )
 

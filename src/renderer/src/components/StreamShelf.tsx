@@ -164,7 +164,15 @@ export const StreamShelf = ({
       <div className="shelf__heading">
         <h2 id={headingId}>{title}</h2>
         <div className="shelf__tools">
-          <span>{state === "loading" ? "Loading" : `${streams.length} channels`}</span>
+          {/* Refresh status lives here, above the divider: a line above the reel pushed every
+              card down and back on each update. A fixed width keeps Refresh from moving. */}
+          <span aria-live="polite" className="shelf__count">
+            {state === "loading"
+              ? streams.length > 0
+                ? "Updating…"
+                : "Loading"
+              : `${streams.length} channels`}
+          </span>
           {onRefresh === undefined ? null : (
             <button
               aria-disabled={refreshing}
@@ -191,9 +199,6 @@ export const StreamShelf = ({
             <span className="stream-skeleton" key={item} />
           ))}
         </div>
-      ) : null}
-      {state === "loading" && streams.length > 0 ? (
-        <p role="status">Updating live streams...</p>
       ) : null}
       {state === "error" ? (
         <p className="error-message" role="alert">

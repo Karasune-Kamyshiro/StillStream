@@ -121,6 +121,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.shelf__count {
+  min-inline-size: 7.5em;
+  text-align: end;
+}
+
 .shelf__tools {
   display: flex;
   flex-wrap: wrap;
