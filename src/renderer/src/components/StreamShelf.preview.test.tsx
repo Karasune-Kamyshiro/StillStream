@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { StreamCard } from "../../../shared/contracts"
 import { PREVIEW_STREAMS } from "../demo-data"
-import { PREVIEW_DELAY_MS, PREVIEW_PRELOAD_MS } from "./StreamPreview"
+import { PREVIEW_DELAY_MS, PREVIEW_PRELOAD_MS, PreviewSoundContext } from "./StreamPreview"
 import { StreamShelf } from "./StreamShelf"
 
 const base = PREVIEW_STREAMS[0] as StreamCard
@@ -102,5 +102,32 @@ describe("stream card live preview", () => {
     }
     // Nothing is activated while the player is still hidden under the thumbnail.
     expect(activate.mock.calls).toEqual([[false], [false]])
+  })
+
+  it("starts muted while hidden, then with sound once shown when previews have sound", async () => {
+    const activate = vi.fn<(audible: boolean) => Promise<boolean>>().mockResolvedValue(false)
+    vi.stubGlobal("stillStream", { system: { activateEmbeddedPlayer: activate } })
+    await act(async () =>
+      root.render(
+        <PreviewSoundContext.Provider value={true}>
+          <StreamShelf
+            emptyMessage="Empty"
+            onSelect={() => undefined}
+            streams={[live, offline]}
+            title="Live"
+          />
+        </PreviewSoundContext.Provider>,
+      ),
+    )
+    await act(async () => card("live").focus())
+    await act(async () => vi.advanceTimersByTime(PREVIEW_PRELOAD_MS))
+    await act(async () => previewOf("live")?.dispatchEvent(new Event("load")))
+    await act(async () => vi.advanceTimersByTime(PREVIEW_DELAY_MS - PREVIEW_PRELOAD_MS - 1))
+    expect(activate.mock.calls.every(([audible]) => !audible)).toBe(true)
+    expect(activate).toHaveBeenCalled()
+    activate.mockClear()
+    await act(async () => vi.advanceTimersByTime(1))
+    await act(async () => vi.advanceTimersByTime(0))
+    expect(activate).toHaveBeenCalledWith(true)
   })
 })

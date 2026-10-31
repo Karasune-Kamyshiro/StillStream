@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
 
 /** How long a card has to stay focused or hovered before its live preview shows. */
 export const PREVIEW_DELAY_MS = 1000
@@ -9,6 +17,10 @@ export const PREVIEW_DELAY_MS = 1000
 export const PREVIEW_PRELOAD_MS = 250
 
 const PREVIEW_ACTIVATION_DELAYS_MS = [0, 800, 2000, 3500, 5500, 8000] as const
+const HIDDEN_ACTIVATION_DELAYS_MS = [0, 350] as const
+
+/** True when live previews play with sound (the "Play live previews with sound" setting). */
+export const PreviewSoundContext = createContext(false)
 
 // Twitch only autoplays embeds of at least 400x300 CSS pixels; smaller ones stay on their poster.
 const MIN_WIDTH = 400
@@ -111,15 +123,19 @@ export const StreamPreview = ({
   }, [])
 
   // Like the full player, the embed can sit on its poster until main starts the video inside the
-  // Twitch frame. On browse screens the preview is the only Twitch player, so the same muted
-  // activation applies once it shows; it is retried while the stream is still buffering.
+  // Twitch frame. On browse screens the preview is the only Twitch player, so the same activation
+  // applies: muted while it loads behind the thumbnail, so it is already running when it shows,
+  // then (with sound if chosen) once revealed, retried while the stream is still buffering.
+  const sound = useContext(PreviewSoundContext)
   useEffect(() => {
-    if (!loaded || !revealed) return
+    if (!loaded) return
     let cancelled = false
-    const timers = PREVIEW_ACTIVATION_DELAYS_MS.map((delay) =>
+    const delays = revealed ? PREVIEW_ACTIVATION_DELAYS_MS : HIDDEN_ACTIVATION_DELAYS_MS
+    const audible = revealed && sound
+    const timers = delays.map((delay) =>
       setTimeout(() => {
         if (cancelled) return
-        void window.stillStream.system.activateEmbeddedPlayer(false).then(
+        void window.stillStream.system.activateEmbeddedPlayer(audible).then(
           (started) => {
             if (started) cancelled = true
           },
@@ -131,7 +147,7 @@ export const StreamPreview = ({
       cancelled = true
       for (const timer of timers) clearTimeout(timer)
     }
-  }, [loaded, revealed])
+  }, [loaded, revealed, sound])
 
   return (
     <iframe

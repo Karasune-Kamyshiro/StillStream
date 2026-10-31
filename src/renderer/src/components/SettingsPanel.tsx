@@ -50,6 +50,9 @@ type SettingsPanelProps = {
   readonly pauseWhenInactive?: boolean
   /** Saves the background pause preference; the switch is hidden when absent. */
   readonly onPauseWhenInactiveChange?: (pauseWhenInactive: boolean) => Promise<void>
+  readonly previewSound?: boolean
+  /** Saves the preview sound preference; the switch is hidden when absent. */
+  readonly onPreviewSoundChange?: (previewSound: boolean) => Promise<void>
 }
 
 type SubmitHandler = NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -188,6 +191,8 @@ export const SettingsPanel = ({
   onStartFullscreenChange,
   pauseWhenInactive = false,
   onPauseWhenInactiveChange,
+  previewSound = false,
+  onPreviewSoundChange,
 }: SettingsPanelProps) => {
   // The last option of the Start screen card, which the Chat card continues below.
   // The Player behaviour options in order; the Chat card continues below the last one.
@@ -195,6 +200,7 @@ export const SettingsPanel = ({
     "settings-start-following",
     ...(onStartFullscreenChange === undefined ? [] : ["settings-start-fullscreen"]),
     ...(onPauseWhenInactiveChange === undefined ? [] : ["settings-pause-inactive"]),
+    ...(onPreviewSoundChange === undefined ? [] : ["settings-preview-sound"]),
   ]
   const startCardLastId = behaviourIds.at(-1) ?? "settings-start-following"
   const behaviourBelow = (id: string): string | undefined =>
@@ -490,7 +496,8 @@ export const SettingsPanel = ({
               <h2 id="player-behaviour-heading">Player behaviour</h2>
               <p>
                 Where StillStream opens and returns to (Following needs a signed-in account), how
-                streams start, and what happens when you switch to another app, such as Steam.
+                streams start, what happens when you switch to another app, such as Steam, and
+                whether the live preview on a selected card plays with sound.
               </p>
             </div>
             <div className="settings-options">
@@ -533,6 +540,21 @@ export const SettingsPanel = ({
                     setError("")
                     return onPauseWhenInactiveChange(checked).catch(() =>
                       setError("The pause preference could not be saved"),
+                    )
+                  }}
+                />
+              )}
+              {onPreviewSoundChange === undefined ? null : (
+                <SettingsSwitch
+                  checked={previewSound}
+                  focusDown={behaviourBelow("settings-preview-sound")}
+                  focusId="settings-preview-sound"
+                  focusUp={behaviourAbove("settings-preview-sound")}
+                  label="Play live previews with sound"
+                  onChange={(checked) => {
+                    setError("")
+                    return onPreviewSoundChange(checked).catch(() =>
+                      setError("The preview sound preference could not be saved"),
                     )
                   }}
                 />

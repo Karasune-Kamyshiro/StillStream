@@ -116,6 +116,8 @@ export const PreferencesSnapshotSchema = z.strictObject({
   startScreen: StartScreenSchema.default("home"),
   /** Pause while the app is in the background (another app focused, hidden or minimised). */
   pauseWhenInactive: z.boolean().default(false),
+  /** Live previews on stream cards play with sound instead of muted. */
+  previewSound: z.boolean().default(false),
 })
 /** Every preference at its default, as for a first launch. */
 export const defaultPreferences = (): PreferencesSnapshot => PreferencesSnapshotSchema.parse({})
@@ -131,6 +133,7 @@ export const PreferencesUpdateSchema = z.strictObject({
   startFullscreen: z.boolean().optional(),
   startScreen: StartScreenSchema.optional(),
   pauseWhenInactive: z.boolean().optional(),
+  previewSound: z.boolean().optional(),
 })
 export type PreferencesUpdate = z.infer<typeof PreferencesUpdateSchema>
 export type PreferencesSnapshot = z.infer<typeof PreferencesSnapshotSchema>
