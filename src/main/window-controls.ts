@@ -20,6 +20,15 @@ const MediaSampleSchema = z.object({
   volume: z.number().min(0).max(1),
 })
 
+/**
+ * Twitch's player internals change without notice. When the embed refuses to start, what it
+ * showed is written to the terminal, so a report from a real setup says which control to press.
+ */
+const reportStalledPlayer = (value: unknown): void => {
+  const summary = JSON.stringify(value) ?? String(value)
+  console.warn(`[StillStream] Twitch player did not start: ${summary.slice(0, 1500)}`)
+}
+
 export const activateEmbeddedPlayer = async (
   webContents: ScriptWebContents,
   audible: boolean,
@@ -29,16 +38,80 @@ export const activateEmbeddedPlayer = async (
   )
   if (playerFrame === undefined) return false
   const script = `(async () => {
+    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const gate = document.querySelector('[data-a-target="content-classification-gate-overlay-start-watching-button"]');
     if (gate instanceof HTMLButtonElement) gate.click();
-    await Promise.race([
-      new Promise((resolve) => requestAnimationFrame(resolve)),
-      new Promise((resolve) => setTimeout(resolve, 100)),
-    ]);
-    const video = document.querySelector('video');
-    if (!(video instanceof HTMLVideoElement)) return null;
+    await Promise.race([new Promise((resolve) => requestAnimationFrame(resolve)), pause(100)]);
+    // Twitch can decline its own autoplay (small or freshly revealed embeds). It then shows a
+    // blurred poster with a play button, often without any video element yet, and ignores a bare
+    // video.play(). Press its play control and ask its media player itself to play, found through
+    // the React tree the same way as the low-latency switch.
+    // Only controls that exist (or are labelled) for a paused player: a toggle pressed while
+    // Twitch is still starting its own playback would pause it instead.
+    const PLAY_CONTROLS = [
+      '[data-a-target="player-overlay-play-button"]',
+      'button[aria-label="Play" i]',
+      'button[aria-label^="Play (" i]',
+      'button[aria-label^="Wiedergabe" i]',
+    ];
+    const pressPlay = () => {
+      for (const selector of PLAY_CONTROLS) {
+        const control = document.querySelector(selector);
+        if (control instanceof HTMLElement) {
+          control.click();
+          return selector;
+        }
+      }
+      return null;
+    };
+    const fiberOf = (element) => {
+      const key = Object.keys(element).find(
+        (name) => name.startsWith("__reactFiber$") || name.startsWith("__reactInternalInstance$"),
+      );
+      return key === undefined ? undefined : element[key];
+    };
+    const startMediaPlayer = () => {
+      const starts = [
+        document.querySelector('video'),
+        document.querySelector('[data-a-target="player-overlay-click-handler"]'),
+        document.querySelector('[data-a-target^="player"]'),
+      ];
+      for (const start of starts) {
+        let element = start;
+        let fiber;
+        for (let hops = 0; element && hops < 30 && !(fiber = fiberOf(element)); hops++) {
+          element = element.parentElement;
+        }
+        for (let depth = 0; fiber && depth < 120; depth++) {
+          const candidate = fiber.memoizedProps && fiber.memoizedProps.mediaPlayerInstance;
+          if (candidate && typeof candidate.play === 'function') {
+            try { candidate.play(); return true; } catch { return false; }
+          }
+          fiber = fiber.return;
+        }
+      }
+      return false;
+    };
+    const diagnostics = (pressed, mediaPlayer) => ({
+      controls: [...document.querySelectorAll('button, [data-a-target]')]
+        .slice(0, 25)
+        .map((element) => [element.getAttribute('data-a-target'), element.getAttribute('aria-label')].filter(Boolean).join('|'))
+        .filter(Boolean),
+      mediaPlayer,
+      pressed,
+    });
+    let pressed = null;
+    let mediaPlayer = false;
+    let video = document.querySelector('video');
+    if (!(video instanceof HTMLVideoElement) || video.paused) {
+      pressed = pressPlay();
+      mediaPlayer = startMediaPlayer();
+      await pause(400);
+      video = document.querySelector('video');
+    }
+    if (!(video instanceof HTMLVideoElement)) return { diagnostics: diagnostics(pressed, mediaPlayer) };
     const playButton = document.querySelector('[data-a-target="player-play-pause-button"]');
-    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA && playButton instanceof HTMLButtonElement) {
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA && playButton instanceof HTMLButtonElement && pressed === null) {
       playButton.click();
     }
     if (${audible}) {
@@ -52,39 +125,16 @@ export const activateEmbeddedPlayer = async (
     }
     const beforeTime = video.currentTime;
     void video.play().catch(() => undefined);
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    if (video.paused) {
-      // Twitch can decline its own autoplay (small or freshly revealed embeds) and then ignores a
-      // bare video.play(): it shows its paused poster with a play button. Press that button, and
-      // ask Twitch's media player itself to play, found the same way as the low-latency switch.
-      const resume =
-        document.querySelector('[data-a-target="player-overlay-play-button"]') ??
-        document.querySelector('[data-a-target="player-play-pause-button"]');
-      if (resume instanceof HTMLElement) resume.click();
-      const fiberOf = (element) => {
-        const key = Object.keys(element).find(
-          (name) => name.startsWith("__reactFiber$") || name.startsWith("__reactInternalInstance$"),
-        );
-        return key === undefined ? undefined : element[key];
-      };
-      let element = video;
-      let fiber;
-      for (let hops = 0; element && hops < 30 && !(fiber = fiberOf(element)); hops++) {
-        element = element.parentElement;
-      }
-      for (let depth = 0; fiber && depth < 80; depth++) {
-        const candidate = fiber.memoizedProps && fiber.memoizedProps.mediaPlayerInstance;
-        if (candidate && typeof candidate.play === 'function') {
-          try { candidate.play(); } catch {}
-          break;
-        }
-        fiber = fiber.return;
-      }
+    await pause(150);
+    if (video.paused && pressed === null) {
+      pressed = pressPlay();
+      mediaPlayer = startMediaPlayer() || mediaPlayer;
     }
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    await pause(600);
     return {
       beforeTime,
       currentTime: video.currentTime,
+      diagnostics: diagnostics(pressed, mediaPlayer),
       muted: video.muted,
       paused: video.paused,
       readyState: video.readyState,
@@ -93,7 +143,7 @@ export const activateEmbeddedPlayer = async (
   })()`
   let timeoutId: ReturnType<typeof setTimeout> | undefined
   const timeout = new Promise<{ readonly kind: "timeout" }>((resolve) => {
-    timeoutId = setTimeout(() => resolve({ kind: "timeout" }), 1_500)
+    timeoutId = setTimeout(() => resolve({ kind: "timeout" }), 2_500)
   })
   const execution = playerFrame.executeJavaScript(script, true).then(
     (value) => ({ kind: "value", value }) as const,
@@ -103,10 +153,14 @@ export const activateEmbeddedPlayer = async (
   if (timeoutId !== undefined) clearTimeout(timeoutId)
   if (result.kind !== "value") return false
   const parsed = MediaSampleSchema.safeParse(result.value)
-  if (!parsed.success) return false
+  if (!parsed.success) {
+    reportStalledPlayer(result.value)
+    return false
+  }
   const sample = parsed.data
   const playing =
     sample.readyState >= 2 && !sample.paused && sample.currentTime - sample.beforeTime >= 0.1
+  if (!playing) reportStalledPlayer(result.value)
   return playing && (!audible || (!sample.muted && sample.volume > 0))
 }
 
