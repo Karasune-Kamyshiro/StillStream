@@ -78,4 +78,17 @@ describe("stream card live preview", () => {
     await act(async () => vi.advanceTimersByTime(PREVIEW_DELAY_MS))
     expect(container.querySelector("iframe")).toBeNull()
   })
+
+  it("starts the loaded preview muted through the main process, retrying until it plays", async () => {
+    const activate = vi.fn<(audible: boolean) => Promise<boolean>>()
+    activate.mockResolvedValueOnce(false).mockResolvedValue(true)
+    vi.stubGlobal("stillStream", { system: { activateEmbeddedPlayer: activate } })
+    await act(async () => card("live").focus())
+    await act(async () => vi.advanceTimersByTime(PREVIEW_DELAY_MS))
+    await act(async () => previewOf("live")?.dispatchEvent(new Event("load")))
+    for (let step = 0; step < 50; step += 1) {
+      await act(async () => vi.advanceTimersByTime(200))
+    }
+    expect(activate.mock.calls).toEqual([[false], [false]])
+  })
 })

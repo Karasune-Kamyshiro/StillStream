@@ -135,14 +135,16 @@ the fallback into encrypted storage.
 
 Flatpak is primary for Bazzite, Steam Deck, ChimeraOS, and other immutable deployments.
 The manifest uses Freedesktop 25.08, Electron2 BaseApp, and Zypak with minimal permissions.
-Raw input access enables native gamepads; no home-directory access is granted.
+Raw input access plus the udev database enable native gamepads; no home-directory access is granted.
 AppImage is a fallback where Chromium user namespaces are available; sandbox failures are
 never worked around with `--no-sandbox`.
 
 Flatpak's `--device=input` exposes the sandbox to all host input devices, not only gamepads,
 and fallback X11 has weaker isolation than Wayland. These are accepted HTPC compatibility
-tradeoffs: Wayland remains preferred, no filesystem access is granted, and packages must be
-built from reviewed source. Release assets include SHA-256 checksums, not cryptographic signatures.
+tradeoffs: Wayland remains preferred, and packages must be
+built from reviewed source. The only filesystem access is read-only `/run/udev`, the device
+database Chromium needs to recognise gamepads such as Xbox controllers and Steam Input's
+virtual pad. Release assets include SHA-256 checksums, not cryptographic signatures.
 The application ID is `io.github.karasune.StillStream` across Electron and Flatpak metadata.
 
 ## External constraints

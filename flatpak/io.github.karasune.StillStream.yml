@@ -16,6 +16,9 @@ finish-args:
   - --socket=pulseaudio
   - --device=dri
   - --device=input
+  # Chromium finds gamepads through udev's device database; without it Xbox-style pads (and
+  # Steam Input's virtual pad) stay invisible, as in other Flatpak Chromium browsers.
+  - --filesystem=/run/udev:ro
   - --talk-name=org.freedesktop.ScreenSaver
   - --talk-name=org.freedesktop.secrets
   - --talk-name=org.kde.kwalletd5

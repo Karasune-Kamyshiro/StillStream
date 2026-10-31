@@ -66,6 +66,16 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.3" date="2026-10-31" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.3</url>
+      <description>
+        <p>Controller and preview fixes, for testing.</p>
+        <ul>
+          <li>The Flatpak can read the udev device database, which Chromium needs to see Xbox controllers and Steam Input's virtual controller.</li>
+          <li>Live previews actually play, and start after one second.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.3-test.2" date="2026-10-30" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.2</url>
       <description>

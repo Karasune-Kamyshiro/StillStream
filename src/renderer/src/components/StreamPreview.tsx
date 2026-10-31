@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 
 /** How long a card has to stay focused or hovered before its live preview starts. */
-export const PREVIEW_DELAY_MS = 1500
+export const PREVIEW_DELAY_MS = 1000
+
+const PREVIEW_ACTIVATION_DELAYS_MS = [300, 1200, 2500, 4500] as const
 
 export const previewUrl = (channel: string): string =>
   `https://player.twitch.tv/?${new URLSearchParams({
@@ -54,6 +56,30 @@ export const usePreviewTarget = (): {
  */
 export const StreamPreview = ({ channel }: { readonly channel: string }) => {
   const [loaded, setLoaded] = useState(false)
+
+  // Like the full player, the embed shows its poster instead of playing until main starts the
+  // video inside the Twitch frame. On browse screens the preview is the only Twitch player, so
+  // the same muted activation applies; it is retried while the player is still loading.
+  useEffect(() => {
+    if (!loaded) return
+    let cancelled = false
+    const timers = PREVIEW_ACTIVATION_DELAYS_MS.map((delay) =>
+      setTimeout(() => {
+        if (cancelled) return
+        void window.stillStream.system.activateEmbeddedPlayer(false).then(
+          (started) => {
+            if (started) cancelled = true
+          },
+          () => undefined,
+        )
+      }, delay),
+    )
+    return () => {
+      cancelled = true
+      for (const timer of timers) clearTimeout(timer)
+    }
+  }, [loaded])
+
   return (
     <iframe
       allow="autoplay"
