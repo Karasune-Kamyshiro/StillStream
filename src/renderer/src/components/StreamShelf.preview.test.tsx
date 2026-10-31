@@ -5,7 +5,12 @@ import { createRoot, type Root } from "react-dom/client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { StreamCard } from "../../../shared/contracts"
 import { PREVIEW_STREAMS } from "../demo-data"
-import { PREVIEW_DELAY_MS, PREVIEW_PRELOAD_MS, PreviewSoundContext } from "./StreamPreview"
+import {
+  PREVIEW_DELAY_MS,
+  PREVIEW_PRELOAD_MS,
+  PreviewSoundContext,
+  REVEAL_GRACE_MS,
+} from "./StreamPreview"
 import { StreamShelf } from "./StreamShelf"
 
 const base = PREVIEW_STREAMS[0] as StreamCard
@@ -61,8 +66,6 @@ describe("stream card live preview", () => {
     expect(frame?.hasAttribute("inert")).toBe(true)
     expect(frame?.tabIndex).toBe(-1)
     expect(frame?.dataset["revealed"]).toBe("false")
-    await act(async () => vi.advanceTimersByTime(PREVIEW_DELAY_MS - PREVIEW_PRELOAD_MS))
-    expect(previewOf("live")?.dataset["revealed"]).toBe("true")
   })
 
   it("lays the player out at Twitch's autoplay minimum of 400x300", async () => {
@@ -90,23 +93,47 @@ describe("stream card live preview", () => {
     expect(container.querySelector("iframe")).toBeNull()
   })
 
-  it("starts the loaded preview muted through the main process, retrying until it plays", async () => {
+  const withBridge = (activate: (audible: boolean) => Promise<boolean>) =>
+    vi.stubGlobal("stillStream", { system: { activateEmbeddedPlayer: activate } })
+  const settle = async (ms: number) => {
+    for (let elapsed = 0; elapsed < ms; elapsed += 50) {
+      await act(async () => vi.advanceTimersByTime(50))
+    }
+  }
+  const loadPreview = async () => {
+    await act(async () => card("live").focus())
+    await act(async () => vi.advanceTimersByTime(PREVIEW_PRELOAD_MS))
+    await act(async () => previewOf("live")?.dispatchEvent(new Event("load")))
+  }
+
+  it("starts the player muted behind the thumbnail and shows it once it plays", async () => {
     const activate = vi.fn<(audible: boolean) => Promise<boolean>>()
     activate.mockResolvedValueOnce(false).mockResolvedValue(true)
-    vi.stubGlobal("stillStream", { system: { activateEmbeddedPlayer: activate } })
-    await act(async () => card("live").focus())
-    await act(async () => vi.advanceTimersByTime(PREVIEW_DELAY_MS))
-    await act(async () => previewOf("live")?.dispatchEvent(new Event("load")))
-    for (let step = 0; step < 50; step += 1) {
-      await act(async () => vi.advanceTimersByTime(200))
-    }
-    // Nothing is activated while the player is still hidden under the thumbnail.
+    withBridge(activate)
+    await loadPreview()
+    await settle(PREVIEW_DELAY_MS - PREVIEW_PRELOAD_MS - 50)
+    expect(previewOf("live")?.dataset["revealed"]).toBe("false")
     expect(activate.mock.calls).toEqual([[false], [false]])
+    await settle(50)
+    expect(previewOf("live")?.dataset["revealed"]).toBe("true")
+    await settle(5000)
+    // Already playing and previews are muted: nothing more to start.
+    expect(activate).toHaveBeenCalledTimes(2)
+  })
+
+  it("shows a player that will not start behind the thumbnail after a grace period", async () => {
+    const activate = vi.fn<(audible: boolean) => Promise<boolean>>().mockResolvedValue(false)
+    withBridge(activate)
+    await loadPreview()
+    await settle(PREVIEW_DELAY_MS - PREVIEW_PRELOAD_MS + REVEAL_GRACE_MS - 50)
+    expect(previewOf("live")?.dataset["revealed"]).toBe("false")
+    await settle(50)
+    expect(previewOf("live")?.dataset["revealed"]).toBe("true")
   })
 
   it("starts muted while hidden, then with sound once shown when previews have sound", async () => {
-    const activate = vi.fn<(audible: boolean) => Promise<boolean>>().mockResolvedValue(false)
-    vi.stubGlobal("stillStream", { system: { activateEmbeddedPlayer: activate } })
+    const activate = vi.fn<(audible: boolean) => Promise<boolean>>().mockResolvedValue(true)
+    withBridge(activate)
     await act(async () =>
       root.render(
         <PreviewSoundContext.Provider value={true}>
@@ -119,15 +146,9 @@ describe("stream card live preview", () => {
         </PreviewSoundContext.Provider>,
       ),
     )
-    await act(async () => card("live").focus())
-    await act(async () => vi.advanceTimersByTime(PREVIEW_PRELOAD_MS))
-    await act(async () => previewOf("live")?.dispatchEvent(new Event("load")))
-    await act(async () => vi.advanceTimersByTime(PREVIEW_DELAY_MS - PREVIEW_PRELOAD_MS - 1))
-    expect(activate.mock.calls.every(([audible]) => !audible)).toBe(true)
-    expect(activate).toHaveBeenCalled()
-    activate.mockClear()
-    await act(async () => vi.advanceTimersByTime(1))
-    await act(async () => vi.advanceTimersByTime(0))
-    expect(activate).toHaveBeenCalledWith(true)
+    await loadPreview()
+    expect(activate.mock.calls).toEqual([[false]])
+    await settle(PREVIEW_DELAY_MS)
+    expect(activate.mock.calls).toEqual([[false], [true]])
   })
 })
