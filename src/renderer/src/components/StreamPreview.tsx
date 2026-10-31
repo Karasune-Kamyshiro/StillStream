@@ -8,13 +8,17 @@ import {
   useState,
 } from "react"
 
-/** How long a card has to stay focused or hovered before its live preview shows. */
-export const PREVIEW_DELAY_MS = 1000
 /**
- * The player starts loading this early, hidden under the thumbnail, so the video is ready when
- * the preview shows. Shorter than a d-pad repeat would load a player for every card passed.
+ * How long a card has to stay focused or hovered before its live player starts loading, hidden
+ * under the thumbnail. Long enough that tapping or holding the d-pad through a shelf loads no
+ * player for the cards passed on the way.
  */
-export const PREVIEW_PRELOAD_MS = 250
+export const PREVIEW_PRELOAD_MS = 400
+/**
+ * The earliest the preview may cover the thumbnail. It also waits for the video to play, which
+ * takes longer than this, so in practice the preview appears as soon as Twitch is ready.
+ */
+export const PREVIEW_DELAY_MS = PREVIEW_PRELOAD_MS
 
 const PREVIEW_ACTIVATION_DELAYS_MS = [0, 800, 2000, 3500, 5500, 8000] as const
 // Behind the thumbnail the player is started again and again until it plays; each try takes

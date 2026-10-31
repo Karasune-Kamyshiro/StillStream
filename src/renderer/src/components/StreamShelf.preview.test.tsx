@@ -111,10 +111,11 @@ describe("stream card live preview", () => {
     activate.mockResolvedValueOnce(false).mockResolvedValue(true)
     withBridge(activate)
     await loadPreview()
-    await settle(PREVIEW_DELAY_MS - PREVIEW_PRELOAD_MS - 50)
+    // The first try reports no playback yet: the thumbnail stays in front.
     expect(previewOf("live")?.dataset["revealed"]).toBe("false")
+    // The next try, a moment later, finds the video playing and the preview shows.
+    await settle(300)
     expect(activate.mock.calls).toEqual([[false], [false]])
-    await settle(50)
     expect(previewOf("live")?.dataset["revealed"]).toBe("true")
     await settle(5000)
     // Already playing and previews are muted: nothing more to start.
