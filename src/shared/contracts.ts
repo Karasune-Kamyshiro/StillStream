@@ -163,6 +163,11 @@ export type UpdateSnapshot = z.infer<typeof UpdateSnapshotSchema>
 
 export const UpdateInstallResultSchema = z.strictObject({
   error: z.string().optional(),
+  /**
+   * Flatpak asks once before an app may update itself. Where nothing can show that question
+   * (Steam Gaming Mode), or after it was denied, the approval has to be given another way.
+   */
+  needsApproval: z.boolean().optional(),
   /** done: installed, active after a restart; empty: nothing newer to install. */
   status: z.enum(["done", "empty", "failed"]),
 })

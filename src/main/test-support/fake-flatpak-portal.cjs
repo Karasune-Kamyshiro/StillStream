@@ -41,6 +41,12 @@ bus.exportInterface(
   {
     Close: () => console.log("closed"),
     Update: () => {
+      if (mode === "unapproved") {
+        // What flatpak-portal answers when no Access portal can ask the user (Gaming Mode).
+        const error = new Error("No portal support found")
+        error.dbusName = "org.freedesktop.DBus.Error.NotSupported"
+        throw error
+      }
       if (mode === "refuse") {
         const error = new Error("Update requires new permissions")
         error.dbusName = "org.freedesktop.portal.Error.NotAllowed"

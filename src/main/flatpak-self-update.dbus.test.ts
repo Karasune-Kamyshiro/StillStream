@@ -122,6 +122,16 @@ describe.skipIf(!hasDbusDaemon)("Flatpak self-update over D-Bus", () => {
     stopPortals()
   })
 
+  it("recognises the one-time approval Flatpak could not ask for", async () => {
+    await startPortal("unapproved")
+    expect(await installFlatpakUpdate(connectSessionBus, () => undefined)).toEqual({
+      error: "No portal support found",
+      needsApproval: true,
+      status: "failed",
+    })
+    stopPortals()
+  })
+
   it("fails cleanly when no portal answers", async () => {
     const result = await installFlatpakUpdate(connectSessionBus, () => undefined)
     expect(result.status).toBe("failed")

@@ -14,6 +14,11 @@ type Stage =
   | { readonly kind: "installed" }
   | { readonly kind: "current" }
   | { readonly kind: "failed"; readonly error: string }
+  | { readonly kind: "approval" }
+
+/** Gives StillStream Flatpak's one-time approval to update itself, as the portal stores it. */
+export const APPROVE_COMMAND =
+  "flatpak permission-set flatpak updates io.github.karasune.StillStream yes"
 
 type Action = { readonly id: string; readonly label: string; readonly onClick: () => void }
 
@@ -64,7 +69,9 @@ export const UpdateDialog = ({
             ? { kind: "installed" }
             : result.status === "empty"
               ? { kind: "current" }
-              : { error: result.error ?? "The update failed.", kind: "failed" },
+              : result.needsApproval === true
+                ? { kind: "approval" }
+                : { error: result.error ?? "The update failed.", kind: "failed" },
         )
       },
       () => {
@@ -148,7 +155,9 @@ export const UpdateDialog = ({
             : `StillStream ${version} is installed. Restart StillStream to use it.`
           : stage.kind === "current"
             ? "Flatpak found nothing newer to install yet; the repository may still be updating. Try again in a few minutes."
-            : `The update could not be installed here: ${stage.error} You can update through Discover or with flatpak update instead.`
+            : stage.kind === "approval"
+              ? "Flatpak wants your OK once before StillStream may update itself, and it cannot ask here. Allow it once, in Desktop Mode (Konsole) or over SSH:"
+              : `The update could not be installed here: ${stage.error} You can update through Discover or with flatpak update instead.`
 
   return createPortal(
     <div className="update-dialog__backdrop">
@@ -165,6 +174,15 @@ export const UpdateDialog = ({
           {stage.kind === "installed" ? "Update installed" : `StillStream ${version}`}
         </h2>
         <p aria-live="polite">{message}</p>
+        {stage.kind === "approval" ? (
+          <>
+            <code className="settings-updates__command">{APPROVE_COMMAND}</code>
+            <p>
+              Then choose Update now again. Until then, Discover or <code>flatpak update</code>{" "}
+              still update StillStream.
+            </p>
+          </>
+        ) : null}
         {installing ? (
           <progress aria-label="Update progress" max={100} value={stage.percent}>
             {stage.percent}%

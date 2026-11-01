@@ -1,6 +1,6 @@
 {
   "name": "stillstream",
-  "version": "0.2.3-test.18",
+  "version": "0.2.3-test.19",
   "description": "A controller-first Twitch client for Linux HTPCs",
   "author": {
     "name": "Karasune Kamyshiro",

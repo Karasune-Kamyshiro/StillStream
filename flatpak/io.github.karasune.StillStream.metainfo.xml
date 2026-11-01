@@ -66,6 +66,12 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.19" date="2026-11-01" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.19</url>
+      <description>
+        <p>When Flatpak's one-time approval for self-updates cannot be asked for (Steam Gaming Mode), the update dialog shows the command that gives it.</p>
+      </description>
+    </release>
     <release version="0.2.3-test.18" date="2026-11-01" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.18</url>
       <description>

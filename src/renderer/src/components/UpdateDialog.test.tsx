@@ -110,6 +110,18 @@ describe("update dialog", () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
+  it("shows the one-time approval command when Flatpak could not ask", async () => {
+    await render({ branch: "beta", kind: "flatpak" }, true)
+    await act(async () => button("update-now")?.click())
+    await act(async () =>
+      finishInstall({ error: "No portal support found", needsApproval: true, status: "failed" }),
+    )
+    expect(text()).toContain(
+      "flatpak permission-set flatpak updates io.github.karasune.StillStream yes",
+    )
+    expect(document.activeElement).toBe(button("update-close"))
+  })
+
   it("sends an AppImage to the release page, and Later or Back just closes", async () => {
     await render({ kind: "appimage" })
     expect(button("update-now")).toBeNull()

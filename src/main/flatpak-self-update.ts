@@ -82,6 +82,21 @@ const dictionary = (entries: unknown): Record<string, unknown> => {
   return result
 }
 
+/**
+ * flatpak-portal asks the user once ("Update StillStream?") through the desktop's Access portal.
+ * Without one (Steam Gaming Mode) it fails with NotSupported "No portal support found"; a denied
+ * question fails with AccessDenied "Application update not allowed".
+ */
+const isApprovalError = (error: unknown, reason: string): boolean => {
+  const name =
+    typeof error === "object" && error !== null && "name" in error ? String(error.name) : ""
+  return (
+    name === "org.freedesktop.DBus.Error.NotSupported" ||
+    name === "org.freedesktop.DBus.Error.AccessDenied" ||
+    /no portal support|update not allowed/i.test(reason)
+  )
+}
+
 type Progress = { readonly error?: string; readonly percent: number; readonly status: number }
 
 const parseProgress = (body: unknown): Progress => {
@@ -149,7 +164,10 @@ export const installFlatpakUpdate = async (
     portal.signals.removeAllListeners(signal)
     return result
   } catch (error) {
-    return { error: describeError(error), status: "failed" }
+    const reason = describeError(error)
+    return isApprovalError(error, reason)
+      ? { error: reason, needsApproval: true, status: "failed" }
+      : { error: reason, status: "failed" }
   } finally {
     try {
       bus?.connection.end()
