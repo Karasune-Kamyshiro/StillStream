@@ -14,6 +14,7 @@ import {
   PreferencesUpdateSchema,
   SearchInputSchema,
   StartScreenSchema,
+  type UpdateSnapshot,
   VideosInputSchema,
 } from "../shared/contracts"
 import type { ChatInput } from "./chat-input"
@@ -22,6 +23,7 @@ import type { PlaybackProgressStore } from "./playback-progress-store"
 import type { PreferencesStore } from "./preferences-store"
 import type { TwitchService } from "./twitch-service"
 import type { TwitchWebSession } from "./twitch-web-session"
+import { releasePageUrl } from "./update-check"
 import {
   activateEmbeddedPlayer,
   restoreShellFullscreen,
@@ -39,6 +41,10 @@ type IpcOptions = {
   readonly rendererOrigin: string
   readonly runningInSteamGameMode: boolean
   readonly twitch: TwitchService
+  /** Absent in tests that do not exercise updates; the check then reports "unknown". */
+  readonly updates?: {
+    readonly check: (includePrereleases: boolean) => Promise<UpdateSnapshot>
+  }
 }
 
 export class InvalidIpcSenderError extends Error {
@@ -96,6 +102,23 @@ export const registerIpc = (options: IpcOptions): void => {
   ipcMain.handle(CHANNELS.authOpenActivation, async (event, input: unknown) => {
     authorize(event)
     await shell.openExternal(options.twitch.activationUrl(z.uuid().parse(input)))
+  })
+  ipcMain.handle(CHANNELS.updatesCheck, async (event, input: unknown) => {
+    authorize(event)
+    const includePrereleases = z.boolean().parse(input)
+    if (options.updates === undefined) {
+      return {
+        currentVersion: "",
+        includePrereleases,
+        packaging: { kind: "other" },
+        status: "unknown",
+      } satisfies UpdateSnapshot
+    }
+    return options.updates.check(includePrereleases)
+  })
+  ipcMain.handle(CHANNELS.updatesOpenReleasePage, async (event, input: unknown) => {
+    authorize(event)
+    await shell.openExternal(releasePageUrl(input))
   })
   ipcMain.handle(CHANNELS.authSetup, async (event, ...input: unknown[]) => {
     authorize(event)

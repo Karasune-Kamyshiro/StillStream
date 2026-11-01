@@ -16,8 +16,16 @@ are not currently provided.
 
 ## Get started
 
-Download an AppImage or Flatpak from [GitHub Releases](https://github.com/Karasune-Kamyshiro/StillStream/releases),
-then follow the [installation and first-run guide](docs/users/getting-started.md).
+Install the Flatpak from the StillStream repository so it updates like any other app:
+
+```sh
+flatpak install --user https://karasune-kamyshiro.github.io/StillStream/io.github.karasune.StillStream.flatpakref
+```
+
+Pre-releases come through the beta branch (`…/io.github.karasune.StillStream-beta.flatpakref`).
+An AppImage is on [GitHub Releases](https://github.com/Karasune-Kamyshiro/StillStream/releases);
+the app tells you in Settings when a new version is out. Then follow the
+[installation and first-run guide](docs/users/getting-started.md).
 If there is no published release yet, use the [source setup](docs/contributing/development.md).
 
 - Watch quick-pick channels or search an exact channel name without signing in.

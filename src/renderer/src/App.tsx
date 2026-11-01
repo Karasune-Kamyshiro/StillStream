@@ -20,6 +20,7 @@ import { homeFocus } from "./home-focus"
 import { screenEntryFocusId } from "./screen"
 import { useAppController } from "./useAppController"
 import { useFavourites } from "./useFavourites"
+import { useUpdateCheck } from "./useUpdateCheck"
 
 const ROUTE_TITLES: Readonly<Record<RouteName, string>> = {
   following: "Following",
@@ -32,6 +33,7 @@ export const App = () => {
   useControllerNavigation()
   const controller = useAppController()
   const favourites = useFavourites()
+  const updateCheck = useUpdateCheck(controller.preferences?.prereleaseUpdates ?? false)
   const accountGeneration = useRef(0)
   const fullscreenCarry = useRef<FullscreenCarry>({ immersive: false, restoreWindowed: false })
   const accountContext = useRef({
@@ -193,6 +195,7 @@ export const App = () => {
           {screenTitle}
         </p>
         <Navigation
+          updateAvailable={updateCheck.snapshot?.status === "available"}
           active={route ?? "home"}
           entryFocusId={
             home?.entryFocusId ??
@@ -461,6 +464,12 @@ export const App = () => {
                 controller.updatePreferences({ previewSound })
               }
               previewSound={controller.preferences.previewSound}
+              updates={{
+                check: updateCheck,
+                includePrereleases: controller.preferences.prereleaseUpdates,
+                onIncludePrereleasesChange: (prereleaseUpdates) =>
+                  controller.updatePreferences({ prereleaseUpdates }).then(() => undefined),
+              }}
               settings={controller.settings}
               startScreen={controller.startScreen}
             />

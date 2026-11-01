@@ -1024,3 +1024,28 @@
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
+
+.settings-updates p {
+  margin: 0;
+}
+
+.settings-updates__status {
+  font-weight: 600;
+}
+
+/* A command to copy: on its own line, wrapping instead of widening the card. */
+.settings-updates__command {
+  display: block;
+  margin-block-start: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-badge);
+  background: var(--color-raised);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.settings-updates__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

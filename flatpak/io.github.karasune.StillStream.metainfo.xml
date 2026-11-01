@@ -66,6 +66,16 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.13" date="2026-11-01" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.13</url>
+      <description>
+        <p>Updates, for testing.</p>
+        <ul>
+          <li>Releases are published to a signed Flatpak repository with a stable and a beta (pre-release) branch, so installs update through Discover or flatpak update.</li>
+          <li>Settings has an Updates card: it says when a new version is out, how to get it for Flatpak or AppImage, and whether to include pre-releases. A dot on Settings marks a new version.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.3-test.12" date="2026-10-31" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.12</url>
       <description>

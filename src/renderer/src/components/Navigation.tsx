@@ -6,6 +6,8 @@ type NavigationProps = {
   readonly active: RouteName
   readonly entryFocusId?: string | undefined
   readonly onNavigate: (route: RouteName) => void
+  /** A newer StillStream release is out: Settings carries a dot. */
+  readonly updateAvailable?: boolean
 }
 
 const items = [
@@ -31,7 +33,12 @@ const routeEntryTarget: Readonly<Record<RouteName, string>> = {
   settings: "settings-sign-in",
 }
 
-export const Navigation = ({ active, entryFocusId, onNavigate }: NavigationProps) => (
+export const Navigation = ({
+  active,
+  entryFocusId,
+  onNavigate,
+  updateAvailable = false,
+}: NavigationProps) => (
   <nav className="navigation" aria-label="Primary">
     <div className="navigation__brand" title="StillStream">
       <img alt="" src="./logo.svg" />
@@ -75,6 +82,11 @@ export const Navigation = ({ active, entryFocusId, onNavigate }: NavigationProps
     >
       <GearIcon aria-hidden="true" />
       <span>Settings</span>
+      {updateAvailable ? (
+        <span className="navigation__badge">
+          <span className="visually-hidden">, update available</span>
+        </span>
+      ) : null}
     </button>
   </nav>
 )

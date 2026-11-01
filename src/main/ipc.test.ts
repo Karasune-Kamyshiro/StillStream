@@ -186,7 +186,9 @@ describe("chat input capability", () => {
       "preferences",
       "settings",
       "system",
+      "updates",
     ])
+    expect([...Object.keys(api.updates ?? {})].sort()).toEqual(["check", "openReleasePage"])
     expect([...Object.keys(api.chatInput)].sort()).toEqual(["begin", "end", "onEscape", "press"])
     expect([...Object.keys(api.system)].sort()).toEqual([
       "activateEmbeddedPlayer",

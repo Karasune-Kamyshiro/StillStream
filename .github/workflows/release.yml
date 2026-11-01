@@ -67,3 +67,110 @@ jobs:
         run: |
           sha256sum --check SHA256SUMS
           gh release upload "$RELEASE_TAG" -- *.AppImage *.flatpak SHA256SUMS
+
+  repository:
+    name: Build Flatpak repository
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions@sha256:9c6819dd59d5170dc5bdd9ceeb61dcb69e9429ae9f9c70b5554b34e905aaa54c
+      options: --privileged
+    outputs:
+      published: ${{ steps.site.outputs.published }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.20.0'
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: linux-x86_64
+          path: release-assets
+      - name: Pick the bundles for each branch
+        id: bundles
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          set -euo pipefail
+          beta="$(ls release-assets/*.flatpak)"
+          echo "beta=$PWD/$beta" >> "$GITHUB_OUTPUT"
+          if [ "$PRERELEASE" = "false" ]; then
+            echo "stable=$PWD/$beta" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # A pre-release only moves beta; stable stays on the latest full release.
+          api="https://api.github.com/repos/$GH_REPO/releases?per_page=50"
+          url="$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "$api" | node -e '
+            let input = ""
+            process.stdin.on("data", (chunk) => (input += chunk))
+            process.stdin.on("end", () => {
+              for (const release of JSON.parse(input)) {
+                if (release.draft || release.prerelease) continue
+                const asset = release.assets.find((candidate) => candidate.name.endsWith(".flatpak"))
+                if (asset !== undefined) return console.log(asset.url)
+              }
+            })
+          ')"
+          if [ -z "$url" ]; then
+            echo "::notice::No full release with a Flatpak yet; only the beta branch is published."
+            exit 0
+          fi
+          mkdir -p stable-bundle
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" \
+            -o stable-bundle/stable.flatpak "$url"
+          echo "stable=$PWD/stable-bundle/stable.flatpak" >> "$GITHUB_OUTPUT"
+      - name: Build the repository
+        id: site
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
+          BETA_BUNDLE: ${{ steps.bundles.outputs.beta }}
+          STABLE_BUNDLE: ${{ steps.bundles.outputs.stable }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GPG_PRIVATE_KEY" ]; then
+            echo "::warning::FLATPAK_GPG_PRIVATE_KEY is not set; the Flatpak repository was not updated. See docs/maintainers/releases.md."
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          owner="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          SITE_URL="https://$owner.github.io/$REPOSITORY_NAME" SITE_DIR="$PWD/site" \
+            bash scripts/publish-flatpak-repo.sh
+          echo "published=true" >> "$GITHUB_OUTPUT"
+      - if: steps.site.outputs.published == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: flatpak-site
+          path: site/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 3
+
+  pages:
+    name: Publish Flatpak repository
+    if: needs.repository.outputs.published == 'true'
+    needs: repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: flatpak-site
+          path: site
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site/
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

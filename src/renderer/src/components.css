@@ -369,3 +369,19 @@
 .stream-preview[data-revealed="true"] {
   z-index: 1;
 }
+
+/* Update available: a dot on the Settings tab, beside its icon. */
+.navigation__settings {
+  position: relative;
+}
+
+.navigation__badge {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-3);
+  inline-size: 0.6rem;
+  block-size: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-accent-strong);
+  box-shadow: 0 0 0 2px var(--color-rail);
+}

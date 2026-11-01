@@ -27,6 +27,7 @@ import {
   StartScreenSchema,
   type StillStreamApi,
   StreamCardSchema,
+  UpdateSnapshotSchema,
   VideoCardSchema,
 } from "../shared/contracts"
 
@@ -156,6 +157,14 @@ const api = {
       ipcRenderer
         .invoke(CHANNELS.playerSessionSnapshot)
         .then((value) => PlayerSessionSnapshotSchema.parse(value)),
+  },
+  updates: {
+    check: (includePrereleases) =>
+      ipcRenderer
+        .invoke(CHANNELS.updatesCheck, includePrereleases)
+        .then((value) => UpdateSnapshotSchema.parse(value)),
+    openReleasePage: (url) =>
+      ipcRenderer.invoke(CHANNELS.updatesOpenReleasePage, url).then(() => undefined),
   },
   settings: {
     saveClientId: (clientId) =>

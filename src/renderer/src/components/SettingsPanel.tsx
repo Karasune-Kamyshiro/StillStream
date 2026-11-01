@@ -1,6 +1,5 @@
 import {
   CheckCircleIcon,
-  CheckIcon,
   CopyIcon,
   DeviceMobileIcon,
   MonitorPlayIcon,
@@ -8,7 +7,7 @@ import {
   SignOutIcon,
 } from "@phosphor-icons/react"
 import { QRCodeSVG } from "qrcode.react"
-import { type ComponentProps, useContext, useEffect, useRef, useState } from "react"
+import { type ComponentProps, useEffect, useRef, useState } from "react"
 import type {
   AuthSnapshot,
   ChatOverlayOpacity,
@@ -27,8 +26,11 @@ import {
   nextOption,
 } from "../chat-appearance"
 import { registerBackDismissal } from "../focus-navigation"
+import type { UpdateCheck } from "../useUpdateCheck"
 import { ControllerStatus } from "./ControllerStatus"
+import { SettingsCycle, SettingsSwitch } from "./settings-controls"
 import { SettingsNavContext } from "./settings-nav-context"
+import { UpdatesCard } from "./UpdatesCard"
 
 type SettingsPanelProps = {
   readonly auth: AuthSnapshot
@@ -53,6 +55,12 @@ type SettingsPanelProps = {
   readonly previewSound?: boolean
   /** Saves the preview sound preference; the switch is hidden when absent. */
   readonly onPreviewSoundChange?: (previewSound: boolean) => Promise<void>
+  /** The update check and its pre-release preference; the Updates card is hidden when absent. */
+  readonly updates?: {
+    readonly check: UpdateCheck
+    readonly includePrereleases: boolean
+    readonly onIncludePrereleasesChange: (include: boolean) => Promise<void>
+  }
 }
 
 type SubmitHandler = NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -86,96 +94,6 @@ const errorMessage = (error: unknown): string =>
  * Following), not to the Settings tab itself, so finishing in Settings is one Left and OK away.
  */
 
-/**
- * An on/off option. A button rather than a checkbox: TV remotes send Enter for OK, which never
- * toggles a checkbox (only Space does). Buttons activate on Enter, Space and a controller A.
- */
-const SettingsSwitch = ({
-  checked,
-  focusDown,
-  focusId,
-  focusUp,
-  label,
-  onChange,
-}: {
-  readonly checked: boolean
-  readonly focusDown?: string | undefined
-  readonly focusId: string
-  readonly focusUp: string
-  readonly label: string
-  readonly onChange: (checked: boolean) => Promise<void>
-}) => {
-  const navFocusId = useContext(SettingsNavContext)
-  const [busy, setBusy] = useState(false)
-  return (
-    <button
-      aria-busy={busy}
-      aria-checked={checked}
-      aria-disabled={busy}
-      className="settings-toggle"
-      {...(focusDown === undefined ? {} : { "data-focus-down": focusDown })}
-      data-focus-id={focusId}
-      data-focus-left={navFocusId}
-      data-focus-up={focusUp}
-      data-focusable="true"
-      onClick={() => {
-        // aria-disabled keeps controller focus while saving; ignore presses meanwhile.
-        if (busy) return
-        setBusy(true)
-        void onChange(!checked).finally(() => setBusy(false))
-      }}
-      role="switch"
-      type="button"
-    >
-      <span aria-hidden="true" className="settings-toggle__box">
-        {checked ? <CheckIcon weight="bold" /> : null}
-      </span>
-      {label}
-    </button>
-  )
-}
-
-/** A value that steps to its next choice on every press (OK, Space, A), wrapping around. */
-const SettingsCycle = ({
-  focusDown,
-  focusId,
-  focusUp,
-  label,
-  onNext,
-  value,
-}: {
-  readonly focusDown?: string | undefined
-  readonly focusId: string
-  readonly focusUp: string
-  readonly label: string
-  readonly onNext: () => Promise<void>
-  readonly value: string
-}) => {
-  const navFocusId = useContext(SettingsNavContext)
-  const [busy, setBusy] = useState(false)
-  return (
-    <button
-      aria-busy={busy}
-      aria-disabled={busy}
-      className="settings-cycle"
-      {...(focusDown === undefined ? {} : { "data-focus-down": focusDown })}
-      data-focus-id={focusId}
-      data-focus-left={navFocusId}
-      data-focus-up={focusUp}
-      data-focusable="true"
-      onClick={() => {
-        if (busy) return
-        setBusy(true)
-        void onNext().finally(() => setBusy(false))
-      }}
-      type="button"
-    >
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </button>
-  )
-}
-
 export const SettingsPanel = ({
   navFocusId = "nav-settings",
   auth,
@@ -193,6 +111,7 @@ export const SettingsPanel = ({
   onPauseWhenInactiveChange,
   previewSound = false,
   onPreviewSoundChange,
+  updates,
 }: SettingsPanelProps) => {
   // The last option of the Start screen card, which the Chat card continues below.
   // The Player behaviour options in order; the Chat card continues below the last one.
@@ -708,6 +627,28 @@ export const SettingsPanel = ({
               })()}
             </div>
           </section>
+        )}
+        {updates === undefined ? null : (
+          <UpdatesCard
+            checking={updates.check.checking}
+            focusUp={
+              onChatPreferencesChange === undefined
+                ? onStartScreenChange === undefined
+                  ? "settings-save"
+                  : startCardLastId
+                : "settings-chat-text"
+            }
+            includePrereleases={updates.includePrereleases}
+            onCheck={updates.check.checkNow}
+            onIncludePrereleasesChange={(include) => {
+              setError("")
+              return updates
+                .onIncludePrereleasesChange(include)
+                .then(updates.check.checkNow)
+                .catch(() => setError("The update preference could not be saved"))
+            }}
+            snapshot={updates.check.snapshot}
+          />
         )}
         <ControllerStatus />
         {error !== "" ? (

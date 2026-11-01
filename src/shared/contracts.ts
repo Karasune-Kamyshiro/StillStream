@@ -118,6 +118,8 @@ export const PreferencesSnapshotSchema = z.strictObject({
   pauseWhenInactive: z.boolean().default(false),
   /** Live previews on stream cards play with sound instead of muted. */
   previewSound: z.boolean().default(false),
+  /** Announce pre-releases as updates, not only full releases. */
+  prereleaseUpdates: z.boolean().default(false),
 })
 /** Every preference at its default, as for a first launch. */
 export const defaultPreferences = (): PreferencesSnapshot => PreferencesSnapshotSchema.parse({})
@@ -134,9 +136,30 @@ export const PreferencesUpdateSchema = z.strictObject({
   startScreen: StartScreenSchema.optional(),
   pauseWhenInactive: z.boolean().optional(),
   previewSound: z.boolean().optional(),
+  prereleaseUpdates: z.boolean().optional(),
 })
 export type PreferencesUpdate = z.infer<typeof PreferencesUpdateSchema>
 export type PreferencesSnapshot = z.infer<typeof PreferencesSnapshotSchema>
+
+export const UpdatePackagingSchema = z.discriminatedUnion("kind", [
+  /** branch: "stable" or "beta" from the StillStream repository, "master" for a downloaded file. */
+  z.strictObject({ branch: z.string(), kind: z.literal("flatpak") }),
+  z.strictObject({ kind: z.literal("appimage") }),
+  z.strictObject({ kind: z.literal("other") }),
+])
+export type UpdatePackaging = z.infer<typeof UpdatePackagingSchema>
+
+export const UpdateSnapshotSchema = z.strictObject({
+  currentVersion: z.string(),
+  includePrereleases: z.boolean(),
+  latest: z
+    .strictObject({ prerelease: z.boolean(), url: z.string(), version: z.string() })
+    .optional(),
+  packaging: UpdatePackagingSchema,
+  /** "unknown" when GitHub could not be asked (offline, rate limit). */
+  status: z.enum(["available", "current", "unknown"]),
+})
+export type UpdateSnapshot = z.infer<typeof UpdateSnapshotSchema>
 
 export const PlayerSessionSnapshotSchema = z.strictObject({
   login: FavouriteLoginSchema.optional(),
@@ -323,6 +346,13 @@ export interface StillStreamApi {
   readonly settings: {
     readonly saveClientId: (clientId: string) => Promise<SettingsSnapshot>
     readonly snapshot: () => Promise<SettingsSnapshot>
+  }
+  /** Always provided by the preload; optional so embedders and test doubles can omit it. */
+  readonly updates?: {
+    /** Asks GitHub for a newer release, pre-releases included when asked. */
+    readonly check: (includePrereleases: boolean) => Promise<UpdateSnapshot>
+    /** Opens a StillStream release page in the browser. */
+    readonly openReleasePage: (url: string) => Promise<void>
   }
   readonly system: {
     /** Starts the stream being watched, or with "preview" the live preview on screen. */

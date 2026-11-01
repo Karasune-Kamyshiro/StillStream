@@ -1,6 +1,6 @@
 import { X509Certificate } from "node:crypto"
 import { join } from "node:path"
-import { app, BrowserWindow, dialog, powerSaveBlocker, safeStorage, session } from "electron"
+import { app, BrowserWindow, dialog, net, powerSaveBlocker, safeStorage, session } from "electron"
 import { CHANNELS } from "../shared/channels"
 import { createChatInput } from "./chat-input"
 import { FavouritesStore } from "./favourites-store"
@@ -16,6 +16,7 @@ import { TokenVault } from "./token-vault"
 import { shouldEmbedLogin } from "./twitch-login-surface"
 import { TwitchService } from "./twitch-service"
 import { createTwitchWebSession, plainChromiumUserAgent } from "./twitch-web-session"
+import { checkForUpdates, readPackaging } from "./update-check"
 
 let staticServer: StaticHttpsServer | undefined
 let primaryWindow: BrowserWindow | undefined
@@ -141,6 +142,15 @@ const createWindow = async (): Promise<void> => {
     rendererOrigin,
     runningInSteamGameMode,
     twitch: new TwitchService(new SettingsStore(app.getPath("userData")), tokenVault),
+    updates: {
+      check: async (includePrereleases) =>
+        checkForUpdates({
+          currentVersion: app.getVersion(),
+          fetch: (url, init) => net.fetch(url, init),
+          includePrereleases,
+          packaging: await readPackaging(),
+        }),
+    },
   })
 
   session.defaultSession.setPermissionCheckHandler(

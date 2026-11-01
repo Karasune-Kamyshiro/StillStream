@@ -52,6 +52,41 @@ The GitHub-generated source archives remain available alongside these binaries. 
 Flathub submission, automatic version bump, or release creation occurs in the build scripts.
 The release becomes visible before its assets finish building; wait for the workflow before announcing it.
 
+## Flatpak repository (updates)
+
+After the assets are uploaded, the workflow rebuilds a signed Flatpak repository from the
+release bundles and publishes it with GitHub Pages at
+`https://karasune-kamyshiro.github.io/StillStream/`:
+
+- branch `stable`: the latest full release;
+- branch `beta`: the newest release, pre-releases included.
+
+Installed copies then update through Discover, GNOME Software or `flatpak update`, and the
+app's Settings → Updates card says when a new version is out (with a dot on Settings). The
+repository is rebuilt from scratch each time (one commit per branch), so it never grows; an
+unchanged branch keeps its exact commit, so installs see no phantom update.
+`scripts/publish-flatpak-repo.sh` does the work and runs locally with the same environment.
+
+One-time setup:
+
+1. Create a signing key without a passphrase (keep a backup; losing it means every install has
+   to re-add the repository):
+
+   ```sh
+   gpg --batch --passphrase '' --quick-gen-key "StillStream Flatpak <you@example.com>" rsa4096 sign never
+   gpg --armor --export-secret-keys "StillStream Flatpak" > stillstream-flatpak.asc
+   ```
+
+2. Add the contents of `stillstream-flatpak.asc` as the repository secret
+   `FLATPAK_GPG_PRIVATE_KEY` (Settings → Secrets and variables → Actions), then delete the file
+   or move it somewhere safe.
+3. Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+4. Settings → Environments → `github-pages` → Deployment branches and tags: add a tag rule
+   `v*`, since releases deploy from their tag.
+
+Without the secret, releases still build and upload; the workflow only warns and skips the
+repository. The public key is embedded in the published `.flatpakrepo` and `.flatpakref` files.
+
 ## Verify and recover
 
 Download assets from the release and run `sha256sum --check SHA256SUMS`. Launch the AppImage

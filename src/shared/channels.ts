@@ -36,4 +36,6 @@ export const CHANNELS = {
   systemSetPlayerLowLatency: "system:set-player-low-latency",
   systemSetFullscreen: "system:set-fullscreen",
   systemToggleFullscreen: "system:toggle-fullscreen",
+  updatesCheck: "updates:check",
+  updatesOpenReleasePage: "updates:open-release-page",
 } as const

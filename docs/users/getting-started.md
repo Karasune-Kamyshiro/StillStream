@@ -23,16 +23,30 @@ The examples below use `0.2.1`; substitute the version you downloaded.
 
 ### Flatpak
 
-Requires Flatpak 1.16 or newer for gamepad device permissions. In Desktop Mode:
+Requires Flatpak 1.16 or newer for gamepad device permissions. In Desktop Mode, install from the
+StillStream repository; it then updates like any other app (Discover, GNOME Software or
+`flatpak update`):
 
 ```bash
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user ./StillStream-0.2.1-x86_64.flatpak
+flatpak install --user https://karasune-kamyshiro.github.io/StillStream/io.github.karasune.StillStream.flatpakref
 flatpak run io.github.karasune.StillStream
 ```
 
-The bundle references Flathub for runtime dependencies; this does not make it a Flathub release.
-Install a newer bundle the same way to update. There is no automatic GitHub-release updater.
+For pre-releases use `io.github.karasune.StillStream-beta.flatpakref` instead (branch `beta`).
+Settings → Updates shows which branch you are on and when a new version is out.
+
+A `.flatpak` file from the Releases page also installs (`flatpak install --user ./StillStream-0.2.1-x86_64.flatpak`),
+but never updates itself. To switch such a copy to the repository, remove it first; settings,
+favourites and sign-in are kept:
+
+```bash
+flatpak uninstall io.github.karasune.StillStream
+flatpak install --user https://karasune-kamyshiro.github.io/StillStream/io.github.karasune.StillStream.flatpakref
+```
+
+The bundle and repository reference Flathub for runtime dependencies; this does not make it a
+Flathub release.
 
 Early local builds used a different application ID. They are separate installations and profiles;
 the public build does not migrate their settings or tokens. Sign in again rather than copying tokens.
@@ -49,6 +63,9 @@ If FUSE is unavailable:
 ```bash
 APPIMAGE_EXTRACT_AND_RUN=1 ./StillStream-0.2.1-x86_64.AppImage
 ```
+
+The AppImage does not update itself: Settings → Updates says when a new version is out and opens
+its release page. Replace the file with the new one; settings and sign-in are kept.
 
 Linux must permit Chromium's sandbox. Do not work around startup failures using `--no-sandbox`;
 prefer Flatpak if your distribution blocks unprivileged user namespaces.
