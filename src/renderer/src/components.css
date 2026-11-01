@@ -44,7 +44,8 @@
   min-block-size: 4rem;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-3) var(--space-1);
+  /* Inline padding keeps the label clear of the active-tab bar (0.25rem at the edge). */
+  padding: var(--space-3);
   border-color: transparent;
   color: var(--color-text-muted);
   background: transparent;

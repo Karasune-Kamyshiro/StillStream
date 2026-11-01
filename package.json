@@ -1,6 +1,6 @@
 {
   "name": "stillstream",
-  "version": "0.2.3-test.15",
+  "version": "0.2.3-test.16",
   "description": "A controller-first Twitch client for Linux HTPCs",
   "author": {
     "name": "Eliott Bouhana",
