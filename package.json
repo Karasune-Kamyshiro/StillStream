@@ -3,8 +3,8 @@
   "version": "0.2.3-test.18",
   "description": "A controller-first Twitch client for Linux HTPCs",
   "author": {
-    "name": "Eliott Bouhana",
-    "url": "https://github.com/eliottness"
+    "name": "Karasune Kamyshiro",
+    "url": "https://github.com/Karasune-Kamyshiro"
   },
   "license": "MIT",
   "private": true,
