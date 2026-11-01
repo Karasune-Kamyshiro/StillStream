@@ -39,6 +39,7 @@ const setup = () => {
     }),
   }))
   const app = Object.assign(new EventEmitter(), {
+    commandLine: { appendSwitch: vi.fn() },
     exit: vi.fn(() => exited.resolve()),
     getAppPath: vi.fn(() => "/application"),
     getPath: vi.fn(() => "/profile"),

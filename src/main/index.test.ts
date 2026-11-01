@@ -34,6 +34,7 @@ const setup = (ownsProfile = true) => {
       calls.push("exit")
       exited.resolve()
     }),
+    commandLine: { appendSwitch: vi.fn() },
     getAppPath: vi.fn(() => "/application"),
     getPath: vi.fn(() => "/profile"),
     isPackaged: false,

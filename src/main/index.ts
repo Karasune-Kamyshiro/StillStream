@@ -5,6 +5,7 @@ import { CHANNELS } from "../shared/channels"
 import { createChatInput } from "./chat-input"
 import { FavouritesStore } from "./favourites-store"
 import { connectSessionBus, installFlatpakUpdate, spawnLatestVersion } from "./flatpak-self-update"
+import { applyGamingModeSwitches } from "./gaming-mode-switches"
 import { type StaticHttpsServer, startStaticHttpsServer } from "./https-server"
 import { registerIpc } from "./ipc"
 import { adoptLegacyData } from "./legacy-data"
@@ -200,6 +201,9 @@ const createWindow = async (): Promise<void> => {
   await mainWindow.loadURL(rendererUrl ?? rendererOrigin)
   if (activationRequested) activateWindow()
 }
+
+// Before the app is ready: Chromium reads its switches at startup.
+applyGamingModeSwitches(app.commandLine, process.env)
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
