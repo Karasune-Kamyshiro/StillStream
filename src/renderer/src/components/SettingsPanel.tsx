@@ -273,7 +273,7 @@ export const SettingsPanel = ({
         <header className="page-heading">
           <span>Account and application</span>
           <h1>Settings</h1>
-          <p>Sign in to Twitch to unlock personalized discovery.</p>
+          <p className="settings-version">StillStream {__STILLSTREAM_VERSION__}</p>
         </header>
 
         <section aria-labelledby="account-heading" className="settings-card">

@@ -190,7 +190,7 @@ p {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 6.5rem minmax(0, 1fr);
+  grid-template-columns: 7rem minmax(0, 1fr);
   block-size: 100dvb;
   overflow: hidden;
 }
