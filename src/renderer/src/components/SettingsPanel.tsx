@@ -14,6 +14,7 @@ import type {
   ChatOverlayPosition,
   ChatOverlaySize,
   ChatTextSize,
+  HardwareVideoDecoding,
   PlayerSessionSnapshot,
   PreferencesUpdate,
   SettingsSnapshot,
@@ -55,6 +56,9 @@ type SettingsPanelProps = {
   readonly previewSound?: boolean
   /** Saves the preview sound preference; the switch is hidden when absent. */
   readonly onPreviewSoundChange?: (previewSound: boolean) => Promise<void>
+  readonly hardwareVideoDecoding?: HardwareVideoDecoding
+  /** Saves the video decoding choice (applied at the next start); hidden when absent. */
+  readonly onHardwareVideoDecodingChange?: (choice: HardwareVideoDecoding) => Promise<void>
   /** The update check and its pre-release preference; the Updates card is hidden when absent. */
   readonly updates?: {
     readonly check: UpdateCheck
@@ -96,6 +100,12 @@ const errorMessage = (error: unknown): string =>
  * Following), not to the Settings tab itself, so finishing in Settings is one Left and OK away.
  */
 
+const VIDEO_DECODING_LABELS: Readonly<Record<HardwareVideoDecoding, string>> = {
+  auto: "Automatic",
+  off: "Off",
+  on: "On",
+}
+
 export const SettingsPanel = ({
   navFocusId = "nav-settings",
   auth,
@@ -112,6 +122,8 @@ export const SettingsPanel = ({
   pauseWhenInactive = false,
   onPauseWhenInactiveChange,
   previewSound = false,
+  hardwareVideoDecoding = "auto",
+  onHardwareVideoDecodingChange,
   onPreviewSoundChange,
   updates,
 }: SettingsPanelProps) => {
@@ -122,6 +134,7 @@ export const SettingsPanel = ({
     ...(onStartFullscreenChange === undefined ? [] : ["settings-start-fullscreen"]),
     ...(onPauseWhenInactiveChange === undefined ? [] : ["settings-pause-inactive"]),
     ...(onPreviewSoundChange === undefined ? [] : ["settings-preview-sound"]),
+    ...(onHardwareVideoDecodingChange === undefined ? [] : ["settings-video-decoding"]),
   ]
   const startCardLastId = behaviourIds.at(-1) ?? "settings-start-following"
   const behaviourBelow = (id: string): string | undefined =>
@@ -129,6 +142,8 @@ export const SettingsPanel = ({
     (onChatPreferencesChange === undefined ? undefined : "settings-chat-dark")
   const behaviourAbove = (id: string): string =>
     behaviourIds[behaviourIds.indexOf(id) - 1] ?? "settings-save"
+  // The choice in effect: Chromium applied it when the app started.
+  const startupVideoDecoding = useRef(hardwareVideoDecoding)
   const [clientId, setClientId] = useState(settings.clientId)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
@@ -418,7 +433,9 @@ export const SettingsPanel = ({
               <p>
                 Where StillStream opens and returns to (Following needs a signed-in account), how
                 streams start, what happens when you switch to another app, such as Steam, and
-                whether the live preview on a selected card plays with sound.
+                whether the live preview on a selected card plays with sound. Hardware video
+                decoding saves CPU; Automatic turns it off in Steam Gaming Mode, where it makes the
+                screen flicker. It changes after a restart.
               </p>
             </div>
             <div className="settings-options">
@@ -479,6 +496,30 @@ export const SettingsPanel = ({
                     )
                   }}
                 />
+              )}
+              {onHardwareVideoDecodingChange === undefined ? null : (
+                <SettingsCycle
+                  focusDown={behaviourBelow("settings-video-decoding")}
+                  focusId="settings-video-decoding"
+                  focusUp={behaviourAbove("settings-video-decoding")}
+                  label="Hardware video decoding"
+                  onNext={() => {
+                    setError("")
+                    return onHardwareVideoDecodingChange(
+                      nextOption<HardwareVideoDecoding>(
+                        ["auto", "on", "off"],
+                        hardwareVideoDecoding,
+                      ),
+                    ).catch(() => setError("The video decoding preference could not be saved"))
+                  }}
+                  value={VIDEO_DECODING_LABELS[hardwareVideoDecoding]}
+                />
+              )}
+              {onHardwareVideoDecodingChange === undefined ||
+              hardwareVideoDecoding === startupVideoDecoding.current ? null : (
+                <p className="settings-note" role="status">
+                  Restart StillStream to apply the video decoding change.
+                </p>
               )}
             </div>
           </section>

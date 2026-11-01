@@ -484,6 +484,10 @@ export const App = () => {
                 controller.updatePreferences({ previewSound })
               }
               previewSound={controller.preferences.previewSound}
+              hardwareVideoDecoding={controller.preferences.hardwareVideoDecoding}
+              onHardwareVideoDecodingChange={(hardwareVideoDecoding) =>
+                controller.updatePreferences({ hardwareVideoDecoding })
+              }
               updates={{
                 check: updateCheck,
                 onInstall: () => setUpdateDialog({ installNow: true }),

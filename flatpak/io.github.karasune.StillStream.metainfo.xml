@@ -66,6 +66,15 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.23" date="2026-11-01" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.23</url>
+      <description>
+        <ul>
+          <li>New Player behaviour setting "Hardware video decoding": Automatic (off only in Steam Gaming Mode), On or Off. It applies after a restart.</li>
+          <li>The player's top bar has more room at the screen edges, so its focus frame is never cut off.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.3-test.22" date="2026-11-01" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.22</url>
       <description>

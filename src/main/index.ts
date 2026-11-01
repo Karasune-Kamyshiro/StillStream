@@ -5,7 +5,7 @@ import { CHANNELS } from "../shared/channels"
 import { createChatInput } from "./chat-input"
 import { FavouritesStore } from "./favourites-store"
 import { connectSessionBus, installFlatpakUpdate, spawnLatestVersion } from "./flatpak-self-update"
-import { applyGamingModeSwitches } from "./gaming-mode-switches"
+import { applyVideoDecodingSwitches, readHardwareDecodingChoice } from "./gaming-mode-switches"
 import { type StaticHttpsServer, startStaticHttpsServer } from "./https-server"
 import { registerIpc } from "./ipc"
 import { adoptLegacyData } from "./legacy-data"
@@ -202,14 +202,19 @@ const createWindow = async (): Promise<void> => {
   if (activationRequested) activateWindow()
 }
 
-// Before the app is ready: Chromium reads its switches at startup.
-applyGamingModeSwitches(app.commandLine, process.env)
-
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
   // A second launch may only reactivate this window, never supply navigation arguments.
   app.on("second-instance", activateWindow)
+
+  // Before the app is ready, since Chromium reads its switches at startup; only the instance
+  // that owns the profile gets this far, so a second launch never touches its files.
+  applyVideoDecodingSwitches(
+    app.commandLine,
+    process.env,
+    readHardwareDecodingChoice(app.getPath("userData")),
+  )
 
   app
     .whenReady()

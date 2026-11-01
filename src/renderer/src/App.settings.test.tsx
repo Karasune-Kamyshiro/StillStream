@@ -644,8 +644,11 @@ describe("Stream fullscreen preference", () => {
     expect(target("settings-pause-inactive").getAttribute("data-focus-down")).toBe(
       "settings-preview-sound",
     )
+    expect(target("settings-preview-sound").getAttribute("data-focus-down")).toBe(
+      "settings-video-decoding",
+    )
     expect(target("settings-chat-dark").getAttribute("data-focus-up")).toBe(
-      "settings-preview-sound",
+      "settings-video-decoding",
     )
     await activate("settings-start-fullscreen")
     expect(bridge.preferences.update).toHaveBeenCalledExactlyOnceWith({ startFullscreen: false })

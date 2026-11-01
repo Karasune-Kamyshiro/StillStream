@@ -100,6 +100,10 @@ export type ChatOverlayOpacity = z.infer<typeof ChatOverlayOpacitySchema>
 export const ChatTextSizeSchema = z.enum(["small", "normal", "large", "xlarge"])
 export type ChatTextSize = z.infer<typeof ChatTextSizeSchema>
 // Defaults keep older preference files valid as new options are added.
+/** auto: on, except in Steam Gaming Mode, where it makes Chromium's GPU process crash. */
+export const HardwareVideoDecodingSchema = z.enum(["auto", "on", "off"])
+export type HardwareVideoDecoding = z.infer<typeof HardwareVideoDecodingSchema>
+
 export const PreferencesSnapshotSchema = z.strictObject({
   chatLayout: ChatLayoutSchema.default("beside"),
   chatOverlayOpacity: ChatOverlayOpacitySchema.default("85"),
@@ -120,6 +124,8 @@ export const PreferencesSnapshotSchema = z.strictObject({
   previewSound: z.boolean().default(false),
   /** Announce pre-releases as updates, not only full releases. */
   prereleaseUpdates: z.boolean().default(false),
+  /** Read once at startup; a change applies after a restart. */
+  hardwareVideoDecoding: HardwareVideoDecodingSchema.default("auto"),
 })
 /** Every preference at its default, as for a first launch. */
 export const defaultPreferences = (): PreferencesSnapshot => PreferencesSnapshotSchema.parse({})
@@ -137,6 +143,7 @@ export const PreferencesUpdateSchema = z.strictObject({
   pauseWhenInactive: z.boolean().optional(),
   previewSound: z.boolean().optional(),
   prereleaseUpdates: z.boolean().optional(),
+  hardwareVideoDecoding: HardwareVideoDecodingSchema.optional(),
 })
 export type PreferencesUpdate = z.infer<typeof PreferencesUpdateSchema>
 export type PreferencesSnapshot = z.infer<typeof PreferencesSnapshotSchema>
