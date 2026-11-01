@@ -67,6 +67,12 @@
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
     <release version="0.2.3-test.18" date="2026-11-01" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.18</url>
+      <description>
+        <p>Version bump to try updating from inside the app.</p>
+      </description>
+    </release>
+    <release version="0.2.3-test.17" date="2026-11-01" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.17</url>
       <description>
         <p>Updates from inside the app, for testing.</p>
