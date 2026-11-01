@@ -1,5 +1,5 @@
 import { BroadcastIcon, SignInIcon } from "@phosphor-icons/react"
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { chatAppearance } from "./chat-appearance"
 import { CategoryShelf } from "./components/CategoryShelf"
@@ -13,6 +13,7 @@ import { SearchView } from "./components/SearchView"
 import { SettingsPanel, settingsAccountFocusId } from "./components/SettingsPanel"
 import { PreviewSoundContext } from "./components/StreamPreview"
 import { StreamShelf } from "./components/StreamShelf"
+import { canInstallUpdate, UpdateDialog } from "./components/UpdateDialog"
 import { VideoShelf } from "./components/VideoShelf"
 import { PREVIEW_STREAMS } from "./demo-data"
 import { useControllerNavigation } from "./focus-navigation"
@@ -34,6 +35,23 @@ export const App = () => {
   const controller = useAppController()
   const favourites = useFavourites()
   const updateCheck = useUpdateCheck(controller.preferences?.prereleaseUpdates ?? false)
+  const [updateDialog, setUpdateDialog] = useState<{ readonly installNow: boolean }>()
+  const closeUpdateDialog = useCallback(() => setUpdateDialog(undefined), [])
+  // Asked once per launch, after the first check: never over a playing stream, so a launch
+  // straight into the player asks on the way back to browsing.
+  const startupPrompt = useRef<"pending" | "done">("pending")
+  const updateSnapshot = updateCheck.snapshot
+  const inPlayer = controller.screen.kind === "player"
+  useEffect(() => {
+    if (startupPrompt.current === "done" || updateSnapshot === undefined || inPlayer) return
+    startupPrompt.current = "done"
+    if (
+      updateSnapshot.status === "available" &&
+      (canInstallUpdate(updateSnapshot) || updateSnapshot.packaging.kind === "appimage")
+    ) {
+      setUpdateDialog({ installNow: false })
+    }
+  }, [updateSnapshot, inPlayer])
   const accountGeneration = useRef(0)
   const fullscreenCarry = useRef<FullscreenCarry>({ immersive: false, restoreWindowed: false })
   const accountContext = useRef({
@@ -184,6 +202,8 @@ export const App = () => {
     <PreviewSoundContext.Provider value={controller.preferences.previewSound}>
       <div
         className="app-shell"
+        // The update dialog is modal: nothing behind it takes focus or input meanwhile.
+        inert={updateDialog !== undefined}
         onFocusCapture={(event) => {
           focusedControl.current = event.target
         }}
@@ -466,6 +486,7 @@ export const App = () => {
               previewSound={controller.preferences.previewSound}
               updates={{
                 check: updateCheck,
+                onInstall: () => setUpdateDialog({ installNow: true }),
                 includePrereleases: controller.preferences.prereleaseUpdates,
                 onIncludePrereleasesChange: (prereleaseUpdates) =>
                   controller.updatePreferences({ prereleaseUpdates }).then(() => undefined),
@@ -476,6 +497,13 @@ export const App = () => {
           ) : null}
         </div>
       </div>
+      {updateDialog === undefined || updateSnapshot === undefined ? null : (
+        <UpdateDialog
+          installNow={updateDialog.installNow}
+          onClose={closeUpdateDialog}
+          snapshot={updateSnapshot}
+        />
+      )}
     </PreviewSoundContext.Provider>
   )
 }

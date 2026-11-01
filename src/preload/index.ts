@@ -27,6 +27,7 @@ import {
   StartScreenSchema,
   type StillStreamApi,
   StreamCardSchema,
+  UpdateInstallResultSchema,
   UpdateSnapshotSchema,
   VideoCardSchema,
 } from "../shared/contracts"
@@ -165,6 +166,20 @@ const api = {
         .then((value) => UpdateSnapshotSchema.parse(value)),
     openReleasePage: (url) =>
       ipcRenderer.invoke(CHANNELS.updatesOpenReleasePage, url).then(() => undefined),
+    install: () =>
+      ipcRenderer
+        .invoke(CHANNELS.updatesInstall)
+        .then((value) => UpdateInstallResultSchema.parse(value)),
+    onProgress: (listener) => {
+      const onProgress = (_event: Electron.IpcRendererEvent, percent: unknown): void => {
+        listener(z.number().min(0).max(100).parse(percent))
+      }
+      ipcRenderer.on(CHANNELS.updatesProgress, onProgress)
+      return () => {
+        ipcRenderer.removeListener(CHANNELS.updatesProgress, onProgress)
+      }
+    },
+    restart: () => ipcRenderer.invoke(CHANNELS.updatesRestart).then(() => undefined),
   },
   settings: {
     saveClientId: (clientId) =>

@@ -36,6 +36,13 @@ flatpak run io.github.karasune.StillStream
 For pre-releases use `io.github.karasune.StillStream-beta.flatpakref` instead (branch `beta`).
 Settings → Updates shows which branch you are on and when a new version is out.
 
+When StillStream starts and a new version is out, it asks whether to update now. **Update now**
+installs it in the background through Flatpak's own update service for apps (no extra
+permissions) and then restarts into the new version; in Steam Gaming Mode it closes instead, so
+start it again from Steam. Settings → Updates has the same **Update now** button. A version that
+needs new permissions cannot be installed this way; Flatpak then asks you to use Discover or
+`flatpak update`, where the new permissions are shown.
+
 A `.flatpak` file from the Releases page also installs (`flatpak install --user ./StillStream-0.2.1-x86_64.flatpak`),
 but never updates itself. To switch such a copy to the repository, remove it first; settings,
 favourites and sign-in are kept:

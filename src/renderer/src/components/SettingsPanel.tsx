@@ -60,6 +60,8 @@ type SettingsPanelProps = {
     readonly check: UpdateCheck
     readonly includePrereleases: boolean
     readonly onIncludePrereleasesChange: (include: boolean) => Promise<void>
+    /** Installs the available update (Flatpak from the repository). */
+    readonly onInstall?: () => void
   }
 }
 
@@ -640,6 +642,7 @@ export const SettingsPanel = ({
             }
             includePrereleases={updates.includePrereleases}
             onCheck={updates.check.checkNow}
+            {...(updates.onInstall === undefined ? {} : { onInstall: updates.onInstall })}
             onIncludePrereleasesChange={(include) => {
               setError("")
               return updates

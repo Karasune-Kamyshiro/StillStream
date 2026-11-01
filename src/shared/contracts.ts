@@ -161,6 +161,13 @@ export const UpdateSnapshotSchema = z.strictObject({
 })
 export type UpdateSnapshot = z.infer<typeof UpdateSnapshotSchema>
 
+export const UpdateInstallResultSchema = z.strictObject({
+  error: z.string().optional(),
+  /** done: installed, active after a restart; empty: nothing newer to install. */
+  status: z.enum(["done", "empty", "failed"]),
+})
+export type UpdateInstallResult = z.infer<typeof UpdateInstallResultSchema>
+
 export const PlayerSessionSnapshotSchema = z.strictObject({
   login: FavouriteLoginSchema.optional(),
   signedIn: z.boolean(),
@@ -353,6 +360,15 @@ export interface StillStreamApi {
     readonly check: (includePrereleases: boolean) => Promise<UpdateSnapshot>
     /** Opens a StillStream release page in the browser. */
     readonly openReleasePage: (url: string) => Promise<void>
+    /** Installs the update of a Flatpak from the StillStream repository, in the background. */
+    readonly install: () => Promise<UpdateInstallResult>
+    /** Install progress, 0-100, while install() runs. */
+    readonly onProgress: (listener: (percent: number) => void) => () => void
+    /**
+     * Ends this instance after an installed update: starts the new version first on the desktop;
+     * in Steam Gaming Mode, where only Steam can start it, it just closes.
+     */
+    readonly restart: () => Promise<void>
   }
   readonly system: {
     /** Starts the stream being watched, or with "preview" the live preview on screen. */

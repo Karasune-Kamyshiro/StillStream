@@ -38,4 +38,7 @@ export const CHANNELS = {
   systemToggleFullscreen: "system:toggle-fullscreen",
   updatesCheck: "updates:check",
   updatesOpenReleasePage: "updates:open-release-page",
+  updatesInstall: "updates:install",
+  updatesProgress: "updates:progress",
+  updatesRestart: "updates:restart",
 } as const

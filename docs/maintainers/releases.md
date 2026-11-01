@@ -67,6 +67,12 @@ repository is rebuilt from scratch each time (one commit per branch), so it neve
 unchanged branch keeps its exact commit, so installs see no phantom update.
 `scripts/publish-flatpak-repo.sh` does the work and runs locally with the same environment.
 
+Installed copies can also update from inside the app (startup prompt, Settings → Updates →
+Update now) through the Flatpak portal's update monitor (`src/main/flatpak-self-update.ts`).
+The portal refuses an update whose manifest grants more permissions than the installed one;
+release notes for such a version should tell users to update through Discover or
+`flatpak update` once.
+
 One-time setup:
 
 1. Create a signing key without a passphrase (keep a backup; losing it means every install has

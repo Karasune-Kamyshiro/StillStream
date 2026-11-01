@@ -1049,3 +1049,52 @@
   flex-wrap: wrap;
   gap: var(--space-3);
 }
+
+/* The update dialog: modal over the app, sized for a TV and readable from the couch. */
+.update-dialog__backdrop {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background: rgb(0 0 0 / 0.6);
+}
+
+.update-dialog {
+  display: grid;
+  gap: var(--space-4);
+  inline-size: min(40rem, 100%);
+  padding: var(--space-8);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  background: var(--color-rail);
+  box-shadow: var(--shadow-lift);
+  overflow-wrap: anywhere;
+}
+
+.update-dialog:focus {
+  outline: 0;
+}
+
+.update-dialog h2,
+.update-dialog p {
+  margin: 0;
+}
+
+.update-dialog__eyebrow {
+  color: var(--color-accent-strong);
+  font-weight: 600;
+}
+
+.update-dialog progress {
+  inline-size: 100%;
+  block-size: 0.6rem;
+  accent-color: var(--color-accent);
+}
+
+.update-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

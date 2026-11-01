@@ -2,6 +2,7 @@ import { useContext } from "react"
 import type { UpdateSnapshot } from "../../../shared/contracts"
 import { SettingsSwitch } from "./settings-controls"
 import { SettingsNavContext } from "./settings-nav-context"
+import { canInstallUpdate } from "./UpdateDialog"
 
 const REPOSITORY = "https://karasune-kamyshiro.github.io/StillStream"
 const STABLE_REF = `${REPOSITORY}/io.github.karasune.StillStream.flatpakref`
@@ -73,6 +74,7 @@ export const UpdatesCard = ({
   includePrereleases,
   onCheck,
   onIncludePrereleasesChange,
+  onInstall,
   snapshot,
 }: {
   readonly checking: boolean
@@ -81,11 +83,43 @@ export const UpdatesCard = ({
   readonly includePrereleases: boolean
   readonly onCheck: () => void
   readonly onIncludePrereleasesChange: (include: boolean) => Promise<void>
+  /** Opens the update dialog, installing right away; shown for a repository Flatpak. */
+  readonly onInstall?: (() => void) | undefined
   readonly snapshot: UpdateSnapshot | undefined
 }) => {
   const navFocusId = useContext(SettingsNavContext)
   const available = snapshot?.status === "available" ? snapshot.latest : undefined
   const download = available !== undefined && snapshot?.packaging.kind !== "flatpak"
+  const installable =
+    available !== undefined && snapshot !== undefined && canInstallUpdate(snapshot)
+  const actions: {
+    readonly disabled?: boolean
+    readonly id: string
+    readonly label: string
+    readonly onClick: () => void
+    readonly primary?: boolean
+  }[] = [
+    ...(installable && onInstall !== undefined
+      ? [{ id: "settings-updates-install", label: "Update now", onClick: onInstall, primary: true }]
+      : []),
+    {
+      disabled: checking,
+      id: "settings-updates-check",
+      label: "Check now",
+      onClick: () => {
+        if (!checking) onCheck()
+      },
+    },
+    ...(download
+      ? [
+          {
+            id: "settings-updates-open",
+            label: "Open release page",
+            onClick: () => void window.stillStream.updates?.openReleasePage(available.url),
+          },
+        ]
+      : []),
+  ]
   return (
     <section aria-labelledby="updates-heading" className="settings-card">
       <div>
@@ -104,39 +138,31 @@ export const UpdatesCard = ({
         ) : null}
         <SettingsSwitch
           checked={includePrereleases}
-          focusDown="settings-updates-check"
+          focusDown={actions[0]?.id ?? "settings-updates-check"}
           focusId="settings-updates-prerelease"
           focusUp={focusUp}
           label="Include pre-releases"
           onChange={onIncludePrereleasesChange}
         />
         <div className="settings-updates__actions">
-          <button
-            aria-disabled={checking}
-            data-focus-id="settings-updates-check"
-            data-focus-left={navFocusId}
-            {...(download ? { "data-focus-right": "settings-updates-open" } : {})}
-            data-focus-up="settings-updates-prerelease"
-            data-focusable="true"
-            onClick={() => {
-              if (!checking) onCheck()
-            }}
-            type="button"
-          >
-            Check now
-          </button>
-          {download ? (
+          {actions.map((action, index) => (
             <button
-              data-focus-id="settings-updates-open"
-              data-focus-left="settings-updates-check"
+              {...(action.disabled === true ? { "aria-disabled": true } : {})}
+              className={action.primary === true ? "primary-button" : undefined}
+              data-focus-id={action.id}
+              data-focus-left={actions[index - 1]?.id ?? navFocusId}
+              {...(index < actions.length - 1
+                ? { "data-focus-right": actions[index + 1]?.id }
+                : {})}
               data-focus-up="settings-updates-prerelease"
               data-focusable="true"
-              onClick={() => void window.stillStream.updates?.openReleasePage(available.url)}
+              key={action.id}
+              onClick={action.onClick}
               type="button"
             >
-              Open release page
+              {action.label}
             </button>
-          ) : null}
+          ))}
         </div>
       </div>
     </section>

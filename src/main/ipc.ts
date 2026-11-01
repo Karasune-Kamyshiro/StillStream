@@ -14,6 +14,7 @@ import {
   PreferencesUpdateSchema,
   SearchInputSchema,
   StartScreenSchema,
+  type UpdateInstallResult,
   type UpdateSnapshot,
   VideosInputSchema,
 } from "../shared/contracts"
@@ -44,6 +45,8 @@ type IpcOptions = {
   /** Absent in tests that do not exercise updates; the check then reports "unknown". */
   readonly updates?: {
     readonly check: (includePrereleases: boolean) => Promise<UpdateSnapshot>
+    readonly install?: (onProgress: (percent: number) => void) => Promise<UpdateInstallResult>
+    readonly restart?: () => Promise<void>
   }
 }
 
@@ -115,6 +118,26 @@ export const registerIpc = (options: IpcOptions): void => {
       } satisfies UpdateSnapshot
     }
     return options.updates.check(includePrereleases)
+  })
+  ipcMain.handle(CHANNELS.updatesInstall, async (event, ...input: unknown[]) => {
+    authorize(event)
+    z.tuple([]).parse(input)
+    const install = options.updates?.install
+    if (install === undefined) {
+      return {
+        error: "This copy cannot update itself",
+        status: "failed",
+      } satisfies UpdateInstallResult
+    }
+    const { sender } = event
+    return install((percent) => {
+      if (!sender.isDestroyed()) sender.send(CHANNELS.updatesProgress, percent)
+    })
+  })
+  ipcMain.handle(CHANNELS.updatesRestart, async (event, ...input: unknown[]) => {
+    authorize(event)
+    z.tuple([]).parse(input)
+    await options.updates?.restart?.()
   })
   ipcMain.handle(CHANNELS.updatesOpenReleasePage, async (event, input: unknown) => {
     authorize(event)

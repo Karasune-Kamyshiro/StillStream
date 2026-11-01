@@ -4,6 +4,7 @@ import { app, BrowserWindow, dialog, net, powerSaveBlocker, safeStorage, session
 import { CHANNELS } from "../shared/channels"
 import { createChatInput } from "./chat-input"
 import { FavouritesStore } from "./favourites-store"
+import { connectSessionBus, installFlatpakUpdate, spawnLatestVersion } from "./flatpak-self-update"
 import { type StaticHttpsServer, startStaticHttpsServer } from "./https-server"
 import { registerIpc } from "./ipc"
 import { adoptLegacyData } from "./legacy-data"
@@ -143,6 +144,24 @@ const createWindow = async (): Promise<void> => {
     runningInSteamGameMode,
     twitch: new TwitchService(new SettingsStore(app.getPath("userData")), tokenVault),
     updates: {
+      install: async (onProgress) => {
+        const packaging = await readPackaging()
+        if (packaging.kind !== "flatpak" || !["stable", "beta"].includes(packaging.branch)) {
+          return {
+            error: "Only the Flatpak from the StillStream repository updates itself",
+            status: "failed",
+          }
+        }
+        return installFlatpakUpdate(connectSessionBus, onProgress)
+      },
+      restart: async () => {
+        // In Gaming Mode only Steam may start the app, so this instance just closes for a relaunch.
+        if (!runningInSteamGameMode) {
+          app.releaseSingleInstanceLock()
+          await spawnLatestVersion(connectSessionBus, "stillstream", process.env)
+        }
+        app.quit()
+      },
       check: async (includePrereleases) =>
         checkForUpdates({
           currentVersion: app.getVersion(),
