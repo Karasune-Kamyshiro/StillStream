@@ -66,6 +66,12 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.14" date="2026-11-01" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.14</url>
+      <description>
+        <p>The 0.2.3-test.13 changes (Flatpak repository and update check), rebuilt: the release build now frees disk space first.</p>
+      </description>
+    </release>
     <release version="0.2.3-test.13" date="2026-11-01" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.13</url>
       <description>

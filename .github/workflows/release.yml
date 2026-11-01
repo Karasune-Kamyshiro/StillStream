@@ -19,8 +19,21 @@ jobs:
     timeout-minutes: 45
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions@sha256:9c6819dd59d5170dc5bdd9ceeb61dcb69e9429ae9f9c70b5554b34e905aaa54c
-      options: --privileged
+      # The host's preinstalled SDKs are mounted so the first step can delete them: the hosted
+      # runner's disk is otherwise too full for Electron, both packages and the Flatpak runtimes.
+      options: >-
+        --privileged
+        -v /usr/share/dotnet:/host/dotnet
+        -v /usr/local/lib/android:/host/android
+        -v /opt/ghc:/host/ghc
+        -v /opt/hostedtoolcache:/host/toolcache
+        -v /usr/local/share/boost:/host/boost
     steps:
+      - name: Free disk space
+        run: |
+          df -h /__w || true
+          rm -rf /host/dotnet/* /host/android/* /host/ghc/* /host/toolcache/* /host/boost/* || true
+          df -h /__w || true
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -38,6 +51,9 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: bun run package:release
+      - name: Disk space after the build
+        if: always()
+        run: df -h /__w || true
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: linux-x86_64
