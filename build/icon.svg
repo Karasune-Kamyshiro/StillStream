@@ -3,7 +3,7 @@
    viewBox="0 0 512 512"
    version="1.1"
    id="svg2"
-   sodipodi:docname="icon.svg"
+   sodipodi:docname="icon2-kontrast.svg"
    inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
    inkscape:export-filename="icon.png"
    inkscape:export-xdpi="96"
@@ -19,6 +19,29 @@
   <title id="title1">StillStream signal mark</title>
   <defs
      id="defs2">
+    <linearGradient
+       id="linearGradient56"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185">
+      <stop
+         offset="0"
+         stop-color="#e01cff"
+         id="stop54"
+         style="stop-color:#e01cff;stop-opacity:0.57189542;" />
+      <stop
+         offset="0.5"
+         stop-color="#7b6cff"
+         id="stop55"
+         style="stop-color:#7b6cff;stop-opacity:0.51307189;" />
+      <stop
+         offset="1"
+         stop-color="#1fd6f0"
+         id="stop56"
+         style="stop-color:#1fd6f0;stop-opacity:0.54575163;" />
+    </linearGradient>
     <linearGradient
        id="linearGradient31"
        inkscape:collect="always">
@@ -1206,8 +1229,8 @@
        inkscape:collect="always"
        xlink:href="#linearGradient31"
        id="linearGradient30"
-       x1="-269.02887"
-       y1="287.17123"
+       x1="-1.3991842"
+       y1="278.38693"
        x2="359.48901"
        y2="274.18939"
        gradientUnits="userSpaceOnUse" />
@@ -1220,6 +1243,492 @@
        y1="0"
        x2="47.5"
        y2="0" />
+    <radialGradient
+       id="bgCalm"
+       gradientUnits="userSpaceOnUse"
+       cx="-6.4331427"
+       cy="373.724"
+       r="360"
+       gradientTransform="matrix(-1.1205503,-1.1205503,1.1302866,-1.1302866,165.73071,678.68579)"
+       fx="-6.4331427"
+       fy="373.724">
+      <stop
+         offset="0"
+         stop-color="#2a2152"
+         id="stop6" />
+      <stop
+         offset="0.55"
+         stop-color="#1a1436"
+         id="stop7" />
+      <stop
+         offset="1"
+         stop-color="#110d24"
+         id="stop8" />
+    </radialGradient>
+    <linearGradient
+       id="rimGrad"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="512">
+      <stop
+         offset="0"
+         stop-color="#b9a8ff"
+         stop-opacity="0.55"
+         id="stop9" />
+      <stop
+         offset="1"
+         stop-color="#b9a8ff"
+         stop-opacity="0.12"
+         id="stop10" />
+    </linearGradient>
+    <filter
+       id="shadowBlur"
+       filterUnits="userSpaceOnUse"
+       x="-200"
+       y="-200"
+       width="600"
+       height="600">
+      <feGaussianBlur
+         stdDeviation="9"
+         id="feGaussianBlur10" />
+    </filter>
+    <radialGradient
+       id="bgGrad-3"
+       cx="100"
+       cy="90.400002"
+       r="115.2"
+       fx="100"
+       fy="90.400002"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(2.56,0,0,2.56,35.104,-95.68)">
+      <stop
+         offset="0"
+         stop-color="#2a0f4a"
+         id="stop4-3-6" />
+      <stop
+         offset="1"
+         stop-color="#0d0618"
+         id="stop5-75" />
+    </radialGradient>
+    <filter
+       id="glow-2"
+       x="-0.66842105"
+       y="-0.21166667"
+       width="2.3368421"
+       height="1.4233333">
+      <feGaussianBlur
+         stdDeviation="6"
+         id="feGaussianBlur7-9" />
+    </filter>
+    <filter
+       id="brush-6"
+       x="-0.19736842"
+       y="-0.0625"
+       width="1.3947368"
+       height="1.125">
+      <feTurbulence
+         type="fractalNoise"
+         baseFrequency="0.09 0.35"
+         numOctaves="3"
+         seed="7"
+         result="noise"
+         id="feTurbulence5-2" />
+      <feDisplacementMap
+         in="SourceGraphic"
+         in2="noise"
+         scale="9"
+         xChannelSelector="R"
+         yChannelSelector="G"
+         id="feDisplacementMap5-6" />
+    </filter>
+    <filter
+       id="dry-87"
+       x="-0.25581395"
+       y="-1.75"
+       width="1.5116279"
+       height="4.5">
+      <feTurbulence
+         type="fractalNoise"
+         baseFrequency="0.6 0.04"
+         numOctaves="2"
+         seed="3"
+         result="streaks"
+         id="feTurbulence6-92" />
+      <feColorMatrix
+         in="streaks"
+         type="matrix"
+         values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 1.45"
+         result="mask"
+         id="feColorMatrix6-0" />
+      <feComposite
+         in="SourceGraphic"
+         in2="mask"
+         operator="in"
+         result="textured"
+         id="feComposite6-2" />
+      <feTurbulence
+         type="fractalNoise"
+         baseFrequency="0.12"
+         numOctaves="2"
+         seed="11"
+         result="n2"
+         id="feTurbulence7-3" />
+      <feDisplacementMap
+         in="textured"
+         in2="n2"
+         scale="6"
+         xChannelSelector="R"
+         yChannelSelector="G"
+         id="feDisplacementMap7-7" />
+    </filter>
+    <filter
+       id="filter18-9"
+       x="-0.25581396"
+       y="-1.75"
+       width="1.5116279"
+       height="4.5">
+      <feTurbulence
+         type="fractalNoise"
+         baseFrequency="0.6 0.04"
+         numOctaves="2"
+         seed="3"
+         result="streaks"
+         id="feTurbulence17-2" />
+      <feColorMatrix
+         in="streaks"
+         type="matrix"
+         values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 1.45"
+         result="mask"
+         id="feColorMatrix17-2" />
+      <feComposite
+         in="SourceGraphic"
+         in2="mask"
+         operator="in"
+         result="textured"
+         id="feComposite17-8" />
+      <feTurbulence
+         type="fractalNoise"
+         baseFrequency="0.12"
+         numOctaves="2"
+         seed="11"
+         result="n2"
+         id="feTurbulence18-9" />
+      <feDisplacementMap
+         in="textured"
+         in2="n2"
+         scale="6"
+         xChannelSelector="R"
+         yChannelSelector="G"
+         id="feDisplacementMap18-7" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient56"
+       id="linearGradient29"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient33"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient34"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient35"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient36"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient37"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient38"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient39"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient40"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient41"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient42"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient43"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient44"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient45"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient46"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient47"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient48"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient49"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient50"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient51"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient52"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient53"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient54"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient57"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient58"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient59"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient60"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient61"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient62"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient63"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient64"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient65"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient66"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#runeGrad"
+       id="linearGradient67"
+       gradientUnits="userSpaceOnUse"
+       x1="0"
+       y1="30"
+       x2="0"
+       y2="185" />
   </defs>
   <sodipodi:namedview
      id="namedview2"
@@ -1230,15 +1739,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.0107422"
-     inkscape:cx="332.42898"
-     inkscape:cy="189.46473"
+     inkscape:zoom="0.5053711"
+     inkscape:cx="363.09951"
+     inkscape:cy="337.37584"
      inkscape:window-width="2048"
-     inkscape:window-height="1244"
+     inkscape:window-height="1060"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2" />
+     inkscape:current-layer="layer1" />
   <rect
      width="512"
      height="512"
@@ -1247,7 +1756,18 @@
      id="rect1"
      x="0"
      y="0"
-     style="display:inline;fill:url(#linearGradient30)" />
+     style="display:inline;fill:url(#bgCalm)" />
+  <rect
+     x="3"
+     y="3"
+     width="506"
+     height="506"
+     rx="109"
+     fill="none"
+     stroke="url(#rimGrad)"
+     stroke-width="6"
+     id="rim"
+     style="display:none" />
   <circle
      cx="256"
      cy="256"
@@ -1257,180 +1777,24 @@
      style="display:none;fill:url(#linearGradient4);fill-opacity:1;stroke:#710fff;stroke-width:18.413;stroke-dasharray:none;stroke-opacity:1" />
   <g
      inkscape:groupmode="layer"
-     id="layer1"
-     inkscape:label="Layer 1"
-     transform="matrix(1.2849801,0,0,1.2849801,-126.96054,44.155087)"
-     style="display:inline">
-    <circle
-       cx="291.104"
-       cy="160.32001"
-       r="245.75999"
-       fill="url(#bgGrad)"
-       id="circle7"
-       style="display:none;fill:url(#bgGrad);stroke-width:2.56" />
-    <polyline
-       points="120,40 86,100 116,100 82,160"
-       fill="none"
-       stroke="url(#runeGrad)"
-       stroke-width="22"
-       stroke-linecap="round"
-       stroke-linejoin="round"
-       opacity="0.45"
-       filter="url(#glow)"
-       id="polyline7"
-       style="display:inline;stroke:url(#linearGradient6)"
-       transform="matrix(2.56,0,0,2.56,35.104,-95.68)" />
-    <g
-       stroke="url(#runeGrad)"
-       fill="none"
-       stroke-linecap="round"
-       stroke-linejoin="round"
-       id="g10"
-       style="display:none;stroke:url(#linearGradient10)"
-       transform="matrix(2.56,0,0,2.56,35.104,-95.68)">
-      <!-- Hauptstrich mit rauen Kanten -->
-      <polyline
-         points="120,40 86,100 116,100 82,160"
-         stroke-width="15"
-         filter="url(#brush)"
-         id="polyline8"
-         style="stroke:url(#linearGradient7)" />
-      <!-- trockene, ausfasernde Pinselspur drumherum -->
-      <polyline
-         points="123,34 87,98 121,99 80,166"
-         stroke-width="22"
-         filter="url(#dry)"
-         opacity="0.9"
-         id="polyline9"
-         style="stroke:url(#linearGradient8)" />
-      <!-- Querstrich läuft etwas über -->
-      <polyline
-         points="74,101 132,99"
-         stroke-width="7"
-         filter="url(#dry)"
-         opacity="0.8"
-         id="polyline10"
-         style="stroke:url(#linearGradient9)" />
-    </g>
-    <g
-       fill="url(#runeGrad)"
-       id="g12"
-       style="display:none;fill:url(#linearGradient17)"
-       transform="matrix(2.56,0,0,2.56,35.104,-95.68)">
-      <path
-         d="m 104,104 q 2,0 2,3 v 10 a 2.2,2.2 0 0 1 -4.4,0 v -10 q 0,-3 2.4,-3 z"
-         opacity="0.9"
-         id="path10"
-         style="fill:url(#linearGradient11)" />
-      <circle
-         cx="103.8"
-         cy="119.5"
-         r="2.5999999"
-         id="circle10"
-         style="fill:url(#linearGradient12)" />
-      <path
-         d="m 115,104 q 1.5,0 1.5,2 v 5 a 1.6,1.6 0 0 1 -3.2,0 v -5 q 0,-2 1.7,-2 z"
-         opacity="0.85"
-         id="path11"
-         style="fill:url(#linearGradient13)" />
-      <circle
-         cx="114.9"
-         cy="112.6"
-         r="1.9"
-         id="circle11"
-         style="fill:url(#linearGradient14)" />
-      <path
-         d="m 84,163 q 1.8,0 1.8,3 v 8 a 2,2 0 0 1 -4,0 v -8 q 0,-3 2.2,-3 z"
-         opacity="0.9"
-         id="path12"
-         style="fill:url(#linearGradient15)" />
-      <circle
-         cx="83.800003"
-         cy="176"
-         r="2.4000001"
-         id="circle12"
-         style="fill:url(#linearGradient16)" />
-    </g>
-    <g
-       fill="url(#runeGrad)"
-       opacity="0.75"
-       id="g23"
-       style="display:inline;fill:url(#linearGradient75)"
-       transform="matrix(2.56,0,0,2.56,35.104,-95.68)">
-      <circle
-         cx="134"
-         cy="44"
-         r="1.4"
-         id="circle13"
-         style="fill:url(#linearGradient18)" />
-      <circle
-         cx="139"
-         cy="52"
-         r="0.89999998"
-         id="circle14"
-         style="fill:url(#linearGradient19)" />
-      <circle
-         cx="110"
-         cy="34"
-         r="1"
-         id="circle15"
-         style="fill:url(#linearGradient20)" />
-      <circle
-         cx="137"
-         cy="95"
-         r="1.2"
-         id="circle16"
-         style="fill:url(#linearGradient21)" />
-      <circle
-         cx="142"
-         cy="103"
-         r="0.80000001"
-         id="circle17"
-         style="fill:url(#linearGradient22)" />
-      <circle
-         cx="68"
-         cy="96"
-         r="1.1"
-         id="circle18"
-         style="fill:url(#linearGradient23)" />
-      <circle
-         cx="63"
-         cy="104"
-         r="0.69999999"
-         id="circle19"
-         style="fill:url(#linearGradient24)" />
-      <circle
-         cx="70"
-         cy="158"
-         r="1.3"
-         id="circle20"
-         style="fill:url(#linearGradient25)" />
-      <circle
-         cx="96"
-         cy="170"
-         r="0.89999998"
-         id="circle21"
-         style="fill:url(#linearGradient26)" />
-      <circle
-         cx="128"
-         cy="62"
-         r="0.69999999"
-         id="circle22"
-         style="fill:url(#linearGradient27)" />
-      <circle
-         cx="74"
-         cy="140"
-         r="0.80000001"
-         id="circle23"
-         style="fill:url(#linearGradient28)" />
-    </g>
-  </g>
-  <g
-     inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Layer 2"
      transform="matrix(0.87181292,0,0,0.87181292,138.7328,52.88981)"
      style="display:inline">
+    <g
+       transform="matrix(2.56,0,0,2.56,-167,-20)"
+       id="waveShadow"
+       style="display:inline">
+      <ellipse
+         cx="102"
+         cy="88"
+         rx="86"
+         ry="34"
+         fill="#05020c"
+         opacity="0.6"
+         filter="url(#shadowBlur)"
+         id="ellipse10" />
+    </g>
     <circle
        cx="89"
        cy="236"
@@ -1441,7 +1805,8 @@
     <g
        mask="url(#reflMask)"
        id="g13"
-       transform="matrix(2.56,0,0,2.56,-167,-20)">
+       transform="matrix(2.56,0,0,2.56,-167,-20)"
+       style="display:inline">
       <g
          transform="matrix(1,0,0,-1,0,208)"
          id="g12-4">
@@ -1480,7 +1845,7 @@
        fill="none"
        opacity="0.5"
        id="g20"
-       style="stroke:url(#linearGradient87)"
+       style="display:inline;stroke:url(#linearGradient87)"
        transform="matrix(2.56,0,0,2.56,-167,-20)">
       <ellipse
          cx="64"
@@ -1560,14 +1925,28 @@
        stroke-linecap="round"
        opacity="0.8"
        id="line20"
-       style="stroke:url(#linearGradient88)" />
+       style="display:inline;stroke:url(#linearGradient88)" />
+    <g
+       transform="matrix(2.56,0,0,2.56,-167,-20)"
+       id="waveBody"
+       style="display:inline">
+      <polyline
+         points="26,104 34,104 64,52 64,104 90,70 90,104 112,83 112,104 130,92 130,104 144,98 144,104 176,104"
+         fill="none"
+         stroke="url(#linearGradient90)"
+         stroke-width="7"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         opacity="1"
+         id="polyline10" />
+    </g>
     <g
        fill="none"
        stroke="url(#swGrad)"
        stroke-linecap="round"
        stroke-linejoin="round"
        id="g22"
-       style="stroke:url(#linearGradient92)"
+       style="display:inline;stroke:url(#linearGradient92)"
        transform="matrix(2.56,0,0,2.56,-167,-20)">
       <polyline
          points="26,104 34,104 64,52 64,104 90,70 90,104 112,83 112,104 130,92 130,104 144,98 144,104 176,104"
@@ -1575,26 +1954,26 @@
          opacity="0.45"
          filter="url(#glow)"
          id="polyline20"
-         style="stroke:url(#linearGradient89);filter:url(#glow-6)" />
+         style="display:none;stroke:url(#linearGradient89);filter:url(#glow-6)" />
       <polyline
          points="26,104 34,104 64,52 64,104 90,70 90,104 112,83 112,104 130,92 130,104 144,98 144,104 176,104"
          stroke-width="10"
          filter="url(#brush)"
          id="polyline21"
-         style="stroke:url(#linearGradient90);filter:url(#brush-1)" />
+         style="display:inline;stroke:url(#linearGradient90);filter:url(#brush-1)" />
       <polyline
          points="26,104 34,104 64,52 64,104 90,70 90,104 112,83 112,104 130,92 130,104 144,98 144,104 176,104"
          stroke-width="16"
          filter="url(#dry)"
          opacity="0.9"
          id="polyline22"
-         style="stroke:url(#linearGradient91);filter:url(#dry-9)" />
+         style="display:inline;stroke:url(#linearGradient91);filter:url(#dry-9)" />
     </g>
     <g
        fill="url(#swGrad)"
        opacity="0.75"
        id="g27"
-       style="fill:url(#linearGradient79)"
+       style="display:inline;fill:url(#linearGradient79)"
        transform="matrix(2.56,0,0,2.56,-167,-20)">
       <circle
          cx="66"
@@ -1672,4 +2051,247 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="Layer 1"
+     transform="matrix(1.2849801,0,0,1.2849801,-121.3524,49.992002)"
+     style="display:inline">
+    <circle
+       cx="291.104"
+       cy="160.32001"
+       r="245.75999"
+       fill="url(#bgGrad)"
+       id="circle7"
+       style="display:none;fill:url(#bgGrad-3);stroke-width:2.56" />
+    <polyline
+       points="120,40 86,100 116,100 82,160"
+       fill="none"
+       stroke="url(#runeGrad)"
+       stroke-width="22"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       opacity="0.45"
+       filter="url(#glow)"
+       id="polyline7"
+       style="display:inline;stroke:url(#linearGradient29);filter:url(#glow-2)"
+       transform="matrix(2.56,0,0,2.56,35.104,-95.68)" />
+    <g
+       stroke="url(#runeGrad)"
+       fill="none"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="g10"
+       style="display:none;stroke:url(#linearGradient36)"
+       transform="matrix(2.56,0,0,2.56,35.104,-95.68)">
+      <!-- Hauptstrich mit rauen Kanten -->
+      <polyline
+         points="120,40 86,100 116,100 82,160"
+         stroke-width="15"
+         filter="url(#brush)"
+         id="polyline8"
+         style="stroke:url(#linearGradient33);filter:url(#brush-6)" />
+      <!-- trockene, ausfasernde Pinselspur drumherum -->
+      <polyline
+         points="123,34 87,98 121,99 80,166"
+         stroke-width="22"
+         filter="url(#dry)"
+         opacity="0.9"
+         id="polyline9"
+         style="stroke:url(#linearGradient34);filter:url(#dry-87)" />
+      <!-- Querstrich läuft etwas über -->
+      <polyline
+         points="74,101 132,99"
+         stroke-width="7"
+         filter="url(#dry)"
+         opacity="0.8"
+         id="polyline10-4"
+         style="stroke:url(#linearGradient35);filter:url(#dry-87)" />
+    </g>
+    <g
+       fill="url(#runeGrad)"
+       id="g12"
+       style="display:none;fill:url(#linearGradient43)"
+       transform="matrix(2.56,0,0,2.56,35.104,-95.68)">
+      <path
+         d="m 104,104 q 2,0 2,3 v 10 a 2.2,2.2 0 0 1 -4.4,0 v -10 q 0,-3 2.4,-3 z"
+         opacity="0.9"
+         id="path10"
+         style="fill:url(#linearGradient37)" />
+      <circle
+         cx="103.8"
+         cy="119.5"
+         r="2.5999999"
+         id="circle10"
+         style="fill:url(#linearGradient38)" />
+      <path
+         d="m 115,104 q 1.5,0 1.5,2 v 5 a 1.6,1.6 0 0 1 -3.2,0 v -5 q 0,-2 1.7,-2 z"
+         opacity="0.85"
+         id="path11"
+         style="fill:url(#linearGradient39)" />
+      <circle
+         cx="114.9"
+         cy="112.6"
+         r="1.9"
+         id="circle11"
+         style="fill:url(#linearGradient40)" />
+      <path
+         d="m 84,163 q 1.8,0 1.8,3 v 8 a 2,2 0 0 1 -4,0 v -8 q 0,-3 2.2,-3 z"
+         opacity="0.9"
+         id="path12"
+         style="fill:url(#linearGradient41)" />
+      <circle
+         cx="83.800003"
+         cy="176"
+         r="2.4000001"
+         id="circle12"
+         style="fill:url(#linearGradient42)" />
+    </g>
+    <g
+       fill="url(#runeGrad)"
+       opacity="0.75"
+       id="g23"
+       style="display:inline;fill:url(#linearGradient75)"
+       transform="matrix(2.56,0,0,2.56,35.104,-95.68)">
+      <circle
+         cx="134"
+         cy="44"
+         r="1.4"
+         id="circle13"
+         style="fill:url(#linearGradient44)" />
+      <circle
+         cx="139"
+         cy="52"
+         r="0.89999998"
+         id="circle14"
+         style="fill:url(#linearGradient45)" />
+      <circle
+         cx="110"
+         cy="34"
+         r="1"
+         id="circle15"
+         style="fill:url(#linearGradient46)" />
+      <circle
+         cx="137"
+         cy="95"
+         r="1.2"
+         id="circle16"
+         style="fill:url(#linearGradient47)" />
+      <circle
+         cx="142"
+         cy="103"
+         r="0.80000001"
+         id="circle17"
+         style="fill:url(#linearGradient48)" />
+      <circle
+         cx="68"
+         cy="96"
+         r="1.1"
+         id="circle18"
+         style="fill:url(#linearGradient49)" />
+      <circle
+         cx="63"
+         cy="104"
+         r="0.69999999"
+         id="circle19"
+         style="fill:url(#linearGradient50)" />
+      <circle
+         cx="70"
+         cy="158"
+         r="1.3"
+         id="circle20"
+         style="fill:url(#linearGradient51)" />
+      <circle
+         cx="96"
+         cy="170"
+         r="0.89999998"
+         id="circle21"
+         style="fill:url(#linearGradient52)" />
+      <circle
+         cx="128"
+         cy="62"
+         r="0.69999999"
+         id="circle22"
+         style="fill:url(#linearGradient53)" />
+      <circle
+         cx="74"
+         cy="140"
+         r="0.80000001"
+         id="circle23"
+         style="fill:url(#linearGradient54)" />
+    </g>
+    <g
+       fill="url(#runeGrad)"
+       opacity="0.75"
+       id="g23-3"
+       style="display:inline;fill:url(#linearGradient6)"
+       transform="matrix(1.4195851,-2.4587934,2.4587934,1.4195851,-104.70768,261.6874)">
+      <circle
+         cx="134"
+         cy="44"
+         r="1.4"
+         id="circle13-1"
+         style="fill:url(#linearGradient57)" />
+      <circle
+         cx="139"
+         cy="52"
+         r="0.89999998"
+         id="circle14-4"
+         style="fill:url(#linearGradient58)" />
+      <circle
+         cx="110"
+         cy="34"
+         r="1"
+         id="circle15-9"
+         style="fill:url(#linearGradient59)" />
+      <circle
+         cx="137"
+         cy="95"
+         r="1.2"
+         id="circle16-2"
+         style="fill:url(#linearGradient60)" />
+      <circle
+         cx="142"
+         cy="103"
+         r="0.80000001"
+         id="circle17-0"
+         style="fill:url(#linearGradient61)" />
+      <circle
+         cx="68"
+         cy="96"
+         r="1.1"
+         id="circle18-6"
+         style="fill:url(#linearGradient62)" />
+      <circle
+         cx="63"
+         cy="104"
+         r="0.69999999"
+         id="circle19-8"
+         style="fill:url(#linearGradient63)" />
+      <circle
+         cx="70"
+         cy="158"
+         r="1.3"
+         id="circle20-9"
+         style="fill:url(#linearGradient64)" />
+      <circle
+         cx="96"
+         cy="170"
+         r="0.89999998"
+         id="circle21-2"
+         style="fill:url(#linearGradient65)" />
+      <circle
+         cx="128"
+         cy="62"
+         r="0.69999999"
+         id="circle22-6"
+         style="fill:url(#linearGradient66)" />
+      <circle
+         cx="74"
+         cy="140"
+         r="0.80000001"
+         id="circle23-6"
+         style="fill:url(#linearGradient67)" />
+    </g>
+  </g>
 </svg>

@@ -66,6 +66,19 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3" date="2026-11-01">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3</url>
+      <description>
+        <p>Controllers, live previews and updates from inside the app.</p>
+        <ul>
+          <li>Xbox and other XInput-style controllers work on SteamOS, with or without Steam Input; Settings lists the controllers the app sees.</li>
+          <li>A selected live channel plays a preview on its card and in the player's Following panel, optionally with sound; a spinner shows while it loads.</li>
+          <li>StillStream installs from its own Flatpak repository with a stable and a beta channel, checks for new versions, and can update itself.</li>
+          <li>No full-screen flicker in Steam Gaming Mode: video is decoded on the CPU there, adjustable under Hardware video decoding.</li>
+          <li>New app icon, Steam artwork in the repository, the installed version in Settings, and more room for focus frames at the screen edges.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.3-test.24" date="2026-11-01" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.24</url>
       <description>

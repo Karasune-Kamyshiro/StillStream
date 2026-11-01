@@ -26,6 +26,8 @@ Pre-releases come through the beta branch (`…/io.github.karasune.StillStream-b
 An AppImage is on [GitHub Releases](https://github.com/Karasune-Kamyshiro/StillStream/releases);
 the app tells you in Settings when a new version is out. Then follow the
 [installation and first-run guide](docs/users/getting-started.md).
+To make it look at home in Steam, add it as a non-Steam game and use the
+[Steam artwork](artwork/steam/README.md) (capsules, hero, logo and icon).
 If there is no published release yet, use the [source setup](docs/contributing/development.md).
 
 - Watch quick-pick channels or search an exact channel name without signing in.
