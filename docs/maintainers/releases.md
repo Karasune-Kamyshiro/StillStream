@@ -15,6 +15,9 @@ For local setup, see [development](../contributing/development.md).
 ## Before publishing
 
 1. Update `package.json` and AppStream release metadata together. Commit the version change.
+   For a final version after test builds (say 0.2.3 after 0.2.3-test.N), replace the test
+   entries with one entry for the final version: AppStream sorts `0.2.3-test.N` after `0.2.3`,
+   and CI's `appstreamcli validate` rejects that order.
 2. Review [Twitch integration policy](twitch.md), dependency updates, and open security reports.
 3. When dependencies change, run `bash scripts/flatpak-node-sources.sh` and commit the refreshed
    `flatpak/package-lock.json`. Flathub builds offline from that lockfile.
