@@ -388,18 +388,22 @@
   box-shadow: 0 0 0 2px var(--color-rail);
 }
 
-/* Small spinner on the thumbnail while a live preview loads behind it. */
+/* Spinner in the middle of the thumbnail while a live preview loads behind it: large, on a dark
+   disc with a light ring, so it reads on bright and dark thumbnails alike. */
 .stream-preview__loading {
   position: absolute;
   z-index: 2;
-  inset-block-start: var(--space-2);
-  inset-inline-end: var(--space-2);
-  inline-size: 1.5rem;
-  block-size: 1.5rem;
-  border: 0.2rem solid rgb(255 255 255 / 0.3);
+  inset: 0;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  margin: auto;
+  border: 0.35rem solid rgb(255 255 255 / 0.35);
   border-block-start-color: var(--color-accent-strong);
   border-radius: 50%;
-  background: rgb(0 0 0 / 0.35);
+  background: rgb(0 0 0 / 0.55);
+  box-shadow:
+    0 0 0 0.35rem rgb(0 0 0 / 0.35),
+    0 0.25rem 1rem rgb(0 0 0 / 0.5);
   animation: stream-preview-spin 0.9s linear infinite;
 }
 
