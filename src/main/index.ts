@@ -217,6 +217,14 @@ if (!app.requestSingleInstanceLock()) {
       app.exit(1)
     })
 
+  // Chromium restarts a crashed GPU process silently, and the whole window flashes while it
+  // does. Logging it makes such a flash traceable from a terminal.
+  app.on("child-process-gone", (_event, details) => {
+    console.warn(
+      `[StillStream] ${details.type} process gone: ${details.reason} (exit code ${details.exitCode})`,
+    )
+  })
+
   app.on("window-all-closed", () => {
     app.quit()
   })

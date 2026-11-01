@@ -387,3 +387,30 @@
   background: var(--color-accent-strong);
   box-shadow: 0 0 0 2px var(--color-rail);
 }
+
+/* Small spinner on the thumbnail while a live preview loads behind it. */
+.stream-preview__loading {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border: 0.2rem solid rgb(255 255 255 / 0.3);
+  border-block-start-color: var(--color-accent-strong);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.35);
+  animation: stream-preview-spin 0.9s linear infinite;
+}
+
+@keyframes stream-preview-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stream-preview__loading {
+    animation-duration: 2.4s;
+  }
+}

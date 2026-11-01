@@ -217,22 +217,28 @@ export const StreamPreview = ({
   }, [shown, sound])
 
   return (
-    <iframe
-      allow="autoplay"
-      aria-hidden="true"
-      className="stream-preview"
-      // Main tells this frame apart from the stream being watched by its name.
-      name={PREVIEW_FRAME_NAME}
-      data-revealed={shown}
-      height={Math.round(box.height)}
-      inert
-      onLoad={() => setLoaded(true)}
-      ref={frameRef}
-      src={previewUrl(channel)}
-      style={{ transform: box.scale === 1 ? undefined : `scale(${box.scale})` }}
-      tabIndex={-1}
-      title={`Live preview of ${channel}`}
-      width={Math.round(box.width)}
-    />
+    <>
+      {shown ? null : (
+        // Loading indicator over the thumbnail while the hidden player starts.
+        <span aria-hidden="true" className="stream-preview__loading" />
+      )}
+      <iframe
+        allow="autoplay"
+        aria-hidden="true"
+        className="stream-preview"
+        // Main tells this frame apart from the stream being watched by its name.
+        name={PREVIEW_FRAME_NAME}
+        data-revealed={shown}
+        height={Math.round(box.height)}
+        inert
+        onLoad={() => setLoaded(true)}
+        ref={frameRef}
+        src={previewUrl(channel)}
+        style={{ transform: box.scale === 1 ? undefined : `scale(${box.scale})` }}
+        tabIndex={-1}
+        title={`Live preview of ${channel}`}
+        width={Math.round(box.width)}
+      />
+    </>
   )
 }

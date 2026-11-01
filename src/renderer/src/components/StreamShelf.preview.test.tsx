@@ -111,8 +111,9 @@ describe("stream card live preview", () => {
     activate.mockResolvedValueOnce(false).mockResolvedValue(true)
     withBridge(activate)
     await loadPreview()
-    // The first try reports no playback yet: the thumbnail stays in front.
+    // The first try reports no playback yet: the thumbnail stays in front, with a spinner.
     expect(previewOf("live")?.dataset["revealed"]).toBe("false")
+    expect(card("live").querySelector(".stream-preview__loading")).not.toBeNull()
     // One report of playback is not enough: Twitch's poster can still cover its first frames.
     await settle(250)
     expect(activate).toHaveBeenCalledTimes(2)
@@ -125,6 +126,7 @@ describe("stream card live preview", () => {
       [false, "preview"],
     ])
     expect(previewOf("live")?.dataset["revealed"]).toBe("true")
+    expect(card("live").querySelector(".stream-preview__loading")).toBeNull()
     await settle(5000)
     // Already playing and previews are muted: nothing more to start.
     expect(activate).toHaveBeenCalledTimes(3)
