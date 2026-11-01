@@ -25,19 +25,19 @@
   <launchable type="desktop-id">io.github.karasune.StillStream.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/eliottness/VacuumStream/v0.2.1/docs/images/screenshot-home.png</image>
-      <caption>Live channels and a Continue Watching shelf on the home screen</caption>
+      <image>https://raw.githubusercontent.com/Karasune-Kamyshiro/StillStream/main/docs/images/screenshot-home.png</image>
+      <caption>Quick watch channels and top categories on the home screen</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/eliottness/VacuumStream/v0.2.1/docs/images/screenshot-player.png</image>
+      <image>https://raw.githubusercontent.com/Karasune-Kamyshiro/StillStream/main/docs/images/screenshot-player.png</image>
       <caption>Full-screen playback with controller-reachable player controls</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/eliottness/VacuumStream/v0.2.1/docs/images/screenshot-search.png</image>
+      <image>https://raw.githubusercontent.com/Karasune-Kamyshiro/StillStream/main/docs/images/screenshot-search.png</image>
       <caption>Searching for a channel with the on-screen keyboard</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/eliottness/VacuumStream/v0.2.1/docs/images/screenshot-settings.png</image>
+      <image>https://raw.githubusercontent.com/Karasune-Kamyshiro/StillStream/main/docs/images/screenshot-settings.png</image>
       <caption>Settings, including Twitch sign-in and playback preferences</caption>
     </screenshot>
   </screenshots>
