@@ -66,6 +66,12 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.3-test.20" date="2026-11-01" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.20</url>
+      <description>
+        <p>A live preview stays behind the thumbnail until its video is confirmed playing with Twitch's paused poster gone, instead of briefly showing that blurred poster.</p>
+      </description>
+    </release>
     <release version="0.2.3-test.19" date="2026-11-01" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3-test.19</url>
       <description>

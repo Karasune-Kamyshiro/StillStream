@@ -18,6 +18,7 @@ const MediaSampleSchema = z.object({
   currentTime: z.number(),
   muted: z.boolean(),
   paused: z.boolean(),
+  poster: z.boolean().optional(),
   readyState: z.number().int().min(0).max(4),
   volume: z.number().min(0).max(1),
 })
@@ -151,12 +152,17 @@ export const activateEmbeddedPlayer = async (
       mediaPlayer = startMediaPlayer() || mediaPlayer;
     }
     await pause(600);
+    // Twitch can keep its paused poster (blurred frame, big play button) up for a moment after
+    // its video has started; playback only counts once that overlay is gone.
+    const poster = [...document.querySelectorAll('[data-a-target="player-overlay-play-button"], [data-a-target="player-overlay-preview-background"]')]
+      .some((element) => element instanceof HTMLElement && element.offsetParent !== null);
     return {
       beforeTime,
       currentTime: video.currentTime,
       diagnostics: diagnostics(pressed, mediaPlayer),
       muted: video.muted,
       paused: video.paused,
+      poster,
       readyState: video.readyState,
       volume: video.volume,
     };
@@ -179,7 +185,10 @@ export const activateEmbeddedPlayer = async (
   }
   const sample = parsed.data
   const playing =
-    sample.readyState >= 2 && !sample.paused && sample.currentTime - sample.beforeTime >= 0.1
+    sample.readyState >= 2 &&
+    !sample.paused &&
+    sample.poster !== true &&
+    sample.currentTime - sample.beforeTime >= 0.1
   if (!playing) reportStalledPlayer(result.value)
   return playing && (!audible || (!sample.muted && sample.volume > 0))
 }

@@ -113,16 +113,21 @@ describe("stream card live preview", () => {
     await loadPreview()
     // The first try reports no playback yet: the thumbnail stays in front.
     expect(previewOf("live")?.dataset["revealed"]).toBe("false")
-    // The next try, a moment later, finds the video playing and the preview shows.
-    await settle(300)
+    // One report of playback is not enough: Twitch's poster can still cover its first frames.
+    await settle(250)
+    expect(activate).toHaveBeenCalledTimes(2)
+    expect(previewOf("live")?.dataset["revealed"]).toBe("false")
+    // The second report in a row shows the preview.
+    await settle(250)
     expect(activate.mock.calls).toEqual([
+      [false, "preview"],
       [false, "preview"],
       [false, "preview"],
     ])
     expect(previewOf("live")?.dataset["revealed"]).toBe("true")
     await settle(5000)
     // Already playing and previews are muted: nothing more to start.
-    expect(activate).toHaveBeenCalledTimes(2)
+    expect(activate).toHaveBeenCalledTimes(3)
   })
 
   it("shows a player that will not start behind the thumbnail after a grace period", async () => {
@@ -158,6 +163,7 @@ describe("stream card live preview", () => {
     expect(activate.mock.calls).toEqual([[false, "preview"]])
     await settle(PREVIEW_DELAY_MS)
     expect(activate.mock.calls).toEqual([
+      [false, "preview"],
       [false, "preview"],
       [true, "preview"],
     ])

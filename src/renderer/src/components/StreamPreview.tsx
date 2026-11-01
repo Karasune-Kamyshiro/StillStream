@@ -24,8 +24,14 @@ const PREVIEW_ACTIVATION_DELAYS_MS = [0, 800, 2000, 3500, 5500, 8000] as const
 // Behind the thumbnail the player is started again and again until it plays; each try takes
 // about a second inside the Twitch frame, and the next follows after this pause.
 const HIDDEN_ACTIVATION_PAUSE_MS = 200
-/** How long a revealed preview may wait behind the thumbnail for its video before showing anyway. */
-export const REVEAL_GRACE_MS = 1500
+const PLAYBACK_CONFIRMATIONS = 2
+/**
+ * How long a preview may wait behind the thumbnail for its video before showing anyway (to be
+ * started in view, should Twitch refuse to play while covered). Twitch regularly needs a few
+ * seconds, e.g. while its ad requests time out behind a blocker, and showing earlier only shows
+ * its blurred paused poster, so this is a last resort rather than a deadline.
+ */
+export const REVEAL_GRACE_MS = 8000
 
 /** Must match PREVIEW_FRAME_NAME in the main process, which finds preview frames by it. */
 export const PREVIEW_FRAME_NAME = "stillstream-preview"
@@ -151,15 +157,20 @@ export const StreamPreview = ({
     if (!loaded || playing || shown) return
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | undefined
+    // Playback must be confirmed twice in a row: Twitch's first moments of video can still sit
+    // under its blurred paused poster, which should never be what the preview reveals.
+    let confirmations = 0
     // One try at a time: the next starts a moment after the previous one reported back.
     const attempt = (): void => {
       void window.stillStream.system.activateEmbeddedPlayer(false, "preview").then(
         (started) => {
           if (cancelled) return
-          if (started) setPlaying(true)
+          confirmations = started ? confirmations + 1 : 0
+          if (confirmations >= PLAYBACK_CONFIRMATIONS) setPlaying(true)
           else timer = setTimeout(attempt, HIDDEN_ACTIVATION_PAUSE_MS)
         },
         () => {
+          confirmations = 0
           if (!cancelled) timer = setTimeout(attempt, HIDDEN_ACTIVATION_PAUSE_MS)
         },
       )

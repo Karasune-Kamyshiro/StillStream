@@ -77,7 +77,7 @@ describe("live panel previews", () => {
     const frame = card("next").querySelector("iframe")
     expect(frame?.getAttribute("name")).toBe("stillstream-preview")
     await act(async () => frame?.dispatchEvent(new Event("load")))
-    await settle(200)
+    await settle(600)
     expect(activate.mock.calls.every(([, target]) => target === "preview")).toBe(true)
     expect(audible.mock.calls).toEqual([[true]])
     await act(async () => card("now").focus())
