@@ -14,6 +14,7 @@ import { PlaybackProgressStore } from "./playback-progress-store"
 import { createPlayerFocusGuard } from "./player-focus-guard"
 import { PreferencesStore } from "./preferences-store"
 import { SettingsStore } from "./settings-store"
+import { applySteamOSPasswordStore } from "./steamos-password-store"
 import { TokenVault } from "./token-vault"
 import { shouldEmbedLogin } from "./twitch-login-surface"
 import { TwitchService } from "./twitch-service"
@@ -215,6 +216,7 @@ if (!app.requestSingleInstanceLock()) {
     process.env,
     readHardwareDecodingChoice(app.getPath("userData")),
   )
+  applySteamOSPasswordStore(app.commandLine)
 
   app
     .whenReady()

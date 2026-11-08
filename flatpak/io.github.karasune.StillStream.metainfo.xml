@@ -66,6 +66,12 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.4-test.1" date="2026-11-08" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.4-test.1</url>
+      <description>
+        <p>On SteamOS the Twitch sign-in survives switching between Desktop and Gaming Mode. Sign in once more after updating.</p>
+      </description>
+    </release>
     <release version="0.2.3" date="2026-11-01">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.3</url>
       <description>

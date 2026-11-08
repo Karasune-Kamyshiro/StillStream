@@ -170,7 +170,9 @@ category are sent to Settings to sign in first.
 Device authorization authenticates discovery, **not the embedded player**. Twitch may show
 advertisements and its own offline, regional, or error screens. Browser cookies are not imported.
 StillStream prefers the Linux keyring. If none is available, it stores the token in its private
-application-data directory with owner-only file permissions and logs a security warning.
+application-data directory with owner-only file permissions and logs a security warning. On
+SteamOS it always uses that private file, in Desktop and Gaming Mode alike: Gaming Mode has no
+keyring, and a token locked in Desktop Mode's KWallet signed you out on every switch.
 
 ## Favourite channels
 

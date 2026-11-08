@@ -11,6 +11,10 @@ Steam Gaming Mode and Big Picture.
 | `logo-1669x320.png` | Logo (over the hero, transparent) | 1669 × 320 |
 | `icon-512.png` | Icon | 512 × 512 |
 
+Sources and extras: `icon.svg` (the app icon, Inkscape), `icon_bk.svg` (an earlier icon variant),
+`logo.svg` and `logo.png` (the bare waveform mark on transparent, 512 × 512, also usable as a
+square logo).
+
 ## Set them in Steam
 
 In Desktop Mode, after adding StillStream with **Games → Add a Non-Steam Game to My Library**:

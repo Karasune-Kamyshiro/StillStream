@@ -8,6 +8,12 @@ Check your connection and system clock. Keep the built-in public Client ID unles
 different registered application. If a device code expires, start sign-in again; do not reuse
 an expired code. Never share device codes, access tokens, or Client Secrets in an issue.
 
+## Signed out after switching between Desktop and Gaming Mode
+
+Fixed in 0.2.4: on SteamOS, StillStream now keeps the sign-in (and Twitch's web session) in the
+same place in both modes. Sign in once more after updating to 0.2.4; it then survives switching
+modes.
+
 ## Logs mention an OAuth token file fallback
 
 Unlock or configure your desktop's Secret Service/KWallet keyring to use encrypted storage.

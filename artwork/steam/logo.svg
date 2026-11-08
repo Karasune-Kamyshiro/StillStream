@@ -16,6 +16,7 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title id="title1">StillStream signal mark</title>
   <defs
      id="defs2">
     <linearGradient
@@ -979,8 +980,6 @@
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer2" />
-  <title
-     id="title1">StillStream signal mark</title>
   <g
      inkscape:groupmode="layer"
      id="layer2"
