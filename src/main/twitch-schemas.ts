@@ -114,7 +114,18 @@ const mapPage = <ApiItem, Item>(
   return { cursor, items }
 }
 
-export const parseStreamsResponse = (input: unknown): Page<StreamCard> => {
+/**
+ * Twitch serves a live preview at a fixed URL per channel and replaces the picture about every
+ * five minutes. Chromium would keep the first picture it loaded for as long as the app runs (and a
+ * channel that had none yet, having just gone live, would stay without one), so the URL carries
+ * the current five-minute slot: each slot fetches a fresh picture, within one it stays cached.
+ */
+export const PREVIEW_REFRESH_MS = 5 * 60 * 1000
+
+export const freshPreviewUrl = (url: string, now: number): string =>
+  `${url}${url.includes("?") ? "&" : "?"}t=${Math.floor(now / PREVIEW_REFRESH_MS)}`
+
+export const parseStreamsResponse = (input: unknown, now = Date.now()): Page<StreamCard> => {
   const response = z
     .object({ data: z.array(HelixStreamSchema), pagination: PaginationSchema })
     .parse(input)
@@ -123,7 +134,10 @@ export const parseStreamsResponse = (input: unknown): Page<StreamCard> => {
     id: stream.id,
     startedAt: stream.started_at,
     tags: stream.tags,
-    thumbnailUrl: stream.thumbnail_url.replace("{width}", "640").replace("{height}", "360"),
+    thumbnailUrl: freshPreviewUrl(
+      stream.thumbnail_url.replace("{width}", "640").replace("{height}", "360"),
+      now,
+    ),
     title: stream.title,
     userId: stream.user_id,
     userLogin: stream.user_login,

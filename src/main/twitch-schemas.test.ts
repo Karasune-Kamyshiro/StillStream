@@ -7,7 +7,9 @@ import {
   VideoCardSchema,
 } from "../shared/contracts"
 import {
+  freshPreviewUrl,
   mergeStreamProfiles,
+  PREVIEW_REFRESH_MS,
   parseCategoriesResponse,
   parseFollowedChannelsResponse,
   parseStreamsResponse,
@@ -93,9 +95,10 @@ describe("Twitch response parsing", () => {
     }
 
     // When the untrusted payload crosses the parser boundary
-    const page = parseStreamsResponse(response)
+    const page = parseStreamsResponse(response, 3 * PREVIEW_REFRESH_MS + 1)
 
-    // Then renderer data is camel-cased and receives a concrete 16:9 image URL
+    // Then renderer data is camel-cased and receives a concrete 16:9 image URL, tagged with the
+    // current five-minute preview slot
     expect(page).toEqual({
       cursor: "next-page",
       items: [
@@ -104,7 +107,7 @@ describe("Twitch response parsing", () => {
           id: "123",
           startedAt: "2026-09-05T12:00:00Z",
           tags: ["English"],
-          thumbnailUrl: "https://static-cdn.jtvnw.net/previews-ttv/live_user_name-640x360.jpg",
+          thumbnailUrl: "https://static-cdn.jtvnw.net/previews-ttv/live_user_name-640x360.jpg?t=3",
           title: "A live stream",
           userId: "456",
           userLogin: "streamer",
@@ -490,5 +493,15 @@ describe("Twitch response parsing", () => {
     expect(enriched.items[0]?.profileImageUrl).toBe(
       "https://static-cdn.jtvnw.net/jtv_user_pictures/streamer.png",
     )
+  })
+})
+
+describe("live preview freshness", () => {
+  it("changes the thumbnail URL every five minutes and keeps it within a slot", () => {
+    const url = "https://static-cdn.jtvnw.net/previews-ttv/live_user_x-640x360.jpg"
+    expect(freshPreviewUrl(url, 0)).toBe(`${url}?t=0`)
+    expect(freshPreviewUrl(url, PREVIEW_REFRESH_MS - 1)).toBe(`${url}?t=0`)
+    expect(freshPreviewUrl(url, PREVIEW_REFRESH_MS)).toBe(`${url}?t=1`)
+    expect(freshPreviewUrl(`${url}?a=b`, PREVIEW_REFRESH_MS)).toBe(`${url}?a=b&t=1`)
   })
 })

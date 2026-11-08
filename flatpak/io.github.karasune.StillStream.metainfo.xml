@@ -66,6 +66,12 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.4-test.3" date="2026-11-08" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.4-test.3</url>
+      <description>
+        <p>Stream thumbnails refresh about every five minutes instead of keeping the first picture, and a channel that just went live gets its thumbnail once Twitch has one.</p>
+      </description>
+    </release>
     <release version="0.2.4-test.2" date="2026-11-08" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.4-test.2</url>
       <description>

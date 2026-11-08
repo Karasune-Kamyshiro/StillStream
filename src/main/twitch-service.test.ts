@@ -108,7 +108,9 @@ describe("Twitch category streams", () => {
       "https://example.com/avatar.png",
       "https://example.com/avatar.png",
     ])
-    expect(page.items[0]?.thumbnailUrl).toBe("https://static-cdn.jtvnw.net/previews/640x360.jpg")
+    expect(page.items[0]?.thumbnailUrl).toMatch(
+      /^https:\/\/static-cdn\.jtvnw\.net\/previews\/640x360\.jpg\?t=\d+$/,
+    )
   })
 
   it("repeats the category filter with the exact returned cursor", async () => {
