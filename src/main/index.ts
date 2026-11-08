@@ -145,6 +145,7 @@ const createWindow = async (): Promise<void> => {
     rendererOrigin,
     runningInSteamGameMode,
     twitch: new TwitchService(new SettingsStore(app.getPath("userData")), tokenVault),
+    quit: () => app.quit(),
     updates: {
       install: async (onProgress) => {
         const packaging = await readPackaging()

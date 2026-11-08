@@ -102,6 +102,7 @@ const makeBridge = (auth: AuthSnapshot) =>
         .fn<StillStreamApi["system"]["activateEmbeddedPlayer"]>()
         .mockResolvedValue(true),
       isSteamGameMode: vi.fn<StillStreamApi["system"]["isSteamGameMode"]>(),
+      quit: vi.fn<NonNullable<StillStreamApi["system"]["quit"]>>().mockResolvedValue(undefined),
       restoreShellFullscreen: vi
         .fn<StillStreamApi["system"]["restoreShellFullscreen"]>()
         .mockResolvedValue(false),
@@ -440,5 +441,33 @@ describe("native gamepad Search shortcuts in App", () => {
     expect(document.activeElement).toBe(target("channel-direct-twitch"))
     expect(constructed).not.toHaveBeenCalled()
     expect(keys).toEqual(["/", "/", "ArrowDown", "Escape", "/", "/", "/"])
+  })
+})
+
+describe("Back on the start screen", () => {
+  const quitDialog = () => document.querySelector('[role="alertdialog"]')
+
+  it("asks whether to quit, and quits only on confirmation", async () => {
+    const { bridge } = await mount()
+    // B on the controller, with nothing open, on Home.
+    await press(1)
+    expect(quitDialog()?.textContent).toContain("Quit StillStream?")
+    expect(document.activeElement?.getAttribute("data-focus-id")).toBe("quit-confirm")
+    // B again stays.
+    await press(1)
+    expect(quitDialog()).toBeNull()
+    expect(bridge.system.quit).not.toHaveBeenCalled()
+    // B, then A quits.
+    await press(1)
+    await press(0)
+    expect(bridge.system.quit).toHaveBeenCalledOnce()
+  })
+
+  it("still returns from another screen to the start screen first", async () => {
+    const { bridge } = await mount()
+    await act(async () => target("nav-search").click())
+    await press(1)
+    expect(quitDialog()).toBeNull()
+    expect(bridge.system.quit).not.toHaveBeenCalled()
   })
 })

@@ -41,6 +41,8 @@ type IpcOptions = {
   readonly playerSession: Pick<TwitchWebSession, "setup" | "signIn" | "signOut" | "snapshot">
   readonly rendererOrigin: string
   readonly runningInSteamGameMode: boolean
+  /** Quits the app; absent in tests that do not exercise it. */
+  readonly quit?: () => void
   readonly twitch: TwitchService
   /** Absent in tests that do not exercise updates; the check then reports "unknown". */
   readonly updates?: {
@@ -270,6 +272,11 @@ export const registerIpc = (options: IpcOptions): void => {
       )
     },
   )
+  ipcMain.handle(CHANNELS.systemQuit, (event, ...input: unknown[]) => {
+    authorize(event)
+    z.tuple([]).parse(input)
+    options.quit?.()
+  })
   ipcMain.handle(CHANNELS.systemIsSteamGameMode, (event) => {
     authorize(event)
     return options.runningInSteamGameMode

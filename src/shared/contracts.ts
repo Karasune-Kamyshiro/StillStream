@@ -389,6 +389,8 @@ export interface StillStreamApi {
       target?: "player" | "preview",
     ) => Promise<boolean>
     readonly isSteamGameMode: () => Promise<boolean>
+    /** Quits StillStream (in Steam Gaming Mode this returns to Steam). */
+    readonly quit?: () => Promise<void>
     readonly restoreShellFullscreen: () => Promise<boolean>
     /**
      * Reads (null) or sets the live low-latency mode of the official player. Resolves with the

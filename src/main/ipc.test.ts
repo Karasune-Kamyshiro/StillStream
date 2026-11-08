@@ -200,6 +200,7 @@ describe("chat input capability", () => {
       "activateEmbeddedPlayer",
       "isSteamGameMode",
       "onWindowActive",
+      "quit",
       "restoreShellFullscreen",
       "setFullscreen",
       "setPlayerLowLatency",

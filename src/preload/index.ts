@@ -198,6 +198,7 @@ const api = {
         .then((value) => Boolean(value)),
     isSteamGameMode: () =>
       ipcRenderer.invoke(CHANNELS.systemIsSteamGameMode).then((value) => Boolean(value)),
+    quit: () => ipcRenderer.invoke(CHANNELS.systemQuit).then(() => undefined),
     restoreShellFullscreen: () =>
       ipcRenderer.invoke(CHANNELS.systemRestoreShellFullscreen).then((value) => Boolean(value)),
     onWindowActive: (listener) => {

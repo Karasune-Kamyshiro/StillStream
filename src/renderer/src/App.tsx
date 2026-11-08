@@ -9,6 +9,7 @@ import { FavouritesShelf } from "./components/FavouritesShelf"
 import { FollowedChannelsView } from "./components/FollowedChannelsView"
 import { Navigation, type RouteName } from "./components/Navigation"
 import { type FullscreenCarry, PlayerView } from "./components/PlayerView"
+import { QuitDialog } from "./components/QuitDialog"
 import { SearchView } from "./components/SearchView"
 import { SettingsPanel, settingsAccountFocusId } from "./components/SettingsPanel"
 import { PreviewSoundContext } from "./components/StreamPreview"
@@ -203,7 +204,7 @@ export const App = () => {
       <div
         className="app-shell"
         // The update dialog is modal: nothing behind it takes focus or input meanwhile.
-        inert={updateDialog !== undefined}
+        inert={updateDialog !== undefined || controller.quitPrompt === true}
         onFocusCapture={(event) => {
           focusedControl.current = event.target
         }}
@@ -501,6 +502,7 @@ export const App = () => {
           ) : null}
         </div>
       </div>
+      {controller.quitPrompt === true ? <QuitDialog onClose={controller.closeQuitPrompt} /> : null}
       {updateDialog === undefined || updateSnapshot === undefined ? null : (
         <UpdateDialog
           installNow={updateDialog.installNow}

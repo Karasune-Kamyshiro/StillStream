@@ -68,6 +68,8 @@ export const useAppController = () => {
   const [videos, setVideos] = useState<readonly VideoCard[]>([])
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState("")
+  // Back on the start screen, with nothing open, asks whether to quit.
+  const [quitPrompt, setQuitPrompt] = useState(false)
   const authEpoch = useRef(0)
   const catalogRequestEpoch = useRef(0)
   const currentScreen = useRef(screen)
@@ -293,7 +295,10 @@ export const useAppController = () => {
         if (shouldNavigateHomeOnBack(screen, startRoute)) {
           event.preventDefault()
           navigateHome()
+          return
         }
+        event.preventDefault()
+        setQuitPrompt(true)
       }
     }
     document.addEventListener("keydown", onShortcut)
@@ -526,6 +531,8 @@ export const useAppController = () => {
   return {
     auth,
     busy,
+    quitPrompt,
+    closeQuitPrompt: () => setQuitPrompt(false),
     categories,
     categoryCatalog,
     continueWatching,
