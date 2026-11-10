@@ -6,6 +6,8 @@ export const homeFocus = (
   mode: "authenticated" | "guest",
   continueWatching: Pick<ContinueWatchingState, "items" | "status">,
   favourites: Pick<FavouritesState, "items" | "status">,
+  /** The first live stream card, where Right from the Home tab lands when nothing sits above. */
+  firstLiveFocusId?: string,
 ) => {
   const firstContinue = continueWatching.items[0]
   const lastContinue = continueWatching.items.at(-1)
@@ -44,7 +46,10 @@ export const homeFocus = (
       lowerFocusId: favouriteEntry ?? liveEntry,
       upperFocusId: "nav-home",
     },
-    entryFocusId: continueEntry ?? favouriteEntry ?? fallback,
+    entryFocusId:
+      continueEntry ??
+      favouriteEntry ??
+      (mode === "authenticated" ? (firstLiveFocusId ?? fallback) : fallback),
     favourites: {
       fallbackFocusId: continueEntry ?? fallback,
       lowerFocusId: liveEntry,

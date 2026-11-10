@@ -302,7 +302,10 @@ describe.each(["home", "following"] as const)("%s live catalog in the mounted Ap
       )
       const duplicate = button("stream-2")
       button(`nav-${shelf}`).focus()
+      // Entering the content from the active tab lands on the first stream, not on Refresh.
       await key(horizontal ? "ArrowDown" : "ArrowRight")
+      expect(document.activeElement).toBe(button("stream-1"))
+      await key("ArrowUp")
       expect(document.activeElement).toBe(button(`${shelf}-refresh`))
       await key("ArrowDown")
       expect(document.activeElement).toBe(button("stream-1"))

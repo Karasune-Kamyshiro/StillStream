@@ -187,6 +187,10 @@ export const App = () => {
     )
   }
 
+  const firstStreamFocusId = (streams: readonly { readonly id: string }[]): string | undefined => {
+    const first = streams[0]
+    return first === undefined ? undefined : `stream-${first.id}`
+  }
   const route = controller.screen.kind === "browse" ? controller.screen.route : undefined
   const allChannels =
     controller.screen.kind === "browse" && controller.screen.followingMode === "all"
@@ -196,6 +200,7 @@ export const App = () => {
           controller.auth.kind === "authenticated" ? "authenticated" : "guest",
           controller.continueWatching,
           favourites,
+          firstStreamFocusId(controller.live.items),
         )
       : undefined
 
@@ -224,10 +229,12 @@ export const App = () => {
               ? settingsAccountFocusId(controller.auth)
               : allChannels
                 ? "following-all"
-                : controller.auth.kind === "authenticated" &&
-                    (route === "home" || route === "following")
-                  ? `${route}-refresh`
-                  : undefined)
+                : controller.auth.kind === "authenticated" && route === "following"
+                  ? // Right from the tab enters the content, not the shelf's Refresh button.
+                    (firstStreamFocusId(controller.followed.items) ?? "following-refresh")
+                  : controller.auth.kind === "authenticated" && route === "home"
+                    ? "home-refresh"
+                    : undefined)
           }
           onNavigate={controller.navigate}
         />

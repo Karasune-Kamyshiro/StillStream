@@ -66,6 +66,12 @@
   <url type="contribute">https://github.com/Karasune-Kamyshiro/StillStream/blob/main/CONTRIBUTING.md</url>
   <url type="vcs-browser">https://github.com/Karasune-Kamyshiro/StillStream</url>
   <releases>
+    <release version="0.2.4-test.4" date="2026-11-11" type="development">
+      <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.4-test.4</url>
+      <description>
+        <p>Right from the selected Home or Following tab goes to the first stream instead of the Refresh button.</p>
+      </description>
+    </release>
     <release version="0.2.4-test.3" date="2026-11-08" type="development">
       <url type="details">https://github.com/Karasune-Kamyshiro/StillStream/releases/tag/v0.2.4-test.3</url>
       <description>

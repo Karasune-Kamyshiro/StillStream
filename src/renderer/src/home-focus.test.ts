@@ -108,3 +108,16 @@ describe("Home focus model", () => {
     },
   )
 })
+
+describe("entering Home from the navigation", () => {
+  const empty = { items: [], status: "ready" } as const
+
+  it("lands on the first live stream when no shelf sits above it", () => {
+    expect(homeFocus("authenticated", empty, empty, "stream-1").entryFocusId).toBe("stream-1")
+  })
+
+  it("falls back to Refresh while no stream is listed, and to Sign in for guests", () => {
+    expect(homeFocus("authenticated", empty, empty).entryFocusId).toBe("home-refresh")
+    expect(homeFocus("guest", empty, empty, "stream-1").entryFocusId).toBe("home-sign-in")
+  })
+})
